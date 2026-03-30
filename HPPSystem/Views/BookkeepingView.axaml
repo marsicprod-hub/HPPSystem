@@ -1,0 +1,181 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HPPSystem.ViewModels"
+             xmlns:model="using:HPPSystem.Models"
+             xmlns:fa="using:FluentAvalonia.UI.Controls"
+             xmlns:fi="using:FluentIcons.Avalonia"
+             x:Class="HPPSystem.Views.BookkeepingView"
+             x:Name="Root"
+             x:DataType="vm:BookkeepingViewModel">
+  <UserControl.Styles>
+    <Style Selector="Border.page-card">
+      <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="18" />
+      <Setter Property="Padding" Value="18" />
+    </Style>
+    <Style Selector="TextBlock.kpi-label">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer>
+    <StackPanel Spacing="18">
+      <StackPanel Spacing="4">
+        <TextBlock Text="Pembukuan &amp; Kas" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+        <TextBlock Text="Cashflow, expense, dan update stok belanja bahan." Foreground="{DynamicResource SecondaryTextBrush}" />
+      </StackPanel>
+
+      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="16">
+        <Border Grid.Column="0" Classes="page-card">
+          <StackPanel>
+            <TextBlock Text="Pemasukan" Classes="kpi-label" />
+            <TextBlock Text="{Binding TotalIncomeText}" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="1" Classes="page-card">
+          <StackPanel>
+            <TextBlock Text="Pengeluaran" Classes="kpi-label" />
+            <TextBlock Text="{Binding TotalExpenseText}" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="2" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Padding="18" CornerRadius="20">
+          <StackPanel>
+            <TextBlock Text="Saldo Bersih" Classes="kpi-label" />
+            <TextBlock Text="{Binding NetBalanceText}" FontSize="28" FontWeight="Black" Foreground="{DynamicResource AccentBrush}" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Grid ColumnDefinitions="*,1.8*" ColumnSpacing="16">
+        <StackPanel Grid.Column="0" Spacing="16">
+          <Border Classes="page-card">
+            <StackPanel Spacing="12">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Command="{Binding SetExpenseCommand}" Background="{DynamicResource AccentRoseBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="12">Expense</Button>
+                <Button Command="{Binding SetIncomeCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="12">Income</Button>
+              </StackPanel>
+
+              <StackPanel Spacing="6">
+                <TextBlock Text="Kategori Transaksi" Classes="kpi-label" />
+                <ComboBox ItemsSource="{Binding CategoryOptions}" SelectedItem="{Binding FormCategory}" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" />
+              </StackPanel>
+
+              <StackPanel Spacing="6">
+                <TextBlock Text="Deskripsi" Classes="kpi-label" />
+                <TextBox Text="{Binding FormDescription}" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
+              </StackPanel>
+
+              <StackPanel Spacing="6">
+                <TextBlock Text="Tanggal" Classes="kpi-label" />
+                <TextBox Text="{Binding FormDate}" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
+              </StackPanel>
+
+              <StackPanel Spacing="6">
+                <TextBlock Text="Nominal Manual" Classes="kpi-label" />
+                <fa:NumberBox Value="{Binding FormAmount}" Minimum="0" SmallChange="1000" SpinButtonPlacementMode="Compact" IsEnabled="{Binding !IsBelanjaBahan}" />
+              </StackPanel>
+
+              <StackPanel Spacing="6" IsVisible="{Binding IsBelanjaBahan}">
+                <TextBlock Text="Subtotal Item Belanja" Classes="kpi-label" />
+                <TextBlock Text="{Binding AutoCalculatedAmount, StringFormat={}{0:N0}}" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" />
+              </StackPanel>
+
+              <ItemsControl ItemsSource="{Binding PurchasedItems}" IsVisible="{Binding IsBelanjaBahan}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate DataType="vm:PurchasedItemEntryViewModel">
+                    <Border Margin="0,0,0,8" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="12">
+                      <Grid ColumnDefinitions="2*,2*,*,*,Auto" ColumnSpacing="8">
+                        <StackPanel Grid.Column="0" Spacing="6">
+                          <TextBlock Text="Material Master" Classes="kpi-label" />
+                          <ComboBox ItemsSource="{Binding #Root.DataContext.AvailableMaterials}"
+                                    SelectedValueBinding="{Binding Id}"
+                                    SelectedValue="{Binding MaterialId}"
+                                    Background="{DynamicResource CardBgBrush}"
+                                    BorderBrush="{DynamicResource InputBorderBrush}">
+                            <ComboBox.ItemTemplate>
+                              <DataTemplate DataType="model:Material">
+                                <TextBlock Text="{Binding Name}" />
+                              </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                          </ComboBox>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="6">
+                          <TextBlock Text="Nama Custom" Classes="kpi-label" />
+                          <TextBox Text="{Binding CustomName}" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="2" Spacing="6">
+                          <TextBlock Text="Qty" Classes="kpi-label" />
+                          <fa:NumberBox Value="{Binding Qty}" Minimum="0" SmallChange="1" SpinButtonPlacementMode="Compact" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="3" Spacing="6">
+                          <TextBlock Text="Harga" Classes="kpi-label" />
+                          <fa:NumberBox Value="{Binding Price}" Minimum="0" SmallChange="1000" SpinButtonPlacementMode="Compact" />
+                        </StackPanel>
+                        <Button Grid.Column="4" Command="{Binding #Root.DataContext.RemovePurchasedItemCommand}" CommandParameter="{Binding .}" VerticalAlignment="Bottom" Background="{DynamicResource AccentRoseBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="10">X</Button>
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <Button Command="{Binding AddPurchasedItemCommand}" IsVisible="{Binding IsBelanjaBahan}" Background="{DynamicResource CardAltBgBrush}" Foreground="{DynamicResource PrimaryTextBrush}" CornerRadius="12">Tambah Item Belanja</Button>
+              <Button Command="{Binding SaveCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="12">Simpan Transaksi</Button>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <Border Grid.Column="1" Classes="page-card">
+          <StackPanel Spacing="12">
+            <TextBlock Text="Riwayat Transaksi" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <ItemsControl ItemsSource="{Binding Transactions}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="model:Transaction">
+                  <Border Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Padding="14" CornerRadius="16" Margin="0,0,0,10">
+                    <StackPanel Spacing="8">
+                      <Grid ColumnDefinitions="2*,Auto,Auto" ColumnSpacing="8">
+                        <StackPanel>
+                          <TextBlock Text="Deskripsi" Classes="kpi-label" />
+                          <TextBlock Text="{Binding Description}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                          <TextBlock Text="{Binding Category}" Foreground="{DynamicResource SecondaryTextBrush}" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="1">
+                          <TextBlock Text="Nominal" Classes="kpi-label" />
+                          <TextBlock Text="{Binding Amount, StringFormat={}{0:N0}}" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" />
+                        </StackPanel>
+                        <Button Grid.Column="2" Command="{Binding #Root.DataContext.RequestDeleteCommand}" CommandParameter="{Binding .}" VerticalAlignment="Bottom" Background="{DynamicResource AccentRoseBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="10">Hapus</Button>
+                      </Grid>
+                      <ItemsControl ItemsSource="{Binding PurchasedItems}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate DataType="model:PurchasedItem">
+                            <Grid ColumnDefinitions="2*,Auto,Auto" ColumnSpacing="8">
+                              <StackPanel>
+                                <TextBlock Text="Item Belanja" Classes="kpi-label" />
+                                <TextBlock Text="{Binding CustomName}" Foreground="{DynamicResource PrimaryTextBrush}" />
+                              </StackPanel>
+                              <StackPanel Grid.Column="1">
+                                <TextBlock Text="Qty" Classes="kpi-label" />
+                                <TextBlock Text="{Binding Qty}" Foreground="{DynamicResource PrimaryTextBrush}" />
+                              </StackPanel>
+                              <StackPanel Grid.Column="2">
+                                <TextBlock Text="Harga" Classes="kpi-label" />
+                                <TextBlock Text="{Binding Price, StringFormat={}{0:N0}}" Foreground="{DynamicResource PrimaryTextBrush}" />
+                              </StackPanel>
+                            </Grid>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

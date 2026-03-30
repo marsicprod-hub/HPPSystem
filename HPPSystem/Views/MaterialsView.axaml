@@ -1,0 +1,145 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HPPSystem.ViewModels"
+             xmlns:model="using:HPPSystem.Models"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:fa="using:FluentAvalonia.UI.Controls"
+             xmlns:fi="using:FluentIcons.Avalonia"
+             xmlns:lottie="using:Avalonia.Skia.Lottie"
+             x:Class="HPPSystem.Views.MaterialsView"
+             x:Name="Root"
+             x:DataType="vm:MaterialsViewModel">
+  <UserControl.Styles>
+    <Style Selector="Border.page-card">
+      <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="18" />
+      <Setter Property="Padding" Value="18" />
+    </Style>
+    <Style Selector="TextBlock.kpi-label">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer>
+    <StackPanel Spacing="16">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+        <StackPanel Spacing="4">
+          <TextBlock Text="Materials" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="Inventory source of truth" Foreground="{DynamicResource SecondaryTextBrush}" />
+        </StackPanel>
+        <Button Grid.Column="1" Command="{Binding StartCreateCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" Padding="16,10" CornerRadius="14" FontWeight="Bold">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+            <fi:FluentIcon Icon="Add" IconVariant="Filled" FontSize="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="Add Material" />
+          </Grid>
+        </Button>
+      </Grid>
+
+      <Border Classes="page-card" Background="{DynamicResource CardAltBgBrush}">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+          <TextBlock Text="{Binding InventoryInsightText}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+          <Border Grid.Column="1" Background="{DynamicResource AccentSoftBrush}" CornerRadius="999" Padding="12,6" ToolTip.Tip="Rata-rata HPP satuan katalog">
+            <TextBlock Text="{Binding AverageUnitCostText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" FontSize="11" />
+          </Border>
+        </Grid>
+      </Border>
+
+      <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
+        <Border Grid.Column="0" Classes="page-card"><StackPanel Spacing="8"><fi:FluentIcon Icon="Box" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" /><TextBlock Text="Materials" Classes="kpi-label" /><TextBlock Text="{Binding MaterialCountText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" /></StackPanel></Border>
+        <Border Grid.Column="1" Classes="page-card"><StackPanel Spacing="8"><fi:FluentIcon Icon="Alert" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" /><TextBlock Text="Low Stock" Classes="kpi-label" /><TextBlock Text="{Binding LowStockCountText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" /></StackPanel></Border>
+        <Border Grid.Column="2" Classes="page-card"><StackPanel Spacing="8"><fi:FluentIcon Icon="Database" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" /><TextBlock Text="Inventory" Classes="kpi-label" /><TextBlock Text="{Binding TotalStockText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" /></StackPanel></Border>
+        <Border Grid.Column="3" Classes="page-card"><StackPanel Spacing="8"><fi:FluentIcon Icon="Calculator" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" /><TextBlock Text="Estimate" Classes="kpi-label" /><TextBlock Text="{Binding EstimatedUnitCostText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" /></StackPanel></Border>
+      </Grid>
+
+      <Border Classes="page-card" IsVisible="{Binding ShowForm}">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="{Binding FormTitleText}" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Grid.Column="1" Text="{Binding EstimatedUnitCostText}" FontWeight="Bold" Foreground="{DynamicResource AccentWarmBrush}" ToolTip.Tip="Harga pack dibagi isi total." />
+          </Grid>
+          <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
+            <TextBox Grid.Column="0" Text="{Binding FormName}" Watermark="Name" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
+            <fa:NumberBox Grid.Column="1" Value="{Binding FormPrice}" SmallChange="100" Minimum="0" SpinButtonPlacementMode="Compact" />
+            <fa:NumberBox Grid.Column="2" Value="{Binding FormWeight}" SmallChange="10" Minimum="0" SpinButtonPlacementMode="Compact" />
+            <TextBox Grid.Column="3" Text="{Binding FormUnit}" Watermark="Unit" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
+          </Grid>
+          <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+            <fa:NumberBox Grid.Column="0" Value="{Binding FormStock}" SmallChange="1" Minimum="0" SpinButtonPlacementMode="Compact" />
+            <Button Grid.Column="1" Command="{Binding SaveCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" Padding="14,10" CornerRadius="12" FontWeight="Bold"><TextBlock Text="{Binding FormActionText}" /></Button>
+            <Button Grid.Column="2" Command="{Binding CancelCommand}" Background="{DynamicResource CardAltBgBrush}" Foreground="{DynamicResource PrimaryTextBrush}" Padding="14,10" CornerRadius="12" FontWeight="Bold"><TextBlock Text="Cancel" /></Button>
+          </Grid>
+        </StackPanel>
+      </Border>
+
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <TextBox Text="{Binding SearchTerm}" Watermark="Search material..." Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
+        <Border Grid.Column="1" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="14,10">
+          <TextBlock Text="{Binding SearchSummaryText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+        </Border>
+      </Grid>
+
+      <Border Classes="page-card" IsVisible="{Binding ShowHistory}">
+        <StackPanel Spacing="10">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="{Binding HistoryTitleText}" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <Button Grid.Column="1" Command="{Binding CloseHistoryCommand}" Background="{DynamicResource CardAltBgBrush}" Foreground="{DynamicResource PrimaryTextBrush}" Padding="14,10" CornerRadius="12" FontWeight="Bold"><TextBlock Text="Close" /></Button>
+          </Grid>
+          <TextBlock Text="{Binding HistoryCurrentPriceText}" Foreground="{DynamicResource SecondaryTextBrush}" />
+          <ItemsControl ItemsSource="{Binding HistoryMaterial.PriceHistory}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="model:PriceHistoryRecord">
+                <Border Margin="0,0,0,8" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="12">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding Date}" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <TextBlock Grid.Column="1" Text="{Binding Price, StringFormat={}{0:N0}}" Foreground="{DynamicResource AccentWarmBrush}" FontWeight="Bold" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="page-card" IsVisible="{Binding !HasMaterials}">
+        <StackPanel Spacing="12" HorizontalAlignment="Center">
+          <lottie:Lottie Width="120" Height="120" Path="avares://HPPSystem/Assets/Animations/empty-pulse.json" />
+          <TextBlock Text="No materials yet" FontSize="22" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <Button Command="{Binding StartCreateCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" Padding="14,10" CornerRadius="12" FontWeight="Bold"><TextBlock Text="Create" /></Button>
+        </StackPanel>
+      </Border>
+
+      <ItemsControl ItemsSource="{Binding FilteredMaterials}" IsVisible="{Binding HasMaterials}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate DataType="model:Material">
+            <Border Classes="page-card" Margin="0,0,0,10">
+              <Grid ColumnDefinitions="2*,Auto,Auto,Auto,Auto" ColumnSpacing="12">
+                <StackPanel Spacing="8">
+                  <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Border Background="{DynamicResource CardAltBgBrush}" CornerRadius="999" Padding="12,6"><TextBlock Text="{Binding Unit}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" /></Border>
+                    <Border Background="{DynamicResource CardAltBgBrush}" CornerRadius="999" Padding="12,6" ToolTip.Tip="Jumlah histori harga"><TextBlock Text="{Binding PriceHistory.Count, StringFormat='History {0}'}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" /></Border>
+                  </StackPanel>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="4" ToolTip.Tip="Harga pack"><TextBlock Text="Pack" Classes="kpi-label" /><TextBlock Text="{Binding Price, StringFormat={}{0:N0}}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" /></StackPanel>
+                <StackPanel Grid.Column="2" Spacing="4" ToolTip.Tip="Berat / isi"><TextBlock Text="Weight" Classes="kpi-label" /><TextBlock Text="{Binding Weight}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" /></StackPanel>
+                <StackPanel Grid.Column="3" Spacing="4" ToolTip.Tip="HPP per satuan"><TextBlock Text="Unit Cost" Classes="kpi-label" /><TextBlock Text="{Binding PricePerUnit, StringFormat={}{0:N0}}" FontWeight="Black" Foreground="{DynamicResource AccentWarmBrush}" /></StackPanel>
+                <StackPanel Grid.Column="4" Spacing="10" HorizontalAlignment="Right">
+                  <TextBlock Text="{Binding Stock}" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Right" ToolTip.Tip="Stok fisik" />
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Command="{Binding #Root.DataContext.ShowHistoryForCommand}" CommandParameter="{Binding .}" Background="{DynamicResource CardAltBgBrush}" Foreground="{DynamicResource PrimaryTextBrush}" Padding="12,8" CornerRadius="12" FontWeight="Bold"><TextBlock Text="History" /></Button>
+                    <Button Command="{Binding #Root.DataContext.EditCommand}" CommandParameter="{Binding .}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" Padding="12,8" CornerRadius="12" FontWeight="Bold"><TextBlock Text="Edit" /></Button>
+                    <Button Command="{Binding #Root.DataContext.RequestDeleteCommand}" CommandParameter="{Binding .}" Background="{DynamicResource AccentRoseBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" Padding="12,8" CornerRadius="12" FontWeight="Bold"><TextBlock Text="Delete" /></Button>
+                  </StackPanel>
+                </StackPanel>
+              </Grid>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

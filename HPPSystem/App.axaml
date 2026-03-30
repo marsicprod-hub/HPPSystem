@@ -1,10 +1,131 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="using:HPPSystem.Views"
+             xmlns:vm="using:HPPSystem.ViewModels"
+             xmlns:material="using:Material.Icons.Avalonia"
+             xmlns:faStyle="using:FluentAvalonia.Styling"
              x:Class="HPPSystem.App"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             RequestedThemeVariant="Light">
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Light">
+          <Color x:Key="AppBgColor">#F8F4EF</Color>
+          <Color x:Key="ChromeBgColor">#FFFFFF</Color>
+          <Color x:Key="SidebarBgColor">#FFF8F3</Color>
+          <Color x:Key="SidebarSurfaceColor">#FFF4EC</Color>
+          <Color x:Key="SidebarSelectedColor">#F2B880</Color>
+          <Color x:Key="SidebarSelectedTextColor">#FFFFFF</Color>
+          <Color x:Key="SidebarTextColor">#7C6A77</Color>
+          <Color x:Key="SidebarMutedColor">#B7A5A1</Color>
+          <Color x:Key="TopbarBgColor">#FFFFFF</Color>
+          <Color x:Key="TopbarBorderColor">#F0E2D7</Color>
+          <Color x:Key="ContentBgColor">#FFFDFC</Color>
+          <Color x:Key="ContentBorderColor">#F0E2D7</Color>
+          <Color x:Key="CardBgColor">#FFFFFF</Color>
+          <Color x:Key="CardAltBgColor">#FFF4EC</Color>
+          <Color x:Key="CardBorderColor">#EEDDD0</Color>
+          <Color x:Key="PrimaryTextColor">#34263A</Color>
+          <Color x:Key="SecondaryTextColor">#967E87</Color>
+          <Color x:Key="AccentColor">#966B9D</Color>
+          <Color x:Key="AccentSoftColor">#E7CFBC</Color>
+          <Color x:Key="AccentWarmColor">#F2B880</Color>
+          <Color x:Key="AccentRoseColor">#C98686</Color>
+          <Color x:Key="InputBgColor">#FBF7F4</Color>
+          <Color x:Key="InputBorderColor">#F0E2D7</Color>
+          <Color x:Key="ToastBgColor">#FFFFFF</Color>
+          <Color x:Key="ToastFgColor">#34263A</Color>
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Dark">
+          <Color x:Key="AppBgColor">#101010</Color>
+          <Color x:Key="ChromeBgColor">#161616</Color>
+          <Color x:Key="SidebarBgColor">#131313</Color>
+          <Color x:Key="SidebarSurfaceColor">#1B1B1B</Color>
+          <Color x:Key="SidebarSelectedColor">#F2B880</Color>
+          <Color x:Key="SidebarSelectedTextColor">#191919</Color>
+          <Color x:Key="SidebarTextColor">#D7CAC0</Color>
+          <Color x:Key="SidebarMutedColor">#8B7D78</Color>
+          <Color x:Key="TopbarBgColor">#171717</Color>
+          <Color x:Key="TopbarBorderColor">#242424</Color>
+          <Color x:Key="ContentBgColor">#111111</Color>
+          <Color x:Key="ContentBorderColor">#202020</Color>
+          <Color x:Key="CardBgColor">#181818</Color>
+          <Color x:Key="CardAltBgColor">#1F1B1A</Color>
+          <Color x:Key="CardBorderColor">#272220</Color>
+          <Color x:Key="PrimaryTextColor">#F7EEE9</Color>
+          <Color x:Key="SecondaryTextColor">#B7A39A</Color>
+          <Color x:Key="AccentColor">#F2B880</Color>
+          <Color x:Key="AccentSoftColor">#2B241F</Color>
+          <Color x:Key="AccentWarmColor">#F2B880</Color>
+          <Color x:Key="AccentRoseColor">#C98686</Color>
+          <Color x:Key="InputBgColor">#1A1A1A</Color>
+          <Color x:Key="InputBorderColor">#262626</Color>
+          <Color x:Key="ToastBgColor">#1A1A1A</Color>
+          <Color x:Key="ToastFgColor">#F7EEE9</Color>
+        </ResourceDictionary>
+      </ResourceDictionary.ThemeDictionaries>
 
-    <Application.Styles>
-        <FluentTheme />
-    </Application.Styles>
+      <SolidColorBrush x:Key="AppBgBrush" Color="{DynamicResource AppBgColor}" />
+      <SolidColorBrush x:Key="ChromeBgBrush" Color="{DynamicResource ChromeBgColor}" />
+      <SolidColorBrush x:Key="SidebarBgBrush" Color="{DynamicResource SidebarBgColor}" />
+      <SolidColorBrush x:Key="SidebarSurfaceBrush" Color="{DynamicResource SidebarSurfaceColor}" />
+      <SolidColorBrush x:Key="SidebarSelectedBrush" Color="{DynamicResource SidebarSelectedColor}" />
+      <SolidColorBrush x:Key="SidebarSelectedTextBrush" Color="{DynamicResource SidebarSelectedTextColor}" />
+      <SolidColorBrush x:Key="SidebarTextBrush" Color="{DynamicResource SidebarTextColor}" />
+      <SolidColorBrush x:Key="SidebarMutedBrush" Color="{DynamicResource SidebarMutedColor}" />
+      <SolidColorBrush x:Key="TopbarBgBrush" Color="{DynamicResource TopbarBgColor}" />
+      <SolidColorBrush x:Key="TopbarBorderBrush" Color="{DynamicResource TopbarBorderColor}" />
+      <SolidColorBrush x:Key="ContentBgBrush" Color="{DynamicResource ContentBgColor}" />
+      <SolidColorBrush x:Key="ContentBorderBrush" Color="{DynamicResource ContentBorderColor}" />
+      <SolidColorBrush x:Key="CardBgBrush" Color="{DynamicResource CardBgColor}" />
+      <SolidColorBrush x:Key="CardAltBgBrush" Color="{DynamicResource CardAltBgColor}" />
+      <SolidColorBrush x:Key="CardBorderBrush" Color="{DynamicResource CardBorderColor}" />
+      <SolidColorBrush x:Key="PrimaryTextBrush" Color="{DynamicResource PrimaryTextColor}" />
+      <SolidColorBrush x:Key="SecondaryTextBrush" Color="{DynamicResource SecondaryTextColor}" />
+      <SolidColorBrush x:Key="AccentBrush" Color="{DynamicResource AccentColor}" />
+      <SolidColorBrush x:Key="AccentSoftBrush" Color="{DynamicResource AccentSoftColor}" />
+      <SolidColorBrush x:Key="AccentWarmBrush" Color="{DynamicResource AccentWarmColor}" />
+      <SolidColorBrush x:Key="AccentRoseBrush" Color="{DynamicResource AccentRoseColor}" />
+      <SolidColorBrush x:Key="InputBgBrush" Color="{DynamicResource InputBgColor}" />
+      <SolidColorBrush x:Key="InputBorderBrush" Color="{DynamicResource InputBorderColor}" />
+      <SolidColorBrush x:Key="ToastBgBrush" Color="{DynamicResource ToastBgColor}" />
+      <SolidColorBrush x:Key="ToastFgBrush" Color="{DynamicResource ToastFgColor}" />
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.DataTemplates>
+    <DataTemplate DataType="vm:DashboardViewModel">
+      <v:DashboardView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:MaterialsViewModel">
+      <v:MaterialsView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:RecipesViewModel">
+      <v:RecipesView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:CombosViewModel">
+      <v:CombosView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:PosViewModel">
+      <v:PosView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:BookkeepingViewModel">
+      <v:BookkeepingView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:SimulationViewModel">
+      <v:SimulationView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:ProfileViewModel">
+      <v:ProfileView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:SettingsViewModel">
+      <v:SettingsView />
+    </DataTemplate>
+  </Application.DataTemplates>
+
+  <Application.Styles>
+    <FluentTheme />
+    <faStyle:FluentAvaloniaTheme />
+    <material:MaterialIconStyles />
+  </Application.Styles>
 </Application>

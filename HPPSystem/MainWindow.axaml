@@ -1,9 +1,306 @@
-<Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="HPPSystem.MainWindow"
-        Title="HPPSystem">
-    Welcome to Avalonia!
-</Window>
+<faw:AppWindow xmlns="https://github.com/avaloniaui"
+              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+              xmlns:vm="using:HPPSystem.ViewModels"
+              xmlns:material="using:Material.Icons.Avalonia"
+              xmlns:fa="using:FluentAvalonia.UI.Controls"
+              xmlns:faw="using:FluentAvalonia.UI.Windowing"
+              xmlns:fi="using:FluentIcons.Avalonia"
+              xmlns:lottie="using:Avalonia.Skia.Lottie"
+              x:Class="HPPSystem.MainWindow"
+              x:DataType="vm:MainViewModel"
+              Title="HPP System"
+              Width="1540"
+              Height="960"
+              MinWidth="1280"
+              MinHeight="820"
+              Background="{DynamicResource AppBgBrush}"
+              ExtendClientAreaToDecorationsHint="True"
+              ExtendClientAreaTitleBarHeightHint="48"
+              WindowStartupLocation="CenterScreen">
+
+  <faw:AppWindow.Styles>
+    <Style Selector="Border.chrome-card">
+      <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="18" />
+    </Style>
+    <Style Selector="Border.toast-card">
+      <Setter Property="Background" Value="{DynamicResource ToastBgBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="14" />
+      <Setter Property="Padding" Value="14,10" />
+      <Setter Property="Margin" Value="0,0,0,10" />
+    </Style>
+    <Style Selector="TextBlock.nav-label">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Foreground" Value="{DynamicResource SidebarTextBrush}" />
+    </Style>
+  </faw:AppWindow.Styles>
+
+  <Border Margin="12"
+          Background="{DynamicResource ChromeBgBrush}"
+          BorderBrush="{DynamicResource ContentBorderBrush}"
+          BorderThickness="1"
+          CornerRadius="24"
+          ClipToBounds="True">
+    <fa:NavigationView x:Name="ShellNav"
+                       Background="{DynamicResource ChromeBgBrush}"
+                       IsBackButtonVisible="False"
+                       IsPaneToggleButtonVisible="False"
+                       IsSettingsVisible="False"
+                       OpenPaneLength="282"
+                       CompactPaneLength="0"
+                       PaneDisplayMode="Left"
+                       SelectionFollowsFocus="False"
+                       SelectionChanged="OnNavigationSelectionChanged">
+      <fa:NavigationView.PaneHeader>
+        <Grid Margin="0,8,0,10" RowDefinitions="Auto,Auto">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Margin="16,0,16,14">
+            <Border Width="44" Height="44" Background="{DynamicResource AccentWarmBrush}" CornerRadius="14">
+              <fi:FluentIcon Icon="AppTitle"
+                             IconVariant="Filled"
+                             FontSize="24"
+                             Foreground="{DynamicResource SidebarSelectedTextBrush}"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center" />
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+              <TextBlock Text="Extej" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="{Binding EditionLabel}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SecondaryTextBrush}" />
+            </StackPanel>
+          </Grid>
+
+          <Border Grid.Row="1"
+                  Margin="16,0,16,0"
+                  Classes="chrome-card"
+                  Background="{DynamicResource SidebarSurfaceBrush}"
+                  Padding="14">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Workspace" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SecondaryTextBrush}" />
+              <TextBlock Text="{Binding WorkspaceStatusText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding NavigationSummaryText}" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" />
+            </StackPanel>
+          </Border>
+        </Grid>
+      </fa:NavigationView.PaneHeader>
+
+      <fa:NavigationView.MenuItems>
+        <fa:NavigationViewItemHeader Content="PAGES" />
+
+        <fa:NavigationViewItem x:Name="DashboardNavItem" Tag="Dashboard" SelectsOnInvoked="True">
+          <fa:NavigationViewItem.Content>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+              <fi:FluentIcon Icon="Home" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource SidebarTextBrush}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Dashboard" Classes="nav-label" />
+            </Grid>
+          </fa:NavigationViewItem.Content>
+        </fa:NavigationViewItem>
+
+        <fa:NavigationViewItem x:Name="MaterialsNavItem" Tag="Materials" SelectsOnInvoked="True">
+          <fa:NavigationViewItem.Content>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+              <fi:FluentIcon Icon="Box" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource SidebarTextBrush}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Materials" Classes="nav-label" />
+            </Grid>
+          </fa:NavigationViewItem.Content>
+        </fa:NavigationViewItem>
+
+        <fa:NavigationViewItem x:Name="RecipesNavItem" Tag="Recipes" SelectsOnInvoked="True">
+          <fa:NavigationViewItem.Content>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+              <fi:FluentIcon Icon="Food" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource SidebarTextBrush}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Recipes" Classes="nav-label" />
+            </Grid>
+          </fa:NavigationViewItem.Content>
+        </fa:NavigationViewItem>
+
+        <fa:NavigationViewItemHeader Content="TOOLS" IsVisible="{Binding ShowAdvancedNavigation}" />
+
+        <fa:NavigationViewItem x:Name="CombosNavItem" Tag="Combos" SelectsOnInvoked="True" IsVisible="{Binding ShowAdvancedNavigation}">
+          <fa:NavigationViewItem.Content>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+              <fi:FluentIcon Icon="AppsList" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource SidebarTextBrush}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Bundles" Classes="nav-label" />
+            </Grid>
+          </fa:NavigationViewItem.Content>
+        </fa:NavigationViewItem>
+
+        <fa:NavigationViewItem x:Name="PosNavItem" Tag="Pos" SelectsOnInvoked="True" IsVisible="{Binding ShowAdvancedNavigation}">
+          <fa:NavigationViewItem.Content>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+              <fi:FluentIcon Icon="Receipt" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource SidebarTextBrush}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="POS" Classes="nav-label" />
+            </Grid>
+          </fa:NavigationViewItem.Content>
+        </fa:NavigationViewItem>
+
+        <fa:NavigationViewItem x:Name="BookkeepingNavItem" Tag="Bookkeeping" SelectsOnInvoked="True" IsVisible="{Binding ShowAdvancedNavigation}">
+          <fa:NavigationViewItem.Content>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+              <fi:FluentIcon Icon="Wallet" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource SidebarTextBrush}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Bookkeeping" Classes="nav-label" />
+            </Grid>
+          </fa:NavigationViewItem.Content>
+        </fa:NavigationViewItem>
+
+        <fa:NavigationViewItem x:Name="SimulationNavItem" Tag="Simulation" SelectsOnInvoked="True" IsVisible="{Binding ShowAdvancedNavigation}">
+          <fa:NavigationViewItem.Content>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+              <fi:FluentIcon Icon="DataUsage" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource SidebarTextBrush}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Simulation" Classes="nav-label" />
+            </Grid>
+          </fa:NavigationViewItem.Content>
+        </fa:NavigationViewItem>
+      </fa:NavigationView.MenuItems>
+
+      <fa:NavigationView.FooterMenuItems>
+        <fa:NavigationViewItem x:Name="ProfileNavItem" Tag="Profile" SelectsOnInvoked="True">
+          <fa:NavigationViewItem.Content>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+              <fi:FluentIcon Icon="ContactCard" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource SidebarTextBrush}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Profile" Classes="nav-label" />
+            </Grid>
+          </fa:NavigationViewItem.Content>
+        </fa:NavigationViewItem>
+
+        <fa:NavigationViewItem x:Name="SettingsNavItem" Tag="Settings" SelectsOnInvoked="True">
+          <fa:NavigationViewItem.Content>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+              <fi:FluentIcon Icon="Settings" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource SidebarTextBrush}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Settings" Classes="nav-label" />
+            </Grid>
+          </fa:NavigationViewItem.Content>
+        </fa:NavigationViewItem>
+      </fa:NavigationView.FooterMenuItems>
+
+      <fa:NavigationView.PaneFooter>
+        <Border Margin="16,10,16,18"
+                Classes="chrome-card"
+                Background="{DynamicResource SidebarSurfaceBrush}"
+                Padding="14">
+          <StackPanel Spacing="4">
+            <TextBlock Text="Store" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SecondaryTextBrush}" />
+            <TextBlock Text="{Binding DataStorePath}" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" MaxHeight="48" />
+          </StackPanel>
+        </Border>
+      </fa:NavigationView.PaneFooter>
+
+      <Grid RowDefinitions="Auto,Auto,*" Margin="18">
+        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="14"
+              VerticalAlignment="Center"
+              Margin="0,0,0,12">
+          <Border Classes="chrome-card"
+                  Padding="14,10"
+                  Background="{DynamicResource CardBgBrush}">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+              <fi:FluentIcon Icon="Search" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Search" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" />
+            </Grid>
+          </Border>
+
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+            <Border Classes="chrome-card" Width="40" Height="40" ToolTip.Tip="Notifications">
+              <Grid>
+                <fi:FluentIcon Icon="Alert" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <fa:InfoBadge HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,6,0" />
+              </Grid>
+            </Border>
+            <Border Classes="chrome-card" Width="40" Height="40" ToolTip.Tip="Messages">
+              <fi:FluentIcon Icon="Mail" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <Button Command="{Binding ToggleThemeCommand}"
+                    Classes="chrome-card"
+                    Width="40"
+                    Height="40"
+                    Padding="0"
+                    Background="{DynamicResource CardBgBrush}"
+                    BorderBrush="{DynamicResource CardBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="18"
+                    ToolTip.Tip="Toggle light / dark mode">
+              <fi:FluentIcon Icon="{Binding ThemeGlyph}" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Button>
+          </StackPanel>
+
+          <Button Grid.Column="2"
+                  Classes="chrome-card"
+                  Padding="10,8"
+                  Background="{DynamicResource CardBgBrush}"
+                  BorderBrush="{DynamicResource CardBorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="18"
+                  Click="OnWorkspaceDetailsClick">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+              <Border Width="40" Height="40" Background="{DynamicResource AccentWarmBrush}" CornerRadius="20">
+                <TextBlock Text="{Binding ProfileInitial}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Black" Foreground="{DynamicResource SidebarSelectedTextBrush}" />
+              </Border>
+              <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                <TextBlock Text="{Binding ActiveProfileName}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="{Binding ActiveOwnerName}" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" />
+              </StackPanel>
+              <fa:InfoBadge Grid.Column="2" VerticalAlignment="Center" Value="0" />
+            </Grid>
+          </Button>
+        </Grid>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="16" Margin="0,0,0,14">
+          <StackPanel Spacing="4">
+            <TextBlock Text="{Binding CurrentPageTitle}" FontSize="30" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding CurrentPageDescription}" Foreground="{DynamicResource SecondaryTextBrush}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+            <Border Classes="chrome-card" Background="{DynamicResource CardAltBgBrush}" Padding="14,10">
+              <TextBlock Text="{Binding ActiveProfileName}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+            </Border>
+            <Border Classes="chrome-card" Background="{DynamicResource CardAltBgBrush}" Padding="14,10">
+              <TextBlock Text="{Binding ThemeLabel}" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" />
+            </Border>
+          </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="2">
+          <Border Background="{DynamicResource CardBgBrush}"
+                  BorderBrush="{DynamicResource CardBorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="24"
+                  Padding="14">
+            <Grid>
+              <ContentControl Content="{Binding CurrentView}" Margin="4" IsVisible="{Binding !IsLoading}" />
+
+              <Border Background="{DynamicResource CardBgBrush}" CornerRadius="20" IsVisible="{Binding IsLoading}">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="14">
+                  <lottie:Lottie Width="140" Height="140" Path="avares://HPPSystem/Assets/Animations/loading-orb.json" />
+                  <TextBlock Text="Loading workspace..." FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
+                  <TextBlock Text="Syncing local data." Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Center" />
+                </StackPanel>
+              </Border>
+            </Grid>
+          </Border>
+
+          <ItemsControl ItemsSource="{Binding Toasts}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,8,0">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Border Classes="toast-card">
+                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <Border Width="26" Height="26" Background="{DynamicResource AccentSoftBrush}" CornerRadius="13">
+                      <fi:FluentIcon Icon="CheckmarkCircle"
+                                     IconVariant="Filled"
+                                     FontSize="15"
+                                     Foreground="{DynamicResource AccentBrush}"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center" />
+                    </Border>
+                    <TextBlock Grid.Column="1" Text="{Binding Message}" Foreground="{DynamicResource ToastFgBrush}" TextWrapping="Wrap" MaxWidth="280" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </Grid>
+      </Grid>
+    </fa:NavigationView>
+  </Border>
+</faw:AppWindow>

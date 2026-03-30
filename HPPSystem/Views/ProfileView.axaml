@@ -1,0 +1,73 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HPPSystem.ViewModels"
+             xmlns:model="using:HPPSystem.Models"
+             xmlns:fi="using:FluentIcons.Avalonia"
+             x:Class="HPPSystem.Views.ProfileView"
+             x:Name="Root"
+             x:DataType="vm:ProfileViewModel">
+  <UserControl.Styles>
+    <Style Selector="Border.page-card">
+      <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="18" />
+      <Setter Property="Padding" Value="18" />
+    </Style>
+    <Style Selector="TextBlock.kpi-label">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid ColumnDefinitions="*,1.8*" ColumnSpacing="16">
+    <Border Grid.Column="0" Classes="page-card">
+      <StackPanel Spacing="12">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+          <fi:FluentIcon Icon="Building" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+          <TextBlock Grid.Column="1" Text="Cabang" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+        </Grid>
+        <ItemsControl ItemsSource="{Binding Profiles}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="model:Profile">
+              <Border Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Padding="14" CornerRadius="16" Margin="0,0,0,8">
+                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                  <StackPanel>
+                    <TextBlock Text="Nama Cabang" Classes="kpi-label" />
+                    <TextBlock Text="{Binding BusinessName}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  </StackPanel>
+                  <Button Grid.Column="1" Command="{Binding #Root.DataContext.SwitchCommand}" CommandParameter="{Binding .}" VerticalAlignment="Bottom" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="10">Pilih</Button>
+                  <Button Grid.Column="2" Command="{Binding #Root.DataContext.RequestDeleteCommand}" CommandParameter="{Binding .}" VerticalAlignment="Bottom" Background="{DynamicResource AccentRoseBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="10">Hapus</Button>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <StackPanel Spacing="6">
+          <TextBlock Text="Nama Cabang Baru" Classes="kpi-label" />
+          <TextBox Text="{Binding NewProfileName}" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
+        </StackPanel>
+        <Button Command="{Binding AddProfileCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="12">Tambah Cabang</Button>
+      </StackPanel>
+    </Border>
+
+    <Border Grid.Column="1" Classes="page-card">
+      <StackPanel Spacing="12">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+          <fi:FluentIcon Icon="ContactCard" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+          <TextBlock Grid.Column="1" Text="Detail Profil Aktif" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+        </Grid>
+        <StackPanel Spacing="6">
+          <TextBlock Text="Nama Bisnis" Classes="kpi-label" />
+          <TextBox Text="{Binding BusinessName}" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
+        </StackPanel>
+        <StackPanel Spacing="6">
+          <TextBlock Text="Nama Owner / PIC" Classes="kpi-label" />
+          <TextBox Text="{Binding OwnerName}" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
+        </StackPanel>
+        <Button Command="{Binding SaveCurrentCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="12">Simpan Profil</Button>
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

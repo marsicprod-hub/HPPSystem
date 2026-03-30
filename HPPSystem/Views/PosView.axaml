@@ -1,0 +1,167 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HPPSystem.ViewModels"
+             xmlns:fa="using:FluentAvalonia.UI.Controls"
+             xmlns:fi="using:FluentIcons.Avalonia"
+             xmlns:lottie="using:Avalonia.Skia.Lottie"
+             x:Class="HPPSystem.Views.PosView"
+             x:Name="Root"
+             x:DataType="vm:PosViewModel">
+  <UserControl.Styles>
+    <Style Selector="Border.page-card">
+      <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="18" />
+      <Setter Property="Padding" Value="18" />
+    </Style>
+    <Style Selector="TextBlock.kpi-label">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid ColumnDefinitions="1.35*,*" ColumnSpacing="16">
+    <ScrollViewer Grid.Column="0">
+      <StackPanel Spacing="16">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+          <StackPanel Spacing="4">
+            <TextBlock Text="Point of Sale" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="Catalog and checkout workspace" Foreground="{DynamicResource SecondaryTextBrush}" />
+          </StackPanel>
+          <Border Grid.Column="1" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="12,8">
+            <TextBlock Text="{Binding CartItemCount, StringFormat=Qty total: {0}}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+          </Border>
+        </Grid>
+
+        <Border Classes="page-card">
+          <StackPanel Spacing="12">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+              <fi:FluentIcon Icon="AppsList" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Bundling" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            </Grid>
+            <ItemsControl ItemsSource="{Binding ComboCatalog}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:PosCatalogItemViewModel">
+                  <Button Command="{Binding #Root.DataContext.AddToCartCommand}" CommandParameter="{Binding .}" Margin="0,0,0,8" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="14">
+                    <Grid ColumnDefinitions="2*,Auto" ColumnSpacing="10">
+                      <StackPanel>
+                        <TextBlock Text="Nama Paket" Classes="kpi-label" />
+                        <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="1">
+                        <TextBlock Text="Harga" Classes="kpi-label" />
+                        <TextBlock Text="{Binding DisplayPrice}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+                      </StackPanel>
+                    </Grid>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
+        <Border Classes="page-card">
+          <StackPanel Spacing="12">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+              <fi:FluentIcon Icon="Food" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="Resep Satuan" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            </Grid>
+            <ItemsControl ItemsSource="{Binding RecipeCatalog}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:PosCatalogItemViewModel">
+                  <Button Command="{Binding #Root.DataContext.AddToCartCommand}" CommandParameter="{Binding .}" Margin="0,0,0,8" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="14">
+                    <Grid ColumnDefinitions="2*,Auto" ColumnSpacing="10">
+                      <StackPanel>
+                        <TextBlock Text="Nama Menu" Classes="kpi-label" />
+                        <TextBlock Text="{Binding Name}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="1">
+                        <TextBlock Text="Harga" Classes="kpi-label" />
+                        <TextBlock Text="{Binding DisplayPrice}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+                      </StackPanel>
+                    </Grid>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+
+    <Border Grid.Column="1" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Padding="20" CornerRadius="24">
+      <StackPanel Spacing="14">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+          <fi:FluentIcon Icon="Receipt" IconVariant="Regular" FontSize="22" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+          <StackPanel Grid.Column="1" Spacing="2">
+            <TextBlock Text="Cart" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="Selected items and price override" Foreground="{DynamicResource SecondaryTextBrush}" />
+          </StackPanel>
+        </Grid>
+
+        <ScrollViewer MaxHeight="460">
+          <ItemsControl ItemsSource="{Binding Cart}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="vm:CartItemViewModel">
+                <Border Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Padding="14" CornerRadius="16" Margin="0,0,0,10">
+                  <StackPanel Spacing="8">
+                    <Button Command="{Binding #Root.DataContext.SelectCartItemCommand}" CommandParameter="{Binding .}" Background="Transparent" HorizontalContentAlignment="Left">
+                      <StackPanel>
+                        <TextBlock Text="Item Keranjang" Classes="kpi-label" />
+                        <TextBlock Text="{Binding Name}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+                      </StackPanel>
+                    </Button>
+                    <StackPanel>
+                      <TextBlock Text="Subtotal" Classes="kpi-label" />
+                      <TextBlock Text="{Binding TotalText}" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <Button Command="{Binding #Root.DataContext.DecreaseQtyCommand}" CommandParameter="{Binding .}" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="10">-</Button>
+                      <Button Command="{Binding #Root.DataContext.IncreaseQtyCommand}" CommandParameter="{Binding .}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="10">+</Button>
+                    </StackPanel>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+
+        <Border Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="14" IsVisible="{Binding HasSelectedCartItem}">
+          <StackPanel Spacing="8">
+            <TextBlock Text="Harga Custom" Classes="kpi-label" />
+            <fa:NumberBox Value="{Binding CustomPrice}" SmallChange="500" Minimum="0" SpinButtonPlacementMode="Compact" />
+            <Button Command="{Binding ApplyCustomPriceCommand}" Background="{DynamicResource AccentWarmBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" Padding="14,10" CornerRadius="12" FontWeight="Bold">
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                <fi:FluentIcon Icon="Edit" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="Terapkan Harga" />
+              </Grid>
+            </Button>
+          </StackPanel>
+        </Border>
+
+        <Border Background="{DynamicResource ChromeBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="18" Padding="16">
+          <StackPanel Spacing="6">
+            <TextBlock Text="Total Tagihan" Classes="kpi-label" />
+            <TextBlock Text="{Binding CartTotalText}" Foreground="{DynamicResource AccentBrush}" FontSize="30" FontWeight="Black" />
+          </StackPanel>
+        </Border>
+
+        <Button Command="{Binding CheckoutCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" Padding="16,12" CornerRadius="14" FontWeight="Bold">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+            <fi:FluentIcon Icon="ArrowDownload" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="Checkout" />
+          </Grid>
+        </Button>
+
+        <Border Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="18" IsVisible="{Binding !HasCart}">
+          <StackPanel Spacing="10" HorizontalAlignment="Center">
+            <lottie:Lottie Width="100" Height="100" Path="avares://HPPSystem/Assets/Animations/empty-pulse.json" />
+            <TextBlock Text="Keranjang masih kosong" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

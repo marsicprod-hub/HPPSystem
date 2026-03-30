@@ -1,0 +1,193 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HPPSystem.ViewModels"
+             xmlns:model="using:HPPSystem.Models"
+             xmlns:fa="using:FluentAvalonia.UI.Controls"
+             xmlns:fi="using:FluentIcons.Avalonia"
+             xmlns:lottie="using:Avalonia.Skia.Lottie"
+             xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
+             x:Class="HPPSystem.Views.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+  <UserControl.Styles>
+    <Style Selector="Border.page-card">
+      <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="18" />
+      <Setter Property="Padding" Value="18" />
+    </Style>
+    <Style Selector="TextBlock.kpi-label">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer>
+    <StackPanel Spacing="16">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+        <StackPanel Spacing="4">
+          <TextBlock Text="Dashboard" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="Modern executive snapshot" Foreground="{DynamicResource SecondaryTextBrush}" />
+        </StackPanel>
+        <Border Grid.Column="1"
+                Background="{DynamicResource CardAltBgBrush}"
+                BorderBrush="{DynamicResource CardBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="12,8"
+                VerticalAlignment="Top"
+                ToolTip.Tip="Kondisi inventaris saat ini">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+            <fi:FluentIcon Icon="Shield" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="{Binding InventoryHealthText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+          </Grid>
+        </Border>
+      </Grid>
+
+      <fa:InfoBar IsOpen="True"
+                  Severity="Informational"
+                  IsClosable="False"
+                  Message="{Binding DashboardInsightText}" />
+
+      <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
+        <Border Grid.Column="0" Classes="page-card" ToolTip.Tip="Jumlah bahan aktif">
+          <StackPanel Spacing="8">
+            <fi:FluentIcon Icon="Box" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+            <TextBlock Text="Materials" Classes="kpi-label" />
+            <TextBlock Text="{Binding MaterialCount}" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding LowStockCountText}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="1" Classes="page-card" ToolTip.Tip="Jumlah resep aktif">
+          <StackPanel Spacing="8">
+            <fi:FluentIcon Icon="Food" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+            <TextBlock Text="Recipes" Classes="kpi-label" />
+            <TextBlock Text="{Binding RecipeCount}" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding TopRecipeName}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" TextTrimming="CharacterEllipsis" MaxWidth="180" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="2" Classes="page-card" ToolTip.Tip="Total omzet POS">
+          <StackPanel Spacing="8">
+            <fi:FluentIcon Icon="Wallet" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+            <TextBlock Text="Balance" Classes="kpi-label" />
+            <TextBlock Text="{Binding TotalSalesText}" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding AverageTicketText}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="3" Classes="page-card" ToolTip.Tip="Total laba kotor">
+          <StackPanel Spacing="8">
+            <fi:FluentIcon Icon="DataUsage" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+            <TextBlock Text="Profit" Classes="kpi-label" />
+            <TextBlock Text="{Binding TotalProfitText}" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding TotalItemsSoldText}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Grid ColumnDefinitions="1.4*,*" ColumnSpacing="14">
+        <Border Grid.Column="0" Classes="page-card">
+          <Grid RowDefinitions="Auto,*" RowSpacing="12">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <TextBlock Text="My Wallets" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Grid.Column="1" Text="{Binding BestDaySalesText}" Foreground="{DynamicResource SecondaryTextBrush}" FontWeight="Bold" ToolTip.Tip="{Binding BestDayLabel}" />
+            </Grid>
+
+            <Grid Grid.Row="1">
+              <lvc:CartesianChart Series="{Binding SalesSeries}"
+                                  XAxes="{Binding XAxes}"
+                                  YAxes="{Binding YAxes}"
+                                  LegendPosition="Hidden"
+                                  TooltipPosition="Hidden"
+                                  ZoomMode="None"
+                                  Height="280" />
+
+              <Border IsVisible="{Binding !HasSalesHistory}"
+                      Background="{DynamicResource CardBgBrush}"
+                      Opacity="0.92"
+                      CornerRadius="16"
+                      Margin="8">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+                  <lottie:Lottie Width="110" Height="110" Path="avares://HPPSystem/Assets/Animations/empty-pulse.json" />
+                  <TextBlock Text="Belum ada histori penjualan" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
+                  <TextBlock Text="Chart akan terisi setelah transaksi mulai tercatat." Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Center" />
+                </StackPanel>
+              </Border>
+            </Grid>
+          </Grid>
+        </Border>
+
+        <StackPanel Grid.Column="1" Spacing="14">
+          <Border Classes="page-card" ToolTip.Tip="Resep dengan target margin tertinggi">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Top Recipe" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="{Binding TopRecipeName}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding TopRecipeRecommendedPriceText}" FontWeight="Bold" Foreground="{DynamicResource AccentWarmBrush}" />
+              <TextBlock Text="{Binding TopRecipeHppText}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" />
+              <Border Background="{DynamicResource AccentSoftBrush}" CornerRadius="999" Padding="10,6" HorizontalAlignment="Left">
+                <TextBlock Text="{Binding TopRecipeMarginText}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+              </Border>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="page-card">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+              <StackPanel Spacing="4" ToolTip.Tip="Total stok fisik">
+                <TextBlock Text="Inventory" Classes="kpi-label" />
+                <TextBlock Text="{Binding TotalInventoryText}" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              </StackPanel>
+              <StackPanel Grid.Column="1" Spacing="4" ToolTip.Tip="Rata-rata item per transaksi">
+                <TextBlock Text="Productivity" Classes="kpi-label" />
+                <TextBlock Text="{Binding AverageUnitsPerTransactionText}" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              </StackPanel>
+            </Grid>
+          </Border>
+        </StackPanel>
+      </Grid>
+
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="14" IsVisible="{Binding ShowAdvancedSection}">
+        <Border Grid.Column="0" Classes="page-card">
+          <StackPanel Spacing="10">
+            <TextBlock Text="Low Stock" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <ItemsControl ItemsSource="{Binding LowStockMaterials}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="model:Material">
+                  <Border Margin="0,0,0,8" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="12" ToolTip.Tip="{Binding PricePerUnit, StringFormat='Unit cost {0:N0}'}">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                      <TextBlock Text="{Binding Name}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+                      <TextBlock Grid.Column="1" Text="{Binding Stock}" Foreground="{DynamicResource AccentRoseBrush}" FontWeight="Bold" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Column="1" Classes="page-card">
+          <StackPanel Spacing="10">
+            <TextBlock Text="Recent" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <ItemsControl ItemsSource="{Binding RecentSales}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:SaleRowViewModel">
+                  <Border Margin="0,0,0,8" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="12" ToolTip.Tip="{Binding DateText}">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                      <Border Width="34" Height="34" Background="{DynamicResource AccentSoftBrush}" CornerRadius="12">
+                        <TextBlock Text="{Binding QtyText}" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                      </Border>
+                      <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock Text="{Binding ItemName}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+                        <TextBlock Text="{Binding ProfitLabelText}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="12" />
+                      </StackPanel>
+                      <TextBlock Grid.Column="2" Text="{Binding TotalPriceText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" VerticalAlignment="Center" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

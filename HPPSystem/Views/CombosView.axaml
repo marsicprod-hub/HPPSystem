@@ -1,0 +1,186 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HPPSystem.ViewModels"
+             xmlns:model="using:HPPSystem.Models"
+             xmlns:fa="using:FluentAvalonia.UI.Controls"
+             xmlns:fi="using:FluentIcons.Avalonia"
+             xmlns:lottie="using:Avalonia.Skia.Lottie"
+             x:Class="HPPSystem.Views.CombosView"
+             x:Name="Root"
+             x:DataType="vm:CombosViewModel">
+  <UserControl.Styles>
+    <Style Selector="Border.page-card">
+      <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="18" />
+      <Setter Property="Padding" Value="18" />
+    </Style>
+    <Style Selector="TextBlock.kpi-label">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer>
+    <StackPanel Spacing="16">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+        <StackPanel Spacing="4">
+          <TextBlock Text="Bundles" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="Offer builder and bundle margin control" Foreground="{DynamicResource SecondaryTextBrush}" />
+        </StackPanel>
+        <Button Grid.Column="1" Command="{Binding StartCreateCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" Padding="16,10" CornerRadius="14" FontWeight="Bold">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+            <fi:FluentIcon Icon="Add" IconVariant="Filled" FontSize="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="New Bundle" />
+          </Grid>
+        </Button>
+      </Grid>
+
+      <Border Classes="page-card" Background="{DynamicResource CardAltBgBrush}">
+        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+          <TextBlock Text="{Binding PortfolioInsightText}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+            <Border Background="{DynamicResource AccentSoftBrush}" CornerRadius="999" Padding="12,6" ToolTip.Tip="Rata-rata margin bundling">
+              <TextBlock Text="{Binding AverageMarginText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" FontSize="11" />
+            </Border>
+            <Border Background="{DynamicResource AccentWarmBrush}" CornerRadius="999" Padding="12,6" ToolTip.Tip="Bundle dengan margin terbaik">
+              <TextBlock Text="{Binding BestComboMarginText}" Foreground="{DynamicResource SidebarSelectedTextBrush}" FontWeight="Bold" FontSize="11" />
+            </Border>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
+        <Border Grid.Column="0" Classes="page-card"><StackPanel Spacing="8"><fi:FluentIcon Icon="AppsList" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" /><TextBlock Text="Bundles" Classes="kpi-label" /><TextBlock Text="{Binding ComboCountText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" /></StackPanel></Border>
+        <Border Grid.Column="1" Classes="page-card"><StackPanel Spacing="8"><fi:FluentIcon Icon="ArrowTrending" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" /><TextBlock Text="Average Margin" Classes="kpi-label" /><TextBlock Text="{Binding AverageMarginText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" /></StackPanel></Border>
+        <Border Grid.Column="2" Classes="page-card"><StackPanel Spacing="8"><fi:FluentIcon Icon="Trophy" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" /><TextBlock Text="Best Bundle" Classes="kpi-label" /><TextBlock Text="{Binding BestComboNameText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" /></StackPanel></Border>
+        <Border Grid.Column="3" Classes="page-card"><StackPanel Spacing="8"><fi:FluentIcon Icon="Tag" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" /><TextBlock Text="Form Scope" Classes="kpi-label" /><TextBlock Text="{Binding FormRecipeCountText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" /></StackPanel></Border>
+      </Grid>
+
+      <Border Classes="page-card" IsVisible="{Binding ShowForm}">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="{Binding FormTitleText}" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Grid.Column="1" Text="{Binding FormMarginText}" FontWeight="Bold" Foreground="{DynamicResource AccentWarmBrush}" ToolTip.Tip="Margin estimasi bundle saat ini." />
+          </Grid>
+
+          <Grid ColumnDefinitions="2*,*" ColumnSpacing="10">
+            <TextBox Grid.Column="0" Text="{Binding FormName}" Watermark="Nama bundling" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
+            <fa:NumberBox Grid.Column="1" Value="{Binding FormSellingPrice}" SmallChange="1000" Minimum="0" SpinButtonPlacementMode="Compact" />
+          </Grid>
+
+          <Border Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="18" Padding="14">
+            <StackPanel Spacing="12">
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="Bundle Composition" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  <TextBlock Text="{Binding FormRecipeCountText}" Foreground="{DynamicResource SecondaryTextBrush}" />
+                </StackPanel>
+                <Button Grid.Column="1" Command="{Binding AddRecipeEntryCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" Padding="12,8" CornerRadius="12" FontWeight="Bold">
+                  <TextBlock Text="Add Recipe" />
+                </Button>
+              </Grid>
+
+              <ItemsControl ItemsSource="{Binding FormRecipes}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate DataType="vm:ComboRecipeEntryViewModel">
+                    <Border Margin="0,0,0,8" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="12">
+                      <Grid ColumnDefinitions="2*,*,Auto" ColumnSpacing="8">
+                        <ComboBox Grid.Column="0"
+                                  ItemsSource="{Binding #Root.DataContext.AvailableRecipes}"
+                                  SelectedValueBinding="{Binding Id}"
+                                  SelectedValue="{Binding RecipeId}"
+                                  Background="{DynamicResource InputBgBrush}"
+                                  BorderBrush="{DynamicResource InputBorderBrush}">
+                          <ComboBox.ItemTemplate>
+                            <DataTemplate DataType="model:Recipe">
+                              <TextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                          </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <fa:NumberBox Grid.Column="1" Value="{Binding Qty}" SmallChange="1" Minimum="1" SpinButtonPlacementMode="Compact" />
+                        <Button Grid.Column="2" Command="{Binding #Root.DataContext.RemoveRecipeEntryCommand}" CommandParameter="{Binding .}" Background="{DynamicResource AccentRoseBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" Padding="10,8" CornerRadius="12" FontWeight="Bold">
+                          <TextBlock Text="X" />
+                        </Button>
+                      </Grid>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+            <Border Grid.Column="0" Background="{DynamicResource CardAltBgBrush}" CornerRadius="14" Padding="12">
+              <StackPanel Spacing="4">
+                <TextBlock Text="Bundle HPP" Classes="kpi-label" />
+                <TextBlock Text="{Binding FormHppText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              </StackPanel>
+            </Border>
+            <Border Grid.Column="1" Background="{DynamicResource AccentWarmBrush}" CornerRadius="14" Padding="12">
+              <StackPanel Spacing="4">
+                <TextBlock Text="Margin" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SidebarSelectedTextBrush}" />
+                <TextBlock Text="{Binding FormMarginText}" FontWeight="Black" Foreground="{DynamicResource SidebarSelectedTextBrush}" />
+              </StackPanel>
+            </Border>
+          </Grid>
+
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Button Command="{Binding SaveCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" Padding="14,10" CornerRadius="12" FontWeight="Bold"><TextBlock Text="{Binding FormActionText}" /></Button>
+            <Button Command="{Binding CancelCommand}" Background="{DynamicResource CardAltBgBrush}" Foreground="{DynamicResource PrimaryTextBrush}" Padding="14,10" CornerRadius="12" FontWeight="Bold"><TextBlock Text="Cancel" /></Button>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="page-card" Background="{DynamicResource CardAltBgBrush}" IsVisible="{Binding ShowDeletePrompt}">
+        <StackPanel Spacing="10">
+          <TextBlock Text="Delete Bundle" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="{Binding DeletePromptText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Button Command="{Binding DeleteCommand}" CommandParameter="{Binding PendingDelete}" Background="{DynamicResource AccentRoseBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" Padding="12,8" CornerRadius="12" FontWeight="Bold"><TextBlock Text="Delete" /></Button>
+            <Button Command="{Binding CancelDeleteCommand}" Background="{DynamicResource CardBgBrush}" Foreground="{DynamicResource PrimaryTextBrush}" Padding="12,8" CornerRadius="12" FontWeight="Bold"><TextBlock Text="Cancel" /></Button>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="page-card" IsVisible="{Binding !HasCombos}">
+        <StackPanel Spacing="12" HorizontalAlignment="Center">
+          <lottie:Lottie Width="120" Height="120" Path="avares://HPPSystem/Assets/Animations/empty-pulse.json" />
+          <TextBlock Text="No bundles yet" FontSize="22" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <Button Command="{Binding StartCreateCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" Padding="14,10" CornerRadius="12" FontWeight="Bold"><TextBlock Text="Create" /></Button>
+        </StackPanel>
+      </Border>
+
+      <ItemsControl ItemsSource="{Binding ComboCards}" IsVisible="{Binding HasCombos}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate DataType="vm:ComboCardViewModel">
+            <Border Classes="page-card" Margin="0,0,0,10">
+              <StackPanel Spacing="12">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <Border Background="{DynamicResource CardAltBgBrush}" CornerRadius="999" Padding="12,6" HorizontalAlignment="Left">
+                      <TextBlock Text="{Binding Combo.Recipes.Count, StringFormat='Isi {0} resep'}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    </Border>
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                    <Button Command="{Binding #Root.DataContext.EditCommand}" CommandParameter="{Binding .}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" Padding="12,8" CornerRadius="12" FontWeight="Bold"><TextBlock Text="Edit" /></Button>
+                    <Button Command="{Binding #Root.DataContext.RequestDeleteCommand}" CommandParameter="{Binding .}" Background="{DynamicResource AccentRoseBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" Padding="12,8" CornerRadius="12" FontWeight="Bold"><TextBlock Text="Delete" /></Button>
+                  </StackPanel>
+                </Grid>
+
+                <Grid ColumnDefinitions="*,*,*" ColumnSpacing="10">
+                  <StackPanel Spacing="4"><TextBlock Text="HPP" Classes="kpi-label" /><TextBlock Text="{Binding HppText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" /></StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="4"><TextBlock Text="Selling Price" Classes="kpi-label" /><TextBlock Text="{Binding SellingPriceText}" FontWeight="Black" Foreground="{DynamicResource AccentWarmBrush}" /></StackPanel>
+                  <StackPanel Grid.Column="2" Spacing="4"><TextBlock Text="Margin" Classes="kpi-label" /><TextBlock Text="{Binding MarginText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" /></StackPanel>
+                </Grid>
+              </StackPanel>
+            </Border>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

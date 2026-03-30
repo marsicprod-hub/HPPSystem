@@ -1,0 +1,157 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HPPSystem.ViewModels"
+             xmlns:fa="using:FluentAvalonia.UI.Controls"
+             xmlns:fi="using:FluentIcons.Avalonia"
+             x:Class="HPPSystem.Views.SettingsView"
+             x:Name="Root"
+             x:DataType="vm:SettingsViewModel">
+  <UserControl.Styles>
+    <Style Selector="Border.page-card">
+      <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="CornerRadius" Value="18" />
+      <Setter Property="Padding" Value="18" />
+    </Style>
+    <Style Selector="TextBlock.kpi-label">
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer>
+    <StackPanel Spacing="16">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+        <StackPanel Spacing="4">
+          <TextBlock Text="Settings" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="Workspace preferences and backup tools" Foreground="{DynamicResource SecondaryTextBrush}" />
+        </StackPanel>
+        <Border Grid.Column="1"
+                Background="{DynamicResource CardAltBgBrush}"
+                BorderBrush="{DynamicResource CardBorderBrush}"
+                BorderThickness="1"
+                CornerRadius="16"
+                Padding="12,8">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+            <fi:FluentIcon Icon="Database" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="Local JSON Store" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+          </Grid>
+        </Border>
+      </Grid>
+
+      <fa:InfoBar IsOpen="True"
+                  Severity="Informational"
+                  IsClosable="False"
+                  Message="Eksperimen UI aktif. Fluent controls, charts, icons, dan Lottie sekarang tersedia untuk eksplorasi visual lebih jauh." />
+
+      <Grid ColumnDefinitions="1.1*,1.3*" ColumnSpacing="14">
+        <Border Grid.Column="0" Classes="page-card">
+          <StackPanel Spacing="14">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+              <Border Width="40" Height="40" Background="{DynamicResource AccentSoftBrush}" CornerRadius="14">
+                <fi:FluentIcon Icon="Sparkle" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+              <StackPanel Grid.Column="1" Spacing="2">
+                <TextBlock Text="Enterprise Mode" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="Aktifkan modul lanjutan untuk POS, pembukuan, simulasi, dan bundling." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Grid>
+
+            <Border Background="{DynamicResource CardAltBgBrush}" CornerRadius="16" Padding="14">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="Current Mode" Classes="kpi-label" />
+                  <TextBlock Text="{Binding IsAdvancedMode}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Command="{Binding ToggleAdvancedCommand}"
+                        Background="{DynamicResource AccentBrush}"
+                        Foreground="{DynamicResource SidebarSelectedTextBrush}"
+                        Padding="14,10"
+                        CornerRadius="12"
+                        FontWeight="Bold"
+                        VerticalAlignment="Center">
+                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <fi:FluentIcon Icon="ArrowSync" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="Toggle" />
+                  </Grid>
+                </Button>
+              </Grid>
+            </Border>
+          </StackPanel>
+        </Border>
+
+        <Border Grid.Column="1" Classes="page-card">
+          <StackPanel Spacing="14">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Backup &amp; Restore" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="{Binding CurrentStorePath}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+              <StackPanel Spacing="6">
+                <TextBlock Text="Export Path" Classes="kpi-label" />
+                <TextBox Text="{Binding ExportPath}" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
+              </StackPanel>
+              <Button Grid.Column="1"
+                      Click="BrowseExport_Click"
+                      Background="{DynamicResource CardAltBgBrush}"
+                      Foreground="{DynamicResource PrimaryTextBrush}"
+                      Padding="14,10"
+                      CornerRadius="12"
+                      FontWeight="Bold"
+                      VerticalAlignment="Bottom">
+                <TextBlock Text="Browse" />
+              </Button>
+              <Button Grid.Column="2"
+                      Command="{Binding ExportCommand}"
+                      Background="{DynamicResource AccentBrush}"
+                      Foreground="{DynamicResource SidebarSelectedTextBrush}"
+                      Padding="14,10"
+                      CornerRadius="12"
+                      FontWeight="Bold"
+                      VerticalAlignment="Bottom">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                  <fi:FluentIcon Icon="ArrowDownload" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="Export" />
+                </Grid>
+              </Button>
+            </Grid>
+
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+              <StackPanel Spacing="6">
+                <TextBlock Text="Import Path" Classes="kpi-label" />
+                <TextBox Text="{Binding ImportPath}" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
+              </StackPanel>
+              <Button Grid.Column="1"
+                      Click="BrowseImport_Click"
+                      Background="{DynamicResource CardAltBgBrush}"
+                      Foreground="{DynamicResource PrimaryTextBrush}"
+                      Padding="14,10"
+                      CornerRadius="12"
+                      FontWeight="Bold"
+                      VerticalAlignment="Bottom">
+                <TextBlock Text="Browse" />
+              </Button>
+              <Button Grid.Column="2"
+                      Command="{Binding ImportCommand}"
+                      Background="{DynamicResource AccentWarmBrush}"
+                      Foreground="{DynamicResource SidebarSelectedTextBrush}"
+                      Padding="14,10"
+                      CornerRadius="12"
+                      FontWeight="Bold"
+                      VerticalAlignment="Bottom">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                  <fi:FluentIcon Icon="ArrowUpload" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="Import" />
+                </Grid>
+              </Button>
+            </Grid>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
