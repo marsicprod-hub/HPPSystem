@@ -2,8 +2,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:HPPSystem.ViewModels"
              xmlns:fa="using:FluentAvalonia.UI.Controls"
-             xmlns:fi="using:FluentIcons.Avalonia"
              xmlns:lottie="using:Avalonia.Skia.Lottie"
+             xmlns:icon="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
              x:Class="HPPSystem.Views.PosView"
              x:Name="Root"
              x:DataType="vm:PosViewModel">
@@ -12,7 +12,7 @@
       <StackPanel Grid.Column="0" Spacing="18">
         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
           <StackPanel Spacing="4">
-            <TextBlock Text="Point of Sale" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="Point of Sale" FontSize="{DynamicResource AppPageTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
             <TextBlock Text="Scan katalog, susun cart, lalu checkout dengan ringkas." Foreground="{DynamicResource SecondaryTextBrush}" />
           </StackPanel>
           <StackPanel Grid.Column="1" Spacing="8" HorizontalAlignment="Right">
@@ -32,19 +32,19 @@
           <Border Grid.Column="0" Classes="page-card">
             <StackPanel Spacing="6">
               <TextBlock Text="Katalog Aktif" Classes="kpi-label" />
-              <TextBlock Text="{Binding CatalogSummaryText}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding CatalogSummaryText}" FontSize="{DynamicResource AppDisplaySmallFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
             </StackPanel>
           </Border>
           <Border Grid.Column="1" Classes="page-card">
             <StackPanel Spacing="6">
               <TextBlock Text="Baris Cart" Classes="kpi-label" />
-              <TextBlock Text="{Binding CartLineCount, StringFormat={}{0} baris}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding CartLineCount, StringFormat={}{0} baris}" FontSize="{DynamicResource AppDisplaySmallFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
             </StackPanel>
           </Border>
           <Border Grid.Column="2" Classes="page-card">
             <StackPanel Spacing="6">
               <TextBlock Text="Proyeksi Laba" Classes="kpi-label" />
-              <TextBlock Text="{Binding CartProjectedProfitText}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource AccentBrush}" />
+            <TextBlock Text="{Binding CartProjectedProfitText}" FontSize="{DynamicResource AppDisplaySmallFontSize}" FontWeight="Black" Foreground="{DynamicResource AccentBrush}" />
             </StackPanel>
           </Border>
         </Grid>
@@ -93,28 +93,28 @@
 
         <Border Classes="page-card" IsVisible="{Binding HasCatalogItems}">
           <StackPanel Spacing="12">
-            <TextBlock Text="Katalog Menu" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="Katalog Menu" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
             <ItemsControl ItemsSource="{Binding FilteredCatalog}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="vm:PosCatalogItemViewModel">
                   <Border Margin="0,0,0,10" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="14">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                       <StackPanel Spacing="8">
-                        <TextBlock Text="{Binding Name}" FontWeight="Black" FontSize="18" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  <TextBlock Text="{Binding Name}" FontWeight="Black" FontSize="{DynamicResource AppSectionFontSize}" Foreground="{DynamicResource PrimaryTextBrush}" />
                         <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="8">
                           <Border Classes="badge" IsVisible="{Binding IsRecipe}">
-                            <TextBlock Text="Resep" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                      <TextBlock Text="Resep" FontSize="{DynamicResource AppCaptionFontSize}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
                           </Border>
                           <Border Classes="badge badge-soft" IsVisible="{Binding IsCombo}">
-                            <TextBlock Text="Bundle" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                      <TextBlock Text="Bundle" FontSize="{DynamicResource AppCaptionFontSize}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
                           </Border>
                           <Border Classes="badge">
-                            <TextBlock Text="{Binding HppText, StringFormat=HPP {0}}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                      <TextBlock Text="{Binding HppText, StringFormat=HPP {0}}" FontSize="{DynamicResource AppCaptionFontSize}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
                           </Border>
                         </WrapPanel>
                       </StackPanel>
                       <StackPanel Grid.Column="1" Spacing="8" HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding DisplayPrice}" FontSize="18" FontWeight="Black" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Right" />
+                  <TextBlock Text="{Binding DisplayPrice}" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Right" />
                         <Button Classes="btn-primary btn-sm"
                                 Command="{Binding #Root.DataContext.AddToCartCommand}"
                                 CommandParameter="{Binding .}">
@@ -133,9 +133,9 @@
       <Border Grid.Column="1" Classes="page-card">
         <StackPanel Spacing="14">
           <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-            <fi:FluentIcon Icon="Receipt" IconVariant="Regular" FontSize="22" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+            <icon:LucideIcon Kind="ReceiptText" Classes="feature-icon" VerticalAlignment="Center" />
             <StackPanel Grid.Column="1" Spacing="2">
-              <TextBlock Text="Cart &amp; Checkout" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="Cart &amp; Checkout" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
               <TextBlock Text="{Binding CheckoutSummaryText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
             </StackPanel>
           </Grid>
@@ -226,7 +226,7 @@
             </Button>
             <Button Classes="btn-primary" Command="{Binding CheckoutCommand}" IsEnabled="{Binding HasCart}">
               <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                <fi:FluentIcon Icon="ArrowDownload" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+                <icon:LucideIcon Kind="ShoppingCart" Classes="button-icon" VerticalAlignment="Center" />
                 <TextBlock Grid.Column="1" Text="Checkout" />
               </Grid>
             </Button>

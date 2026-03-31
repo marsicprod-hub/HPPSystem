@@ -18,12 +18,23 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
     private const string FocusAllValue = "all";
     private const string FocusCriticalValue = "critical";
     private const string FocusOutValue = "out";
+    private const string SortNameAsc = "name_asc";
+    private const string SortNameDesc = "name_desc";
+    private const string SortUnitAsc = "unit_asc";
+    private const string SortUnitDesc = "unit_desc";
+    private const string SortStockAsc = "stock_asc";
+    private const string SortStockDesc = "stock_desc";
+    private const string SortPriceAsc = "price_asc";
+    private const string SortPriceDesc = "price_desc";
+    private const string SortPackAsc = "pack_asc";
+    private const string SortPackDesc = "pack_desc";
 
     private string _quickRestockMaterialName = string.Empty;
 
     public WarehouseViewModel(IDataService dataService, NotificationService notifications)
         : base(dataService, notifications)
     {
+        BuildSortOptions();
         Refresh();
     }
 
@@ -37,15 +48,22 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
     public ObservableCollection<SelectionOptionViewModel> LedgerSourceOptions { get; } = new();
     public ObservableCollection<SelectionOptionViewModel> LedgerMaterialOptions { get; } = new();
     public ObservableCollection<SelectionOptionViewModel> CatalogMaterialOptions { get; } = new();
+    public ObservableCollection<SelectionOptionViewModel> SortOptions { get; } = new();
 
     [ObservableProperty]
     private string _searchTerm = string.Empty;
+
+    [ObservableProperty]
+    private string _catalogSearchTerm = string.Empty;
 
     [ObservableProperty]
     private string _materialFocusMode = FocusAllValue;
 
     [ObservableProperty]
     private HPPSystem.Models.Material? _historyMaterial;
+
+    [ObservableProperty]
+    private HPPSystem.Models.Material? _pendingWarehouseRemoval;
 
     [ObservableProperty]
     private SelectionOptionViewModel? _selectedLedgerSourceOption;
@@ -55,6 +73,9 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
 
     [ObservableProperty]
     private SelectionOptionViewModel? _selectedCatalogMaterialOption;
+
+    [ObservableProperty]
+    private SelectionOptionViewModel? _selectedSortOption;
 
     [ObservableProperty]
     private bool _showAdjustForm;
@@ -79,6 +100,7 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
 
     public bool HasMaterials => FilteredMaterials.Count > 0;
     public bool ShowHistory => HistoryMaterial is not null;
+    public bool ShowDeletePrompt => PendingWarehouseRemoval is not null;
     public bool HasLedgerStockMovements => LedgerStockMovements.Count > 0;
     public bool HasHistoryPriceRecords => HistoryPriceRecords.Count > 0;
     public bool HasHistoryStockMovements => HistoryStockMovements.Count > 0;
@@ -86,6 +108,7 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
     public bool HasActiveMaterialFocus => !IsFocusAll;
     public bool HasSearchTerm => !string.IsNullOrWhiteSpace(SearchTerm);
     public bool HasActiveSearchOrFocus => HasSearchTerm || HasActiveMaterialFocus;
+    public bool HasCatalogSearchTerm => !string.IsNullOrWhiteSpace(CatalogSearchTerm);
     public bool HasCatalogMaterialOptions => CatalogMaterialOptions.Count > 0;
     public bool IsFocusAll => string.Equals(MaterialFocusMode, FocusAllValue, StringComparison.Ordinal);
     public bool IsFocusCritical => string.Equals(MaterialFocusMode, FocusCriticalValue, StringComparison.Ordinal);
@@ -97,6 +120,7 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
     public string LowStockCountText { get; private set; } = "0 bahan kritis";
     public string TotalStockText { get; private set; } = "0 unit";
     public string SearchSummaryText { get; private set; } = "0 hasil";
+    public string SortSummaryText => SelectedSortOption?.Label ?? "Nama A-Z";
     public string FocusAllText { get; private set; } = "Semua 0";
     public string FocusCriticalText { get; private set; } = "Stok Tipis 0";
     public string FocusOutText { get; private set; } = "Kosong 0";
@@ -109,13 +133,16 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
         ? "Pilih material katalog dulu."
         : $"Masukkan {SelectedCatalogMaterialOption.Label} ke daftar stok gudang.";
     public string SearchHelperText => string.IsNullOrWhiteSpace(SearchTerm)
-        ? "Cari nama bahan untuk fokus ke stok tertentu."
+        ? "Cari nama bahan atau merk produk untuk fokus ke stok tertentu."
         : $"Filter aktif: \"{SearchTerm.Trim()}\"";
+    public string CatalogSearchHelperText => string.IsNullOrWhiteSpace(CatalogSearchTerm)
+        ? "Cari nama bahan atau merk untuk mempersempit daftar katalog."
+        : $"Filter katalog aktif: \"{CatalogSearchTerm.Trim()}\"";
 
-    public string HistoryTitleText => HistoryMaterial is null ? string.Empty : $"Audit Gudang {HistoryMaterial.Name}";
+    public string HistoryTitleText => HistoryMaterial is null ? string.Empty : $"Audit Gudang {BuildMaterialLabel(HistoryMaterial)}";
     public string HistorySummaryText => HistoryMaterial is null
         ? string.Empty
-        : $"Stok aktif {HistoryMaterial.Stock:0.##} {HistoryMaterial.Unit} | harga pack {FormattingHelper.FormatCurrency(HistoryMaterial.Price)}";
+        : $"{BuildMaterialLabel(HistoryMaterial)} | stok aktif {HistoryMaterial.Stock:0.##} {HistoryMaterial.Unit} | harga pack {FormattingHelper.FormatCurrency(HistoryMaterial.Price)}";
     public string HistoryPriceCountText => $"{HistoryPriceRecords.Count} perubahan harga";
     public string HistoryMovementCountText => $"{HistoryStockMovements.Count} pergerakan stok";
 
@@ -131,6 +158,7 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
     public string AdjustFormHelperText => string.IsNullOrWhiteSpace(AdjustingMaterialId)
         ? "Pilih salah satu bahan untuk mengubah stok fisik gudang."
         : $"Set stok fisik terbaru untuk {AdjustingMaterialName}. Harga dan berat pack tetap dikelola di halaman Material.";
+    public string DeletePromptText => PendingWarehouseRemoval is null ? string.Empty : BuildWarehouseDeletePromptText(PendingWarehouseRemoval);
     public string AdjustmentDeltaText
     {
         get
@@ -142,13 +170,24 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
     }
 
     partial void OnSearchTermChanged(string value) => Refresh();
+    partial void OnCatalogSearchTermChanged(string value) => Refresh();
     partial void OnMaterialFocusModeChanged(string value) => Refresh();
+    partial void OnSelectedSortOptionChanged(SelectionOptionViewModel? value)
+    {
+        OnPropertyChanged(nameof(SortSummaryText));
+        Refresh();
+    }
     partial void OnHistoryMaterialChanged(HPPSystem.Models.Material? value)
     {
         OnPropertyChanged(nameof(ShowHistory));
         OnPropertyChanged(nameof(HistoryTitleText));
         OnPropertyChanged(nameof(HistorySummaryText));
         RefreshHistoryDetails();
+    }
+    partial void OnPendingWarehouseRemovalChanged(HPPSystem.Models.Material? value)
+    {
+        OnPropertyChanged(nameof(ShowDeletePrompt));
+        OnPropertyChanged(nameof(DeletePromptText));
     }
 
     partial void OnSelectedLedgerSourceOptionChanged(SelectionOptionViewModel? value) => RefreshLedgerDetails();
@@ -188,18 +227,23 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
         var profileId = DataService.Settings.ActiveProfileId;
         var allProfileItems = DataService.Materials
             .Where(x => x.ProfileId == profileId)
-            .OrderBy(x => x.Name)
             .ToList();
         var warehouseItems = allProfileItems
             .Where(x => x.IsTrackedInWarehouse)
             .ToList();
-        var catalogCandidates = allProfileItems
+        var sortedWarehouseItems = ApplySort(warehouseItems)
+            .ToList();
+        var allCatalogCandidates = allProfileItems
             .Where(x => !x.IsTrackedInWarehouse)
-            .OrderBy(x => x.Name)
+            .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        var catalogCandidates = allCatalogCandidates
+            .Where(x => MatchesSearch(x, CatalogSearchTerm))
             .ToList();
 
-        var items = warehouseItems
-            .Where(x => string.IsNullOrWhiteSpace(SearchTerm) || x.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
+        var items = sortedWarehouseItems
+            .Where(x => MatchesSearch(x, SearchTerm))
             .Where(x => MaterialFocusMode switch
             {
                 FocusCriticalValue => x.Stock <= 5,
@@ -225,14 +269,14 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
             .Where(x => x.ProfileId == profileId)
             .ToList();
 
-        var lowStockCount = warehouseItems.Count(x => x.Stock <= 5);
-        var outStockCount = warehouseItems.Count(x => x.Stock <= 0);
+        var lowStockCount = sortedWarehouseItems.Count(x => x.Stock <= 5);
+        var outStockCount = sortedWarehouseItems.Count(x => x.Stock <= 0);
 
-        MaterialCountText = $"{warehouseItems.Count} bahan aktif";
+        MaterialCountText = $"{sortedWarehouseItems.Count} bahan aktif";
         LowStockCountText = $"{lowStockCount} bahan kritis";
-        TotalStockText = $"{warehouseItems.Sum(x => x.Stock):0.##} unit tersimpan";
+        TotalStockText = $"{sortedWarehouseItems.Sum(x => x.Stock):0.##} unit tersimpan";
         SearchSummaryText = $"{items.Count} hasil ditampilkan";
-        FocusAllText = $"Semua {warehouseItems.Count}";
+        FocusAllText = $"Semua {sortedWarehouseItems.Count}";
         FocusCriticalText = $"Stok Tipis {lowStockCount}";
         FocusOutText = $"Kosong {outStockCount}";
         MaterialFocusSummaryText = MaterialFocusMode switch
@@ -241,29 +285,32 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
             FocusOutValue => "Menampilkan bahan yang stoknya sudah habis.",
             _ => "Menampilkan semua bahan aktif."
         };
-        InventoryInsightText = warehouseItems.Count switch
+        InventoryInsightText = sortedWarehouseItems.Count switch
         {
-            0 => catalogCandidates.Count == 0
+            0 => allCatalogCandidates.Count == 0
                 ? "Gudang belum punya stok aktif. Tambahkan material dulu dari halaman Material."
                 : "Gudang belum punya stok aktif. Pilih material katalog di panel kanan lalu masukkan ke daftar stok.",
             _ when lowStockCount == 0 => "Stok gudang dalam kondisi aman. Fokuskan audit pada bahan dengan pergerakan tertinggi.",
             _ => $"Ada {lowStockCount} bahan dengan stok tipis. Prioritaskan restock agar produksi tidak terganggu."
         };
-        RestockFocusText = BuildRestockFocusText(warehouseItems);
-        _quickRestockMaterialName = warehouseItems
+        RestockFocusText = BuildRestockFocusText(sortedWarehouseItems);
+        _quickRestockMaterialName = sortedWarehouseItems
             .Where(x => x.Stock <= 5)
             .OrderBy(x => x.Stock)
-            .ThenBy(x => x.Name)
-            .Select(x => x.Name)
+            .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+            .Select(BuildMaterialLabel)
             .FirstOrDefault() ?? string.Empty;
         QuickRestockActionText = string.IsNullOrWhiteSpace(_quickRestockMaterialName)
             ? "Belum ada stok kritis."
             : $"Fokus restock: {_quickRestockMaterialName}";
-        CatalogPickerSummaryText = catalogCandidates.Count switch
+        CatalogPickerSummaryText = allCatalogCandidates.Count switch
         {
             0 => "Semua material katalog sudah tersedia di gudang.",
-            1 => $"1 material katalog siap ditambahkan ke gudang.",
-            _ => $"{catalogCandidates.Count} material katalog siap ditambahkan ke gudang."
+            _ when string.IsNullOrWhiteSpace(CatalogSearchTerm) => allCatalogCandidates.Count == 1
+                ? "1 material katalog siap ditambahkan ke gudang."
+                : $"{allCatalogCandidates.Count} material katalog siap ditambahkan ke gudang.",
+            _ when catalogCandidates.Count == 0 => $"Tidak ada hasil katalog untuk \"{CatalogSearchTerm.Trim()}\".",
+            _ => $"{catalogCandidates.Count} dari {allCatalogCandidates.Count} material katalog cocok dengan pencarian."
         };
 
         OnPropertyChanged(nameof(HasMaterials));
@@ -271,6 +318,7 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
         OnPropertyChanged(nameof(LowStockCountText));
         OnPropertyChanged(nameof(TotalStockText));
         OnPropertyChanged(nameof(SearchSummaryText));
+        OnPropertyChanged(nameof(SortSummaryText));
         OnPropertyChanged(nameof(FocusAllText));
         OnPropertyChanged(nameof(FocusCriticalText));
         OnPropertyChanged(nameof(FocusOutText));
@@ -281,19 +329,37 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
         OnPropertyChanged(nameof(CatalogPickerSummaryText));
         OnPropertyChanged(nameof(CatalogPickerActionText));
         OnPropertyChanged(nameof(SearchHelperText));
+        OnPropertyChanged(nameof(CatalogSearchHelperText));
         OnPropertyChanged(nameof(IsFocusAll));
         OnPropertyChanged(nameof(IsFocusCritical));
         OnPropertyChanged(nameof(IsFocusOut));
         OnPropertyChanged(nameof(HasSearchTerm));
         OnPropertyChanged(nameof(HasActiveMaterialFocus));
         OnPropertyChanged(nameof(HasActiveSearchOrFocus));
+        OnPropertyChanged(nameof(HasCatalogSearchTerm));
         OnPropertyChanged(nameof(HasQuickRestockTarget));
         OnPropertyChanged(nameof(HasCatalogMaterialOptions));
         OnPropertyChanged(nameof(CanAddCatalogMaterial));
 
         RefreshCatalogMaterialOptions(catalogCandidates);
-        RefreshLedgerFilters(warehouseItems, profileMovements);
+        RefreshLedgerFilters(sortedWarehouseItems, profileMovements);
         RefreshLedgerDetails();
+    }
+
+    private void BuildSortOptions()
+    {
+        SortOptions.Clear();
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortNameAsc, Label = "Nama A-Z" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortNameDesc, Label = "Nama Z-A" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortUnitAsc, Label = "Satuan A-Z" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortUnitDesc, Label = "Satuan Z-A" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortStockAsc, Label = "Stok Terkecil-Terbesar" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortStockDesc, Label = "Stok Terbesar-Terkecil" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortPriceAsc, Label = "Harga Termurah-Termahal" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortPriceDesc, Label = "Harga Termahal-Termurah" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortPackAsc, Label = "Isi Pack Terkecil-Terbesar" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortPackDesc, Label = "Isi Pack Terbesar-Terkecil" });
+        SelectedSortOption = SortOptions.FirstOrDefault(x => x.Value == SortNameAsc) ?? SortOptions.FirstOrDefault();
     }
 
     [RelayCommand]
@@ -319,6 +385,12 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
     {
         MaterialFocusMode = FocusAllValue;
         SearchTerm = string.Empty;
+    }
+
+    [RelayCommand]
+    private void ClearCatalogSearch()
+    {
+        CatalogSearchTerm = string.Empty;
     }
 
     [RelayCommand]
@@ -360,7 +432,7 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
         updated.IsTrackedInWarehouse = true;
         await DataService.SaveMaterialAsync(updated);
 
-        Success($"{updated.Name} ditambahkan ke daftar stok gudang.");
+        Success($"{BuildMaterialLabel(updated)} ditambahkan ke daftar stok gudang.");
         StartAdjust(updated);
     }
 
@@ -368,7 +440,7 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
     private void StartAdjust(HPPSystem.Models.Material material)
     {
         AdjustingMaterialId = material.Id;
-        AdjustingMaterialName = material.Name;
+        AdjustingMaterialName = BuildMaterialLabel(material);
         AdjustingUnit = material.Unit;
         CurrentStock = material.Stock;
         NewStock = material.Stock;
@@ -428,6 +500,37 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
     }
 
     [RelayCommand]
+    private void RequestDeleteFromWarehouse(HPPSystem.Models.Material material)
+    {
+        PendingWarehouseRemoval = material;
+    }
+
+    [RelayCommand]
+    private void CancelDelete()
+    {
+        PendingWarehouseRemoval = null;
+    }
+
+    [RelayCommand]
+    private async Task DeleteFromWarehouseAsync(HPPSystem.Models.Material material)
+    {
+        await DataService.RemoveMaterialFromWarehouseAsync(material.Id);
+
+        if (HistoryMaterial?.Id == material.Id)
+        {
+            HistoryMaterial = null;
+        }
+
+        if (string.Equals(AdjustingMaterialId, material.Id, StringComparison.Ordinal))
+        {
+            CancelAdjust();
+        }
+
+        PendingWarehouseRemoval = null;
+        Success($"{BuildMaterialLabel(material)} dikeluarkan dari daftar gudang. Master material tetap ada di katalog.");
+    }
+
+    [RelayCommand]
     private void CloseHistory()
     {
         HistoryMaterial = null;
@@ -450,8 +553,11 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
         foreach (var record in HistoryMaterial.PriceHistory
                      .OrderByDescending(x => DateTime.TryParse(x.Date, out var date) ? date : DateTime.MinValue))
         {
+            var dateValue = DateTime.TryParse(record.Date, out var parsedDate) ? parsedDate : DateTime.MinValue;
             HistoryPriceRecords.Add(new PriceHistoryRowViewModel
             {
+                DateValue = dateValue,
+                PriceValue = record.Price,
                 DateText = FormattingHelper.FormatDateTime(record.Date),
                 PriceText = FormattingHelper.FormatCurrency(record.Price)
             });
@@ -490,7 +596,7 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
             .Select(x => x.SourceType)
             .Where(x => !string.IsNullOrWhiteSpace(x))
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(GetSourceTypeLabel)
+            .OrderBy(GetSourceTypeLabel, StringComparer.OrdinalIgnoreCase)
             .Select(x => new SelectionOptionViewModel
             {
                 Value = x,
@@ -504,11 +610,12 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
         });
 
         var materialOptions = materials
-            .OrderBy(x => x.Name)
+            .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase)
             .Select(x => new SelectionOptionViewModel
             {
                 Value = x.Id,
-                Label = x.Name
+                Label = BuildMaterialLabel(x)
             })
             .ToList();
         materialOptions.Insert(0, new SelectionOptionViewModel
@@ -528,11 +635,12 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
     {
         var selectedValue = SelectedCatalogMaterialOption?.Value ?? string.Empty;
         var options = materials
-            .OrderBy(x => x.Name)
+            .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase)
             .Select(x => new SelectionOptionViewModel
             {
                 Value = x.Id,
-                Label = x.Name
+                Label = BuildMaterialLabel(x)
             })
             .ToList();
 
@@ -568,7 +676,9 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
 
             LedgerStockMovements.Add(new StockMovementRowViewModel
             {
-                MaterialNameText = string.IsNullOrWhiteSpace(movement.MaterialName) ? material?.Name ?? "Bahan Terhapus" : movement.MaterialName,
+                MaterialNameText = material is not null
+                    ? BuildMaterialLabel(material)
+                    : string.IsNullOrWhiteSpace(movement.MaterialName) ? "Bahan Terhapus" : movement.MaterialName,
                 DateText = FormattingHelper.FormatDateTime(movement.Date),
                 SourceText = string.IsNullOrWhiteSpace(movement.SourceLabel) ? GetSourceTypeLabel(movement.SourceType) : movement.SourceLabel,
                 QuantityText = $"{quantityPrefix}{movement.QuantityDelta:0.##}{unitSuffix}",
@@ -640,14 +750,24 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
         return new MaterialCardViewModel
         {
             Material = material,
-            UnitBadgeText = $"Unit {material.Unit}",
+            NameText = material.Name,
+            BrandText = string.IsNullOrWhiteSpace(material.Brand) ? "-" : material.Brand,
+            UnitBadgeText = material.Unit,
             HistoryBadgeText = $"Riwayat Harga {material.PriceHistory.Count}",
+            StockQuantityValue = material.Stock,
+            StockUnitText = material.Unit,
             StockValueText = $"{material.Stock:0.##} {material.Unit}",
             StockStatusText = statusText,
             StockStatusDetailText = statusDetail,
+            PackPriceValue = material.Price,
             PackPriceText = FormattingHelper.FormatCurrency(material.Price),
+            PackQuantityValue = material.Weight,
+            PackUnitText = material.Unit,
             WeightText = $"{material.Weight:0.##} {material.Unit}",
+            UnitCostValue = material.PricePerUnit,
             UnitCostText = FormattingHelper.FormatCurrency(material.PricePerUnit),
+            PriceHistoryCountValue = material.PriceHistory.Count,
+            StockBalanceValue = material.Stock,
             StockBalanceText = $"Sisa {material.Stock:0.##} {material.Unit}",
             IsOutOfStock = isOutOfStock,
             IsLowStock = isLowStock,
@@ -661,6 +781,7 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
         {
             Id = material.Id,
             Name = material.Name,
+            Brand = material.Brand,
             Price = material.Price,
             Weight = material.Weight,
             Unit = material.Unit,
@@ -677,9 +798,9 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
         var lowStockNames = materials
             .Where(x => x.Stock <= 5)
             .OrderBy(x => x.Stock)
-            .ThenBy(x => x.Name)
+            .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
             .Take(3)
-            .Select(x => x.Name)
+            .Select(BuildMaterialLabel)
             .ToList();
 
         return lowStockNames.Count switch
@@ -688,5 +809,55 @@ public sealed partial class WarehouseViewModel : PageViewModelBase
             1 => $"Prioritas restock: {lowStockNames[0]}.",
             _ => $"Prioritas restock: {string.Join(", ", lowStockNames)}."
         };
+    }
+
+    private IEnumerable<HPPSystem.Models.Material> ApplySort(IEnumerable<HPPSystem.Models.Material> materials)
+    {
+        return (SelectedSortOption?.Value ?? SortNameAsc) switch
+        {
+            SortNameDesc => materials.OrderByDescending(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortUnitAsc => materials.OrderBy(x => x.Unit, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortUnitDesc => materials.OrderByDescending(x => x.Unit, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortStockAsc => materials.OrderBy(x => x.Stock).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortStockDesc => materials.OrderByDescending(x => x.Stock).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortPriceAsc => materials.OrderBy(x => x.Price).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortPriceDesc => materials.OrderByDescending(x => x.Price).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortPackAsc => materials.OrderBy(x => x.Weight).ThenBy(x => x.Unit, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortPackDesc => materials.OrderByDescending(x => x.Weight).ThenBy(x => x.Unit, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            _ => materials.OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase)
+        };
+    }
+
+    private static bool MatchesSearch(HPPSystem.Models.Material material, string searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            return true;
+        }
+
+        return material.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            || material.Brand.Contains(searchTerm, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string BuildMaterialLabel(HPPSystem.Models.Material material)
+        => string.IsNullOrWhiteSpace(material.Brand)
+            ? material.Name
+            : $"{material.Name} | {material.Brand}";
+
+    private string BuildWarehouseDeletePromptText(HPPSystem.Models.Material material)
+    {
+        var profileId = DataService.Settings.ActiveProfileId;
+        var recipeUsageCount = DataService.Recipes
+            .Where(x => string.Equals(x.ProfileId, profileId, StringComparison.Ordinal))
+            .Count(x => x.IngredientGroups.Any(group => group.Ingredients.Any(ingredient => string.Equals(ingredient.MaterialId, material.Id, StringComparison.Ordinal))));
+        var stockMovementCount = DataService.StockMovements.Count(x => string.Equals(x.MaterialId, material.Id, StringComparison.Ordinal));
+        var recipeImpactText = recipeUsageCount switch
+        {
+            0 => "belum dipakai di resep aktif",
+            1 => "dipakai di 1 resep aktif",
+            _ => $"dipakai di {recipeUsageCount} resep aktif"
+        };
+
+        return $"{BuildMaterialLabel(material)} akan dihapus dari daftar Gudang. Material tetap ada di katalog Material, tetapi stok fisik akan direset ke 0 dan {stockMovementCount} catatan ledger gudang untuk bahan ini akan dibersihkan. Saat ini bahan ini {recipeImpactText}.";
     }
 }

@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using HPPSystem.Helpers;
 using HPPSystem.Models;
 using HPPSystem.Services;
 using Xunit;
@@ -64,7 +65,8 @@ public sealed class LocalJsonDataServiceTests
             {
                 ActiveProfileId = "imported",
                 IsAdvancedMode = false,
-                IsDarkMode = true
+                IsDarkMode = true,
+                FontSizePreset = FontSizingHelper.ExtraSmall
             }
         };
 
@@ -76,6 +78,7 @@ public sealed class LocalJsonDataServiceTests
         Assert.Single(service.Materials);
         Assert.Equal("imported", service.Settings.ActiveProfileId);
         Assert.Equal("Fresh", service.Materials[0].Name);
+        Assert.Equal(FontSizingHelper.ExtraSmall, service.Settings.FontSizePreset);
         Assert.DoesNotContain(service.Materials, x => x.Id == "legacy-material");
     }
 

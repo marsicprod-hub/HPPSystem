@@ -4,9 +4,10 @@ using System.Threading.Tasks;
 using Avalonia;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using HPPSystem.Helpers;
 using HPPSystem.Models;
 using HPPSystem.Services;
-using Material.Icons;
+using Lucide.Avalonia;
 
 namespace HPPSystem.ViewModels;
 
@@ -21,6 +22,7 @@ public partial class MainViewModel : ViewModelBase
         MaterialsViewModel materials,
         WarehouseViewModel warehouse,
         RecipesViewModel recipes,
+        ProductionViewModel production,
         CombosViewModel combos,
         PosViewModel pos,
         BookkeepingViewModel bookkeeping,
@@ -35,6 +37,7 @@ public partial class MainViewModel : ViewModelBase
         Materials = materials;
         Warehouse = warehouse;
         Recipes = recipes;
+        Production = production;
         Combos = combos;
         Pos = pos;
         Bookkeeping = bookkeeping;
@@ -44,24 +47,36 @@ public partial class MainViewModel : ViewModelBase
 
         PrimaryNavigation = new ObservableCollection<NavigationItemViewModel>
         {
-            new(AppPage.Dashboard, "Dashboard", MaterialIconKind.ViewDashboard, Navigate),
-            new(AppPage.Materials, "Material", MaterialIconKind.PackageVariant, Navigate),
-            new(AppPage.Warehouse, "Gudang", MaterialIconKind.PackageVariant, Navigate),
-            new(AppPage.Recipes, "Recipes", MaterialIconKind.ChefHat, Navigate)
+            new(AppPage.Dashboard, "Dashboard", Navigate),
+            new(AppPage.Materials, "Material", Navigate),
+            new(AppPage.Warehouse, "Gudang", Navigate),
+            new(AppPage.Recipes, "Recipes", Navigate),
+            new(AppPage.Production, "Produksi", Navigate)
+        };
+
+        recipes.RequestProductionSetup = recipeId =>
+        {
+            Production.PrepareDraftFromRecipe(recipeId);
+            Navigate(AppPage.Production);
+        };
+        production.RequestBookkeepingForShortage = orderId =>
+        {
+            Bookkeeping.PrepareShortageTemplateFromProductionOrder(orderId);
+            Navigate(AppPage.Bookkeeping);
         };
 
         AdvancedNavigation = new ObservableCollection<NavigationItemViewModel>
         {
-            new(AppPage.Combos, "Bundles", MaterialIconKind.LayersTriple, Navigate),
-            new(AppPage.Pos, "POS", MaterialIconKind.ReceiptText, Navigate),
-            new(AppPage.Bookkeeping, "Bookkeeping", MaterialIconKind.WalletBifold, Navigate),
-            new(AppPage.Simulation, "Simulation", MaterialIconKind.ChartTimelineVariant, Navigate)
+            new(AppPage.Combos, "Bundles", Navigate),
+            new(AppPage.Pos, "POS", Navigate),
+            new(AppPage.Bookkeeping, "Bookkeeping", Navigate),
+            new(AppPage.Simulation, "Simulation", Navigate)
         };
 
         SystemNavigation = new ObservableCollection<NavigationItemViewModel>
         {
-            new(AppPage.Profile, "Profile", MaterialIconKind.AccountCircle, Navigate),
-            new(AppPage.Settings, "Settings", MaterialIconKind.Cog, Navigate)
+            new(AppPage.Profile, "Profile", Navigate),
+            new(AppPage.Settings, "Settings", Navigate)
         };
 
         _dataService.StateChanged += (_, _) => RefreshShell();
@@ -77,6 +92,7 @@ public partial class MainViewModel : ViewModelBase
     public MaterialsViewModel Materials { get; }
     public WarehouseViewModel Warehouse { get; }
     public RecipesViewModel Recipes { get; }
+    public ProductionViewModel Production { get; }
     public CombosViewModel Combos { get; }
     public PosViewModel Pos { get; }
     public BookkeepingViewModel Bookkeeping { get; }
@@ -114,7 +130,8 @@ public partial class MainViewModel : ViewModelBase
         AppPage.Dashboard => "Overview and portfolio movement.",
         AppPage.Materials => "Master catalog for materials.",
         AppPage.Warehouse => "Stock management and warehouse audit.",
-        AppPage.Recipes => "Costing and pricing engine.",
+        AppPage.Recipes => "Costing and recipe builder.",
+        AppPage.Production => "Production queue and stock deduction control.",
         AppPage.Combos => "Bundle and offer builder.",
         AppPage.Pos => "Transaction terminal.",
         AppPage.Bookkeeping => "Cash movement and expenses.",
@@ -127,8 +144,9 @@ public partial class MainViewModel : ViewModelBase
     public string NavigationSummaryText => $"{PrimaryNavigation.Count + (ShowAdvancedNavigation ? AdvancedNavigation.Count : 0) + SystemNavigation.Count} modules";
     public string ProfileInitial => string.IsNullOrWhiteSpace(ActiveProfileName) ? "H" : ActiveProfileName.Substring(0, 1).ToUpperInvariant();
     public string ThemeLabel => IsDarkMode ? "Dark" : "Light";
-    public MaterialIconKind ThemeIcon => IsDarkMode ? MaterialIconKind.WhiteBalanceSunny : MaterialIconKind.MoonWaningCrescent;
-    public string ThemeGlyph => IsDarkMode ? "WeatherSunny" : "DarkTheme";
+    public LucideIconKind ThemeIcon => IsDarkMode ? LucideIconKind.SunMedium : LucideIconKind.MoonStar;
+    public double AppFontSize => FontSizingHelper.GetBaseFontSize(_dataService.Settings.FontSizePreset);
+    public string FontSizeLabel => FontSizingHelper.GetLabel(_dataService.Settings.FontSizePreset);
 
     partial void OnSelectedProfileChanged(Profile? value)
     {
@@ -147,6 +165,7 @@ public partial class MainViewModel : ViewModelBase
         if (Application.Current is App app)
         {
             app.ApplyTheme(_dataService.Settings.IsDarkMode);
+            app.ApplyFontSize(_dataService.Settings.FontSizePreset);
         }
         RefreshShell();
         IsLoading = false;
@@ -159,12 +178,14 @@ public partial class MainViewModel : ViewModelBase
         {
             ActiveProfileId = _dataService.Settings.ActiveProfileId,
             IsAdvancedMode = _dataService.Settings.IsAdvancedMode,
-            IsDarkMode = !_dataService.Settings.IsDarkMode
+            IsDarkMode = !_dataService.Settings.IsDarkMode,
+            FontSizePreset = _dataService.Settings.FontSizePreset
         });
 
         if (Application.Current is App app)
         {
             app.ApplyTheme(_dataService.Settings.IsDarkMode);
+            app.ApplyFontSize(_dataService.Settings.FontSizePreset);
         }
     }
 
@@ -177,6 +198,7 @@ public partial class MainViewModel : ViewModelBase
             AppPage.Materials => Materials,
             AppPage.Warehouse => Warehouse,
             AppPage.Recipes => Recipes,
+            AppPage.Production => Production,
             AppPage.Combos => Combos,
             AppPage.Pos => Pos,
             AppPage.Bookkeeping => Bookkeeping,
@@ -206,7 +228,13 @@ public partial class MainViewModel : ViewModelBase
         OnPropertyChanged(nameof(ProfileInitial));
         OnPropertyChanged(nameof(ThemeLabel));
         OnPropertyChanged(nameof(ThemeIcon));
-        OnPropertyChanged(nameof(ThemeGlyph));
+        OnPropertyChanged(nameof(AppFontSize));
+        OnPropertyChanged(nameof(FontSizeLabel));
+        if (Application.Current is App app)
+        {
+            app.ApplyTheme(_dataService.Settings.IsDarkMode);
+            app.ApplyFontSize(_dataService.Settings.FontSizePreset);
+        }
         RefreshNavSelection();
     }
 

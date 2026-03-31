@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
+using HPPSystem.Helpers;
 using HPPSystem.Models;
 
 namespace HPPSystem.Services;
@@ -18,6 +19,7 @@ public interface IDataService
     ObservableCollection<HPPSystem.Models.Material> Materials { get; }
     ObservableCollection<StockMovement> StockMovements { get; }
     ObservableCollection<Recipe> Recipes { get; }
+    ObservableCollection<ProductionOrder> ProductionOrders { get; }
     ObservableCollection<Combo> Combos { get; }
     ObservableCollection<Sale> Sales { get; }
     ObservableCollection<Transaction> Transactions { get; }
@@ -29,9 +31,12 @@ public interface IDataService
     Task SaveMaterialAsync(HPPSystem.Models.Material material);
     Task SaveMaterialsAsync(IEnumerable<HPPSystem.Models.Material> materials);
     Task ApplyMaterialStockAdjustmentAsync(MaterialStockAdjustment adjustment);
+    Task RemoveMaterialFromWarehouseAsync(string materialId);
     Task DeleteMaterialAsync(string id);
     Task SaveRecipeAsync(Recipe recipe);
     Task DeleteRecipeAsync(string id);
+    Task SaveProductionOrderAsync(ProductionOrder order);
+    Task DeleteProductionOrderAsync(string id);
     Task SaveComboAsync(Combo combo);
     Task DeleteComboAsync(string id);
     Task SaveSaleAsync(Sale sale);
@@ -42,6 +47,7 @@ public interface IDataService
     Task DeleteProfileAsync(string id);
     Task UpdateSettingsAsync(AppSettings settings);
     Task SetActiveProfileAsync(string profileId);
+    Task ClearAllDataAsync();
     HppDataSnapshot CreateSnapshot();
     Task ExportSnapshotAsync(string path);
     Task ImportSnapshotAsync(string path);
@@ -62,6 +68,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
     public ObservableCollection<HPPSystem.Models.Material> Materials { get; } = new();
     public ObservableCollection<StockMovement> StockMovements { get; } = new();
     public ObservableCollection<Recipe> Recipes { get; } = new();
+    public ObservableCollection<ProductionOrder> ProductionOrders { get; } = new();
     public ObservableCollection<Combo> Combos { get; } = new();
     public ObservableCollection<Sale> Sales { get; } = new();
     public ObservableCollection<Transaction> Transactions { get; } = new();
@@ -168,6 +175,23 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
         await SaveMaterialCoreAsync(updated, movement);
     }
 
+    public async Task RemoveMaterialFromWarehouseAsync(string materialId)
+    {
+        var existing = Materials.FirstOrDefault(x => string.Equals(x.Id, materialId, StringComparison.Ordinal));
+        if (existing is null)
+        {
+            return;
+        }
+
+        var updated = CloneMaterial(existing);
+        updated.Stock = 0;
+        updated.IsTrackedInWarehouse = false;
+
+        RemoveAll(StockMovements, x => string.Equals(x.MaterialId, materialId, StringComparison.Ordinal));
+        await SaveMaterialCoreAsync(updated, movement: null, persistChanges: false);
+        await PersistAndNotifyAsync();
+    }
+
     public async Task DeleteMaterialAsync(string id)
     {
         foreach (var recipe in Recipes.Where(x => x.IngredientGroups.Any(g => g.Ingredients.Any(i => i.MaterialId == id))).ToList())
@@ -217,6 +241,20 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
         }
 
         RemoveById(Recipes, id);
+        await PersistAndNotifyAsync();
+    }
+
+    public async Task SaveProductionOrderAsync(ProductionOrder order)
+    {
+        order.ProfileId = string.IsNullOrWhiteSpace(order.ProfileId) ? Settings.ActiveProfileId : order.ProfileId;
+        order.Requirements ??= new List<ProductionMaterialRequirement>();
+        Upsert(ProductionOrders, order, x => x.Id);
+        await PersistAndNotifyAsync();
+    }
+
+    public async Task DeleteProductionOrderAsync(string id)
+    {
+        RemoveById(ProductionOrders, id);
         await PersistAndNotifyAsync();
     }
 
@@ -280,6 +318,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
         RemoveById(Profiles, id);
         RemoveAllByProfile(Materials, id);
         RemoveAllByProfile(Recipes, id);
+        RemoveAllByProfile(ProductionOrders, id);
         RemoveAllByProfile(Combos, id);
         RemoveAllByProfile(Sales, id);
         RemoveAllByProfile(Transactions, id);
@@ -295,6 +334,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
 
     public async Task UpdateSettingsAsync(AppSettings settings)
     {
+        settings.FontSizePreset = FontSizingHelper.NormalizePreset(settings.FontSizePreset);
         Settings = settings;
         await PersistAndNotifyAsync();
     }
@@ -302,6 +342,13 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
     public async Task SetActiveProfileAsync(string profileId)
     {
         Settings.ActiveProfileId = profileId;
+        await PersistAndNotifyAsync();
+    }
+
+    public async Task ClearAllDataAsync()
+    {
+        var clearedSnapshot = CreateClearedSnapshot(Settings);
+        ApplySnapshot(clearedSnapshot);
         await PersistAndNotifyAsync();
     }
 
@@ -314,6 +361,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
             Materials = Materials.ToList(),
             StockMovements = StockMovements.ToList(),
             Recipes = Recipes.ToList(),
+            ProductionOrders = ProductionOrders.ToList(),
             Combos = Combos.ToList(),
             Sales = Sales.ToList(),
             Transactions = Transactions.ToList(),
@@ -321,7 +369,8 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
             {
                 ActiveProfileId = Settings.ActiveProfileId,
                 IsAdvancedMode = Settings.IsAdvancedMode,
-                IsDarkMode = Settings.IsDarkMode
+                IsDarkMode = Settings.IsDarkMode,
+                FontSizePreset = FontSizingHelper.NormalizePreset(Settings.FontSizePreset)
             }
         };
     }
@@ -378,6 +427,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
         ReplaceCollection(Materials, snapshot.Materials);
         ReplaceCollection(StockMovements, snapshot.StockMovements);
         ReplaceCollection(Recipes, snapshot.Recipes);
+        ReplaceCollection(ProductionOrders, snapshot.ProductionOrders);
         ReplaceCollection(Combos, snapshot.Combos);
         ReplaceCollection(Sales, snapshot.Sales);
         ReplaceCollection(Transactions, snapshot.Transactions);
@@ -390,10 +440,12 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
         snapshot.Materials ??= new List<HPPSystem.Models.Material>();
         snapshot.StockMovements ??= new List<StockMovement>();
         snapshot.Recipes ??= new List<Recipe>();
+        snapshot.ProductionOrders ??= new List<ProductionOrder>();
         snapshot.Combos ??= new List<Combo>();
         snapshot.Sales ??= new List<Sale>();
         snapshot.Transactions ??= new List<Transaction>();
         snapshot.Settings ??= new AppSettings();
+        snapshot.Settings.FontSizePreset = FontSizingHelper.NormalizePreset(snapshot.Settings.FontSizePreset);
 
         if (snapshot.Profiles.Count == 0)
         {
@@ -403,6 +455,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
         foreach (var material in snapshot.Materials)
         {
             material.ProfileId = string.IsNullOrWhiteSpace(material.ProfileId) ? "default" : material.ProfileId;
+            material.Brand = material.Brand?.Trim() ?? string.Empty;
             material.PriceHistory ??= new List<PriceHistoryRecord>();
             material.PricePerUnit = material.Weight <= 0 ? 0 : material.Price / material.Weight;
             material.IsTrackedInWarehouse = material.IsTrackedInWarehouse
@@ -421,6 +474,16 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
         {
             combo.ProfileId = string.IsNullOrWhiteSpace(combo.ProfileId) ? "default" : combo.ProfileId;
             combo.Recipes ??= new List<ComboRecipe>();
+        }
+
+        foreach (var productionOrder in snapshot.ProductionOrders)
+        {
+            productionOrder.ProfileId = string.IsNullOrWhiteSpace(productionOrder.ProfileId) ? "default" : productionOrder.ProfileId;
+            productionOrder.ProductionDate = string.IsNullOrWhiteSpace(productionOrder.ProductionDate)
+                ? DateTime.Today.ToString("yyyy-MM-dd")
+                : productionOrder.ProductionDate;
+            productionOrder.Status = string.IsNullOrWhiteSpace(productionOrder.Status) ? "pending" : productionOrder.Status;
+            productionOrder.Requirements ??= new List<ProductionMaterialRequirement>();
         }
 
         foreach (var sale in snapshot.Sales)
@@ -517,6 +580,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
         }
 
         material.PricePerUnit = material.Weight <= 0 ? 0 : material.Price / material.Weight;
+        material.Brand = material.Brand?.Trim() ?? string.Empty;
         material.ProfileId = string.IsNullOrWhiteSpace(material.ProfileId) ? Settings.ActiveProfileId : material.ProfileId;
 
         Upsert(Materials, material, x => x.Id);
@@ -586,6 +650,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
         {
             Id = material.Id,
             Name = material.Name,
+            Brand = material.Brand,
             Price = material.Price,
             Weight = material.Weight,
             Unit = material.Unit,
@@ -681,7 +746,31 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
             {
                 ActiveProfileId = "default",
                 IsAdvancedMode = true,
-                IsDarkMode = false
+                IsDarkMode = false,
+                FontSizePreset = FontSizingHelper.Normal
+            }
+        };
+    }
+
+    private static HppDataSnapshot CreateClearedSnapshot(AppSettings currentSettings)
+    {
+        return new HppDataSnapshot
+        {
+            Profiles =
+            [
+                new Profile
+                {
+                    Id = "default",
+                    BusinessName = "Bisnis Utama",
+                    OwnerName = "Owner"
+                }
+            ],
+            Settings = new AppSettings
+            {
+                ActiveProfileId = "default",
+                IsAdvancedMode = currentSettings.IsAdvancedMode,
+                IsDarkMode = currentSettings.IsDarkMode,
+                FontSizePreset = FontSizingHelper.NormalizePreset(currentSettings.FontSizePreset)
             }
         };
     }

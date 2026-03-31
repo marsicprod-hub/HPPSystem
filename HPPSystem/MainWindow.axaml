@@ -1,10 +1,9 @@
 <faw:AppWindow xmlns="https://github.com/avaloniaui"
               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
               xmlns:vm="using:HPPSystem.ViewModels"
-              xmlns:material="using:Material.Icons.Avalonia"
               xmlns:fa="using:FluentAvalonia.UI.Controls"
               xmlns:faw="using:FluentAvalonia.UI.Windowing"
-              xmlns:fi="using:FluentIcons.Avalonia"
+              xmlns:icon="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
               xmlns:lottie="using:Avalonia.Skia.Lottie"
               x:Class="HPPSystem.MainWindow"
               x:DataType="vm:MainViewModel"
@@ -13,6 +12,7 @@
               Height="960"
               MinWidth="1120"
               MinHeight="820"
+              FontSize="{Binding AppFontSize}"
               Background="{DynamicResource AppBgBrush}"
               ExtendClientAreaToDecorationsHint="True"
               ExtendClientAreaTitleBarHeightHint="48"
@@ -50,13 +50,13 @@
     </Style>
     <Style Selector="TextBlock.nav-section-label">
       <Setter Property="Margin" Value="8,6,8,4" />
-      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontSize" Value="{DynamicResource AppCaptionFontSize}" />
       <Setter Property="FontWeight" Value="Bold" />
       <Setter Property="Foreground" Value="{DynamicResource SidebarMutedBrush}" />
     </Style>
     <Style Selector="TextBlock.nav-label">
       <Setter Property="VerticalAlignment" Value="Center" />
-      <Setter Property="FontSize" Value="14" />
+      <Setter Property="FontSize" Value="{DynamicResource AppBodyFontSize}" />
       <Setter Property="FontWeight" Value="SemiBold" />
       <Setter Property="Foreground" Value="{DynamicResource SidebarTextBrush}" />
     </Style>
@@ -173,16 +173,14 @@
             <StackPanel Spacing="12">
               <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
                 <Border Width="46" Height="46" Background="{DynamicResource AccentWarmBrush}" CornerRadius="15">
-                  <fi:FluentIcon Icon="AppTitle"
-                                 IconVariant="Filled"
-                                 FontSize="26"
-                                 Foreground="{DynamicResource SidebarSelectedTextBrush}"
-                                 HorizontalAlignment="Center"
-                                 VerticalAlignment="Center" />
+                  <icon:LucideIcon Kind="CakeSlice"
+                                   Classes="brand-icon"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center" />
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                  <TextBlock Text="Extej" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-                  <TextBlock Text="{Binding EditionLabel}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SecondaryTextBrush}" />
+                  <TextBlock Text="Extej" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  <TextBlock Text="{Binding EditionLabel}" FontSize="{DynamicResource AppCaptionFontSize}" FontWeight="Bold" Foreground="{DynamicResource SecondaryTextBrush}" />
                 </StackPanel>
               </Grid>
 
@@ -202,15 +200,15 @@
                       <Button Classes="nav-item-selected" IsVisible="{Binding IsSelected}" Command="{Binding NavigateCommand}">
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                           <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource SidebarSelectedTextBrush}">
-                            <material:MaterialIcon Kind="{Binding Icon}" Width="17" Height="17" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <icon:LucideIcon Kind="{Binding Icon}" Classes="nav-icon-selected" HorizontalAlignment="Center" VerticalAlignment="Center" />
                           </Border>
-                          <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="14" FontWeight="Black" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+                          <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="{DynamicResource AppBodyFontSize}" FontWeight="Black" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
                         </Grid>
                       </Button>
                       <Button Classes="nav-item" IsVisible="{Binding !IsSelected}" Command="{Binding NavigateCommand}">
                         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                           <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource SidebarSurfaceBrush}">
-                            <material:MaterialIcon Kind="{Binding Icon}" Width="17" Height="17" Foreground="{DynamicResource SidebarTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <icon:LucideIcon Kind="{Binding Icon}" Classes="nav-icon" HorizontalAlignment="Center" VerticalAlignment="Center" />
                           </Border>
                           <TextBlock Grid.Column="1" Text="{Binding Label}" Classes="nav-label" />
                         </Grid>
@@ -229,15 +227,15 @@
                         <Button Classes="nav-item-selected" IsVisible="{Binding IsSelected}" Command="{Binding NavigateCommand}">
                           <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                             <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource SidebarSelectedTextBrush}">
-                              <material:MaterialIcon Kind="{Binding Icon}" Width="17" Height="17" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                              <icon:LucideIcon Kind="{Binding Icon}" Classes="nav-icon-selected" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="14" FontWeight="Black" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="{DynamicResource AppBodyFontSize}" FontWeight="Black" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
                           </Grid>
                         </Button>
                         <Button Classes="nav-item" IsVisible="{Binding !IsSelected}" Command="{Binding NavigateCommand}">
                           <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                             <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource SidebarSurfaceBrush}">
-                              <material:MaterialIcon Kind="{Binding Icon}" Width="17" Height="17" Foreground="{DynamicResource SidebarTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                              <icon:LucideIcon Kind="{Binding Icon}" Classes="nav-icon" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
                             <TextBlock Grid.Column="1" Text="{Binding Label}" Classes="nav-label" />
                           </Grid>
@@ -259,15 +257,15 @@
                     <Button Classes="nav-item-selected" IsVisible="{Binding IsSelected}" Command="{Binding NavigateCommand}">
                       <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                         <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource SidebarSelectedTextBrush}">
-                          <material:MaterialIcon Kind="{Binding Icon}" Width="17" Height="17" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                          <icon:LucideIcon Kind="{Binding Icon}" Classes="nav-icon-selected" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
-                        <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="14" FontWeight="Black" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="{DynamicResource AppBodyFontSize}" FontWeight="Black" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
                       </Grid>
                     </Button>
                     <Button Classes="nav-item" IsVisible="{Binding !IsSelected}" Command="{Binding NavigateCommand}">
                       <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                         <Border Width="28" Height="28" CornerRadius="9" Background="{DynamicResource SidebarSurfaceBrush}">
-                          <material:MaterialIcon Kind="{Binding Icon}" Width="17" Height="17" Foreground="{DynamicResource SidebarTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                          <icon:LucideIcon Kind="{Binding Icon}" Classes="nav-icon" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <TextBlock Grid.Column="1" Text="{Binding Label}" Classes="nav-label" />
                       </Grid>
@@ -279,8 +277,8 @@
 
             <Border Classes="shell-card" Background="{DynamicResource SidebarSurfaceBrush}">
               <StackPanel Spacing="4">
-                <TextBlock Text="Store Path" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SecondaryTextBrush}" />
-                <TextBlock Text="{Binding DataStorePath}" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" MaxHeight="48" />
+                <TextBlock Text="Store Path" FontSize="{DynamicResource AppCaptionFontSize}" FontWeight="Bold" Foreground="{DynamicResource SecondaryTextBrush}" />
+                <TextBlock Text="{Binding DataStorePath}" FontSize="{DynamicResource AppCaptionFontSize}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" MaxHeight="48" />
               </StackPanel>
             </Border>
           </StackPanel>
@@ -291,7 +289,7 @@
         <Grid ColumnDefinitions="1.2*,Auto" ColumnSpacing="12">
           <Border Classes="shell-card" Padding="12,10">
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-              <fi:FluentIcon Icon="Search" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" />
+              <icon:LucideIcon Kind="Search" Size="16" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" />
               <TextBlock Grid.Column="1" Text="{Binding CurrentPageTitle, StringFormat='Quick focus: {0}'}" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" />
             </Grid>
           </Border>
@@ -299,14 +297,14 @@
           <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
             <Border Classes="status-chip">
               <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                <fi:FluentIcon Icon="Alert" IconVariant="Regular" FontSize="14" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+                <icon:LucideIcon Kind="Bell" Size="14" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
                 <TextBlock Grid.Column="1" Text="{Binding Toasts.Count, StringFormat='Notif {0}'}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
               </Grid>
             </Border>
 
             <Button Classes="icon-button"
                     Command="{Binding ToggleThemeCommand}">
-              <fi:FluentIcon Icon="{Binding ThemeGlyph}" IconVariant="Regular" FontSize="18" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              <icon:LucideIcon Kind="{Binding ThemeIcon}" Size="18" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
             </Button>
 
             <Button Classes="shell-card"
@@ -322,7 +320,7 @@
                 </Border>
                 <StackPanel Grid.Column="1" Spacing="1" VerticalAlignment="Center">
                   <TextBlock Text="{Binding ActiveProfileName}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
-                  <TextBlock Text="{Binding ThemeLabel}" FontSize="12" Foreground="{DynamicResource SecondaryTextBrush}" />
+                  <TextBlock Text="{Binding ThemeLabel}" FontSize="{DynamicResource AppCaptionFontSize}" Foreground="{DynamicResource SecondaryTextBrush}" />
                 </StackPanel>
               </Grid>
             </Button>
@@ -333,7 +331,7 @@
           <Grid RowDefinitions="Auto,Auto" RowSpacing="12">
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
               <StackPanel Spacing="4">
-                <TextBlock Text="{Binding CurrentPageTitle}" FontSize="32" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="{Binding CurrentPageTitle}" FontSize="{DynamicResource AppHeroFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                 <TextBlock Text="{Binding CurrentPageDescription}" Foreground="{DynamicResource SecondaryTextBrush}" />
               </StackPanel>
               <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
@@ -368,7 +366,7 @@
                         Background="{DynamicResource CardBgBrush}">
                   <StackPanel Spacing="12" HorizontalAlignment="Center">
                     <lottie:Lottie Width="130" Height="130" Path="avares://HPPSystem/Assets/Animations/loading-orb.json" />
-                    <TextBlock Text="Loading workspace..." FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
+                    <TextBlock Text="Loading workspace..." FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
                     <TextBlock Text="Menyiapkan modul, sinkron data, dan state navigasi." Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
                   </StackPanel>
                 </Border>
@@ -383,7 +381,7 @@
                   <Border Classes="toast-card" IsVisible="{Binding !IsError}">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                       <Border Width="26" Height="26" Background="{DynamicResource AccentSoftBrush}" CornerRadius="13">
-                        <fi:FluentIcon Icon="CheckmarkCircle" IconVariant="Filled" FontSize="15" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <icon:LucideIcon Kind="CircleCheck" Size="15" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                       </Border>
                       <TextBlock Grid.Column="1" Text="{Binding Message}" Foreground="{DynamicResource ToastFgBrush}" TextWrapping="Wrap" MaxWidth="300" />
                     </Grid>
@@ -392,7 +390,7 @@
                   <Border Classes="toast-card error" IsVisible="{Binding IsError}">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                       <Border Width="26" Height="26" Background="#33FFFFFF" CornerRadius="13">
-                        <fi:FluentIcon Icon="DismissCircle" IconVariant="Filled" FontSize="15" Foreground="{DynamicResource SidebarSelectedTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <icon:LucideIcon Kind="CircleX" Size="15" Foreground="{DynamicResource SidebarSelectedTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                       </Border>
                       <TextBlock Grid.Column="1" Text="{Binding Message}" Foreground="{DynamicResource SidebarSelectedTextBrush}" TextWrapping="Wrap" MaxWidth="300" />
                     </Grid>

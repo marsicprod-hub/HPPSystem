@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path class="shadow" d="M9 28 32 11l23 17v23H9z"/>
+  <path class="base" d="M9 25 32 8l23 17v23H9z"/>
+  <path class="accent" d="M16 25h32v23H16z"/>
+  <path class="highlight" d="M21 20h22l-11-8z"/>
+  <path class="stroke" d="M9 25 32 8l23 17"/>
+  <path class="stroke" d="M16 25h32v23H16z"/>
+  <path class="stroke" d="M24 33h7v7h-7z"/>
+  <path class="stroke" d="M33 33h7v7h-7z"/>
+</svg>

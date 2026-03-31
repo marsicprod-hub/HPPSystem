@@ -141,7 +141,7 @@ public sealed partial class PosViewModel : PageViewModelBase
         var combos = DataService.Combos.Where(x => x.ProfileId == profileId).ToList();
 
         RecipeCatalog.Clear();
-        foreach (var recipe in recipes.OrderBy(x => x.Name))
+        foreach (var recipe in recipes.OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase))
         {
             var hpp = CostCalculator.CalculateRecipeHppPerPortion(recipe, materials);
             RecipeCatalog.Add(new PosCatalogItemViewModel
@@ -155,7 +155,7 @@ public sealed partial class PosViewModel : PageViewModelBase
         }
 
         ComboCatalog.Clear();
-        foreach (var combo in combos.OrderBy(x => x.Name))
+        foreach (var combo in combos.OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase))
         {
             ComboCatalog.Add(new PosCatalogItemViewModel
             {

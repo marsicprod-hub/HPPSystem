@@ -7,6 +7,8 @@ public class Material
 {
     public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public string Name { get; set; } = string.Empty;
+    public string Brand { get; set; } = string.Empty;
+    public string CatalogLabel => string.IsNullOrWhiteSpace(Brand) ? Name : $"{Name} | {Brand}";
     public decimal Price { get; set; }
     public decimal Weight { get; set; }
     public string Unit { get; set; } = "gram";
@@ -61,6 +63,31 @@ public class Recipe
     public List<OverheadCost> OverheadCosts { get; set; } = new();
     public decimal TargetMargin { get; set; } = 40;
     public string ProfileId { get; set; } = "default";
+}
+
+public class ProductionOrder
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string RecipeId { get; set; } = string.Empty;
+    public string RecipeName { get; set; } = string.Empty;
+    public int PortionsPerBatch { get; set; } = 1;
+    public int BatchCount { get; set; } = 1;
+    public string ProductionDate { get; set; } = DateTime.Today.ToString("yyyy-MM-dd");
+    public string Status { get; set; } = "pending";
+    public string CompletedAt { get; set; } = string.Empty;
+    public string Notes { get; set; } = string.Empty;
+    public string ProfileId { get; set; } = "default";
+    public List<ProductionMaterialRequirement> Requirements { get; set; } = new();
+}
+
+public class ProductionMaterialRequirement
+{
+    public string MaterialId { get; set; } = string.Empty;
+    public string MaterialName { get; set; } = string.Empty;
+    public string MaterialBrand { get; set; } = string.Empty;
+    public string MaterialLabel => string.IsNullOrWhiteSpace(MaterialBrand) ? MaterialName : $"{MaterialName} | {MaterialBrand}";
+    public string Unit { get; set; } = string.Empty;
+    public decimal QuantityPerBatch { get; set; }
 }
 
 public class IngredientGroup
@@ -146,17 +173,19 @@ public class AppSettings
 {
     public bool IsAdvancedMode { get; set; }
     public bool IsDarkMode { get; set; }
+    public string FontSizePreset { get; set; } = "normal";
     public string ActiveProfileId { get; set; } = "default";
 }
 
 public class HppDataSnapshot
 {
-    public string Version { get; set; } = "3.0";
+    public string Version { get; set; } = "3.1";
     public string Timestamp { get; set; } = DateTime.UtcNow.ToString("O");
     public List<Profile> Profiles { get; set; } = new();
     public List<Material> Materials { get; set; } = new();
     public List<StockMovement> StockMovements { get; set; } = new();
     public List<Recipe> Recipes { get; set; } = new();
+    public List<ProductionOrder> ProductionOrders { get; set; } = new();
     public List<Combo> Combos { get; set; } = new();
     public List<Sale> Sales { get; set; } = new();
     public List<Transaction> Transactions { get; set; } = new();

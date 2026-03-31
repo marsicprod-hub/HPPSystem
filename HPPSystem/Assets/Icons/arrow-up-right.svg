@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path class="shadow" d="M18 45 46 17l4 4-28 28z"/>
+  <path class="base" d="M15 42 43 14l4 4-28 28z"/>
+  <path class="accent" d="M31 14h16v16"/>
+  <path class="highlight" d="M36 18h6"/>
+  <path class="stroke" d="M15 42 43 14"/>
+  <path class="stroke" d="M31 14h16v16"/>
+</svg>

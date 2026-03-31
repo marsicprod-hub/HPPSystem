@@ -4,99 +4,150 @@
              xmlns:model="using:HPPSystem.Models"
              xmlns:fa="using:FluentAvalonia.UI.Controls"
              xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
-             xmlns:fi="using:FluentIcons.Avalonia"
              xmlns:lottie="using:Avalonia.Skia.Lottie"
+             xmlns:icon="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
              x:Class="HPPSystem.Views.RecipesView"
              x:Name="Root"
              x:DataType="vm:RecipesViewModel">
   <ScrollViewer Padding="0,0,16,0">
-    <StackPanel Spacing="18">
+    <StackPanel Spacing="14">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
         <StackPanel Spacing="4">
-          <TextBlock Text="Resep" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-          <TextBlock Text="Bangun costing, pricing, dan alur produksi dalam studio resep yang lebih jelas." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
+          <TextBlock Text="Resep" FontSize="{DynamicResource AppPageTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="Bangun costing, pricing, dan blueprint resep dalam studio yang lebih jelas." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
         </StackPanel>
-        <StackPanel Grid.Column="1" Spacing="8" HorizontalAlignment="Right">
+        <WrapPanel Grid.Column="1" Classes="action-row" HorizontalAlignment="Right" VerticalAlignment="Top">
           <Border Classes="badge badge-soft" Padding="12,6" HorizontalAlignment="Right">
-            <TextBlock Text="{Binding TopRecipeRecommendedPriceText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" FontSize="11" />
+            <TextBlock Text="{Binding TopRecipeRecommendedPriceText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" FontSize="{DynamicResource AppCaptionFontSize}" />
           </Border>
           <Button Classes="btn-primary" Command="{Binding StartCreateCommand}" Padding="16,10" CornerRadius="14">
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-              <fi:FluentIcon Icon="Add" IconVariant="Filled" FontSize="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+              <icon:LucideIcon Kind="Plus" Classes="button-icon" VerticalAlignment="Center" />
               <TextBlock Grid.Column="1" Text="Tambah Resep" />
             </Grid>
           </Button>
-        </StackPanel>
+        </WrapPanel>
       </Grid>
-
-      <fa:InfoBar IsOpen="True"
-                  Classes="hint inline-info"
-                  Severity="Informational"
-                  IsClosable="False"
-                  Message="{Binding LibraryInsightText}" />
 
       <Border Classes="page-card" Background="{DynamicResource CardAltBgBrush}">
         <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
           <StackPanel Spacing="4">
-            <TextBlock Text="Arah Library Resep" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="Arah Library Resep" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
             <TextBlock Text="{Binding LibraryFocusText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
           </StackPanel>
           <Border Grid.Column="1" Classes="badge" Padding="12,6">
-            <TextBlock Text="{Binding TopRecipeMarginText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" FontSize="11" />
+            <TextBlock Text="{Binding TopRecipeMarginText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" FontSize="{DynamicResource AppCaptionFontSize}" />
           </Border>
           <Border Grid.Column="2" Classes="badge badge-warm" Padding="12,6">
-            <TextBlock Text="{Binding TopRecipeNameText}" Foreground="{DynamicResource SidebarSelectedTextBrush}" FontWeight="Bold" FontSize="11" />
+            <TextBlock Text="{Binding TopRecipeNameText}" Foreground="{DynamicResource SidebarSelectedTextBrush}" FontWeight="Bold" FontSize="{DynamicResource AppCaptionFontSize}" />
           </Border>
         </Grid>
       </Border>
 
       <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
         <Border Grid.Column="0" Classes="page-card">
-          <StackPanel Spacing="8">
-            <fi:FluentIcon Icon="Food" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+          <StackPanel Spacing="6">
+            <icon:LucideIcon Kind="ChefHat" Classes="metric-icon" />
             <TextBlock Text="Resep Aktif" Classes="kpi-label" />
-            <TextBlock Text="{Binding TotalRecipeCountText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding TotalRecipeCountText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
         <Border Grid.Column="1" Classes="page-card">
-          <StackPanel Spacing="8">
-            <fi:FluentIcon Icon="ArrowUpRight" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+          <StackPanel Spacing="6">
+            <icon:LucideIcon Kind="ArrowUpRight" Classes="metric-icon" />
             <TextBlock Text="Output Batch" Classes="kpi-label" />
-            <TextBlock Text="{Binding TotalPortionCapacityText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding TotalPortionCapacityText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
         <Border Grid.Column="2" Classes="page-card">
-          <StackPanel Spacing="8">
-            <fi:FluentIcon Icon="Calculator" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+          <StackPanel Spacing="6">
+            <icon:LucideIcon Kind="Calculator" Classes="metric-icon" />
             <TextBlock Text="Rata-rata HPP" Classes="kpi-label" />
-            <TextBlock Text="{Binding AverageHppText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding AverageHppText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
         <Border Grid.Column="3" Classes="page-card">
-          <StackPanel Spacing="8">
-            <fi:FluentIcon Icon="Layer" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+          <StackPanel Spacing="6">
+            <icon:LucideIcon Kind="Layers2" Classes="metric-icon" />
             <TextBlock Text="Jejak Bahan" Classes="kpi-label" />
-            <TextBlock Text="{Binding TotalIngredientFootprintText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding TotalIngredientFootprintText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
       </Grid>
 
       <Border Classes="page-card" IsVisible="{Binding IsEditing}">
-        <Grid ColumnDefinitions="1.85*,*" ColumnSpacing="16">
-          <StackPanel Spacing="14">
-            <StackPanel Spacing="4">
-              <TextBlock Text="{Binding EditorTitleText}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-              <TextBlock Text="{Binding EditorSubtitleText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
-            </StackPanel>
+        <StackPanel Spacing="12">
+          <StackPanel Spacing="12">
+            <Border Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="22" Padding="14">
+              <Grid ColumnDefinitions="1.7*,*" ColumnSpacing="12">
+                <StackPanel Spacing="8">
+                  <TextBlock Text="{Binding EditorTitleText}" FontSize="{DynamicResource AppDisplaySmallFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  <TextBlock Text="{Binding EditorSubtitleText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                  <WrapPanel Classes="action-row">
+                    <Border Classes="badge badge-soft">
+                      <TextBlock Text="{Binding EditorGroupCountText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+                    </Border>
+                    <Border Classes="badge">
+                      <TextBlock Text="{Binding EditorIngredientCountText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+                    </Border>
+                    <Border Classes="badge">
+                      <TextBlock Text="{Binding EditorOverheadSummaryText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+                    </Border>
+                    <Border Classes="badge badge-warm">
+                      <TextBlock Text="{Binding BuilderMaterialCountText}" Foreground="{DynamicResource SidebarSelectedTextBrush}" FontWeight="Bold" />
+                    </Border>
+                  </WrapPanel>
+                </StackPanel>
 
-            <Border Classes="metric-card" Background="{DynamicResource AccentSoftBrush}">
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                <TextBlock Text="{Binding EditorStructureText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1" Text="{Binding EditorPricingGuideText}" Foreground="{DynamicResource PrimaryTextBrush}" FontSize="12" TextWrapping="Wrap" MaxWidth="220" TextAlignment="Right" Classes="hint" />
+                <Border Grid.Column="1" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="18" Padding="12">
+                  <StackPanel Spacing="6">
+                    <TextBlock Text="Pricing Frame" Classes="kpi-label" />
+                    <TextBlock Text="{Binding EditorRecommendedPriceText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource AccentWarmBrush}" />
+                    <TextBlock Text="{Binding EditorPricingGuideText}" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding EditorOutputGuideText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                  </StackPanel>
+                </Border>
               </Grid>
             </Border>
 
-            <Grid ColumnDefinitions="2*,*,*" ColumnSpacing="10">
+            <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
+              <Border Grid.Column="0" Classes="metric-card">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="Gudang Ready" Classes="kpi-label" />
+                  <TextBlock Text="{Binding BuilderMaterialCountText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  <TextBlock Text="{Binding EditorMaterialScopeText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+              </Border>
+              <Border Grid.Column="1" Classes="metric-card">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="Readiness" Classes="kpi-label" />
+                  <TextBlock Text="{Binding EditorReadinessText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+              </Border>
+              <Border Grid.Column="2" Classes="metric-card">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="HPP Live" Classes="kpi-label" />
+                  <TextBlock Text="{Binding EditorHppText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  <TextBlock Text="{Binding EditorOutputGuideText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+              </Border>
+              <Border Grid.Column="3" Classes="metric-card" Background="{DynamicResource AccentSoftBrush}">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="Formula Batch" Classes="kpi-label" />
+                  <TextBlock Text="{Binding EditorTotalCostText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  <TextBlock Text="{Binding EditorLiveCostEquationText}" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+              </Border>
+            </Grid>
+
+            <Border Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="20" Padding="14">
+              <StackPanel Spacing="10">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="Fondasi Resep" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  <TextBlock Text="Tentukan identitas menu, output batch, dan target margin sebelum masuk ke struktur bahan." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+
+                <Grid ColumnDefinitions="2*,*,*" ColumnSpacing="10">
               <StackPanel Grid.Column="0" Spacing="6">
                 <TextBlock Text="Nama Resep" Classes="kpi-label" />
                 <TextBox Text="{Binding Editor.Name}" Watermark="Contoh: Rice Bowl Signature" />
@@ -110,13 +161,15 @@
                 <fa:NumberBox Value="{Binding Editor.TargetMargin}" SmallChange="5" Minimum="0" Maximum="100" SpinButtonPlacementMode="Compact" />
               </StackPanel>
             </Grid>
+              </StackPanel>
+            </Border>
 
-            <Border Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="18" Padding="14">
-              <StackPanel Spacing="12">
+            <Border Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="18" Padding="12">
+              <StackPanel Spacing="10">
                 <Grid ColumnDefinitions="*,Auto">
                   <StackPanel Spacing="4">
-                    <TextBlock Text="Struktur Bahan" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-                    <TextBlock Text="Pisahkan resep per kelompok agar lebih mudah dibaca saat costing dan produksi." Foreground="{DynamicResource SecondaryTextBrush}" Classes="hint" />
+                    <TextBlock Text="Struktur Bahan" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <TextBlock Text="Pisahkan resep per kelompok agar costing, audit, dan produksi lebih mudah dibaca." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
                   </StackPanel>
                   <Button Grid.Column="1" Classes="btn-primary" Command="{Binding AddGroupCommand}">
                     <TextBlock Text="Tambah Kelompok" />
@@ -126,44 +179,104 @@
                 <ItemsControl ItemsSource="{Binding Editor.Groups}">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="vm:IngredientGroupEditorViewModel">
-                      <Border Margin="0,0,0,8" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="12">
+                      <Border Margin="0,0,0,10" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="18" Padding="12">
                         <StackPanel Spacing="10">
-                          <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                            <TextBox Grid.Column="0" Text="{Binding Name}" />
-                            <Button Grid.Column="1" Classes="btn-secondary btn-sm" Command="{Binding #Root.DataContext.AddIngredientCommand}" CommandParameter="{Binding .}">
-                              <TextBlock Text="Tambah Bahan" />
-                            </Button>
-                            <Button Grid.Column="2" Classes="btn-danger btn-sm" Command="{Binding #Root.DataContext.RemoveGroupCommand}" CommandParameter="{Binding .}">
-                              <TextBlock Text="Hapus" />
-                            </Button>
+                          <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="6">
+                            <TextBlock Text="Kelompok" Classes="kpi-label" />
+                            <TextBox Grid.Row="1" Text="{Binding Name}" Watermark="Contoh: Base, Topping, Saus" />
+                            <WrapPanel Grid.Row="2" Classes="action-row">
+                              <Border Classes="badge badge-soft">
+                                <TextBlock Text="{Binding Ingredients.Count, StringFormat='{}{0} bahan'}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+                              </Border>
+                            </WrapPanel>
+                            <WrapPanel Grid.Column="1" Grid.Row="1" Classes="action-row" HorizontalAlignment="Right" VerticalAlignment="Center">
+                              <Button Grid.Column="1"
+                                      Classes="btn-secondary btn-sm"
+                                      Command="{Binding #Root.DataContext.AddIngredientCommand}"
+                                      CommandParameter="{Binding .}"
+                                      IsEnabled="{Binding #Root.DataContext.HasBuilderMaterials}">
+                                <TextBlock Text="Tambah Bahan" />
+                              </Button>
+                              <Button Grid.Column="2" Classes="btn-danger btn-sm" Command="{Binding #Root.DataContext.RemoveGroupCommand}" CommandParameter="{Binding .}">
+                                <TextBlock Text="Hapus Kelompok" />
+                              </Button>
+                            </WrapPanel>
                           </Grid>
 
-                          <ItemsControl ItemsSource="{Binding Ingredients}">
-                            <ItemsControl.ItemTemplate>
-                              <DataTemplate DataType="vm:IngredientEntryViewModel">
-                                <Border Margin="0,0,0,8" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="10">
-                                  <Grid ColumnDefinitions="2.2*,*,Auto,Auto,Auto" ColumnSpacing="8">
-                                    <ComboBox Grid.Column="0" ItemsSource="{Binding #Root.DataContext.AvailableMaterials}" SelectedValueBinding="{Binding Id}" SelectedValue="{Binding MaterialId}">
-                                      <ComboBox.ItemTemplate>
+                          <dg:DataGrid Classes="editor-grid"
+                                       ItemsSource="{Binding Ingredients}"
+                                       AutoGenerateColumns="False"
+                                       CanUserResizeColumns="True"
+                                       MinHeight="120">
+                            <dg:DataGrid.Columns>
+                              <dg:DataGridTemplateColumn Header="" Width="56">
+                                <dg:DataGridTemplateColumn.CellTemplate>
+                                  <DataTemplate DataType="vm:IngredientEntryViewModel">
+                                    <Border Width="24"
+                                            Height="24"
+                                            CornerRadius="12"
+                                            Background="{DynamicResource AccentRoseBrush}"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            IsVisible="{Binding HasWarehouseWarning}"
+                                            ToolTip.Tip="{Binding WarehouseWarningText}">
+                                      <TextBlock Text="!"
+                                                 HorizontalAlignment="Center"
+                                                 VerticalAlignment="Center"
+                                                 TextAlignment="Center"
+                                                 FontWeight="Black"
+                                                 Foreground="{DynamicResource SidebarSelectedTextBrush}" />
+                                    </Border>
+                                  </DataTemplate>
+                                </dg:DataGridTemplateColumn.CellTemplate>
+                              </dg:DataGridTemplateColumn>
+                              <dg:DataGridTemplateColumn Header="Material" Width="2.5*">
+                                <dg:DataGridTemplateColumn.CellTemplate>
+                                  <DataTemplate DataType="vm:IngredientEntryViewModel">
+                                    <AutoCompleteBox ItemsSource="{Binding #Root.DataContext.BuilderMaterials}"
+                                                     SelectedItem="{Binding SelectedMaterial}"
+                                                     ValueMemberBinding="{Binding CatalogLabel}"
+                                                     FilterMode="Contains"
+                                                     MinimumPrefixLength="0"
+                                                     Watermark="Cari material lalu pilih..."
+                                                     MinWidth="220">
+                                      <AutoCompleteBox.ItemTemplate>
                                         <DataTemplate DataType="model:Material">
-                                          <TextBlock Text="{Binding Name}" />
+                                          <StackPanel Spacing="2">
+                                            <TextBlock Text="{Binding CatalogLabel}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+                                            <TextBlock Text="{Binding PricePerUnit, StringFormat='Rp{0:N0} / satuan'}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="{DynamicResource AppCaptionFontSize}" />
+                                          </StackPanel>
                                         </DataTemplate>
-                                      </ComboBox.ItemTemplate>
-                                    </ComboBox>
-                                    <fa:NumberBox Grid.Column="1" Value="{Binding Quantity}" SmallChange="1" Minimum="0" SpinButtonPlacementMode="Compact" />
-                                    <TextBlock Grid.Column="2" Text="{Binding UnitName}" VerticalAlignment="Center" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
-                                    <StackPanel Grid.Column="3" Spacing="2" VerticalAlignment="Center">
-                                      <TextBlock Text="{Binding LineCostText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" HorizontalAlignment="Right" />
-                                      <TextBlock Text="{Binding UnitCostText}" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="11" HorizontalAlignment="Right" />
-                                    </StackPanel>
-                                    <Button Grid.Column="4" Classes="btn-danger btn-sm" Command="{Binding #Root.DataContext.RemoveIngredientCommand}" CommandParameter="{Binding .}">
-                                      <TextBlock Text="X" />
+                                      </AutoCompleteBox.ItemTemplate>
+                                    </AutoCompleteBox>
+                                  </DataTemplate>
+                                </dg:DataGridTemplateColumn.CellTemplate>
+                              </dg:DataGridTemplateColumn>
+                              <dg:DataGridTemplateColumn Header="Qty Pakai" Width="1.1*">
+                                <dg:DataGridTemplateColumn.CellTemplate>
+                                  <DataTemplate DataType="vm:IngredientEntryViewModel">
+                                    <fa:NumberBox Value="{Binding Quantity}" SmallChange="1" Minimum="0" SpinButtonPlacementMode="Compact" MinWidth="110" />
+                                  </DataTemplate>
+                                </dg:DataGridTemplateColumn.CellTemplate>
+                              </dg:DataGridTemplateColumn>
+                              <dg:DataGridTextColumn Header="Satuan" Binding="{Binding UnitName}" Width="*" />
+                              <dg:DataGridTextColumn Header="Biaya Satuan" Binding="{Binding UnitCostText}" Width="1.2*" />
+                              <dg:DataGridTextColumn Header="Total Line" Binding="{Binding LineCostText}" Width="1.2*" />
+                              <dg:DataGridTemplateColumn Header="Aksi" Width="110">
+                                <dg:DataGridTemplateColumn.CellTemplate>
+                                  <DataTemplate DataType="vm:IngredientEntryViewModel">
+                                    <Button Classes="btn-danger btn-sm"
+                                            Command="{Binding #Root.DataContext.RemoveIngredientCommand}"
+                                            CommandParameter="{Binding .}"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center">
+                                      <TextBlock Text="Hapus" />
                                     </Button>
-                                  </Grid>
-                                </Border>
-                              </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                          </ItemsControl>
+                                  </DataTemplate>
+                                </dg:DataGridTemplateColumn.CellTemplate>
+                              </dg:DataGridTemplateColumn>
+                            </dg:DataGrid.Columns>
+                          </dg:DataGrid>
                         </StackPanel>
                       </Border>
                     </DataTemplate>
@@ -172,76 +285,103 @@
               </StackPanel>
             </Border>
 
-            <Border Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="18" Padding="14" IsVisible="{Binding IsAdvancedMode}">
-              <StackPanel Spacing="10">
+            <Border Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="18" Padding="12" IsVisible="{Binding IsAdvancedMode}">
+              <StackPanel Spacing="8">
                 <Grid ColumnDefinitions="*,Auto">
                   <StackPanel Spacing="4">
-                    <TextBlock Text="Overhead" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-                    <TextBlock Text="Gunakan untuk biaya utilitas, kemasan, atau tenaga kerja yang ingin masuk ke HPP." Foreground="{DynamicResource SecondaryTextBrush}" Classes="hint" />
+                    <TextBlock Text="Overhead Layer" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <TextBlock Text="Tambahkan utilitas, kemasan, atau tenaga kerja yang memang ingin dibawa ke HPP." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
                   </StackPanel>
                   <Button Grid.Column="1" Classes="btn-primary" Command="{Binding AddOverheadCommand}">
                     <TextBlock Text="Tambah Overhead" />
                   </Button>
                 </Grid>
-                <ItemsControl ItemsSource="{Binding Editor.Overheads}">
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="vm:OverheadEntryViewModel">
-                      <Grid Margin="0,0,0,8" ColumnDefinitions="2*,*,Auto" ColumnSpacing="8">
-                        <TextBox Grid.Column="0" Text="{Binding Name}" />
-                        <fa:NumberBox Grid.Column="1" Value="{Binding Cost}" SmallChange="100" Minimum="0" SpinButtonPlacementMode="Compact" />
-                        <Button Grid.Column="2" Classes="btn-danger btn-sm" Command="{Binding #Root.DataContext.RemoveOverheadCommand}" CommandParameter="{Binding .}">
-                          <TextBlock Text="X" />
-                        </Button>
-                      </Grid>
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                <dg:DataGrid Classes="editor-grid"
+                             ItemsSource="{Binding Editor.Overheads}"
+                             AutoGenerateColumns="False"
+                             CanUserResizeColumns="True"
+                             MinHeight="120">
+                  <dg:DataGrid.Columns>
+                    <dg:DataGridTemplateColumn Header="Label Overhead" Width="2.4*">
+                      <dg:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="vm:OverheadEntryViewModel">
+                          <TextBox Text="{Binding Name}" Watermark="Contoh: Kemasan, Gas, Tenaga Kerja" MinWidth="220" />
+                        </DataTemplate>
+                      </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+                    <dg:DataGridTemplateColumn Header="Biaya" Width="1.2*">
+                      <dg:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="vm:OverheadEntryViewModel">
+                          <fa:NumberBox Value="{Binding Cost}" SmallChange="100" Minimum="0" SpinButtonPlacementMode="Compact" MinWidth="130" />
+                        </DataTemplate>
+                      </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+                    <dg:DataGridTemplateColumn Header="Aksi" Width="110">
+                      <dg:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="vm:OverheadEntryViewModel">
+                          <Button Classes="btn-danger btn-sm"
+                                  Command="{Binding #Root.DataContext.RemoveOverheadCommand}"
+                                  CommandParameter="{Binding .}"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center">
+                            <TextBlock Text="Hapus" />
+                          </Button>
+                        </DataTemplate>
+                      </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+                  </dg:DataGrid.Columns>
+                </dg:DataGrid>
               </StackPanel>
             </Border>
 
-            <WrapPanel Classes="action-row">
+            <Border Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="18" Padding="12">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="Siap Simpan" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  <TextBlock Text="{Binding EditorPricingGuideText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                </StackPanel>
+                <WrapPanel Grid.Column="1" Classes="action-row" HorizontalAlignment="Right" VerticalAlignment="Center">
               <Button Classes="btn-primary" Command="{Binding SaveCommand}">
                 <TextBlock Text="{Binding EditorActionText}" />
               </Button>
               <Button Classes="btn-secondary" Command="{Binding CancelEditCommand}">
                 <TextBlock Text="Batal" />
               </Button>
-            </WrapPanel>
+                </WrapPanel>
+              </Grid>
+            </Border>
           </StackPanel>
 
-          <StackPanel Grid.Column="1" Spacing="12">
+          <StackPanel Spacing="10">
             <Border Classes="metric-card" Background="{DynamicResource AccentSoftBrush}">
-              <StackPanel Spacing="6">
-                <TextBlock Text="Ringkasan Live" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-                <TextBlock Text="{Binding EditorPricingGuideText}" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
+              <StackPanel Spacing="8">
+                <TextBlock Text="Ringkasan Live" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="{Binding EditorLiveCostEquationText}" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
               </StackPanel>
             </Border>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-              <Border Grid.Column="0" Classes="metric-card">
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+              <Border Grid.Column="0" Grid.Row="0" Classes="metric-card">
                 <StackPanel Spacing="4">
                   <TextBlock Text="Biaya Bahan" Classes="kpi-label" />
                   <TextBlock Text="{Binding EditorMaterialCostText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                 </StackPanel>
               </Border>
-              <Border Grid.Column="1" Classes="metric-card">
+              <Border Grid.Column="1" Grid.Row="0" Classes="metric-card">
                 <StackPanel Spacing="4">
                   <TextBlock Text="Overhead" Classes="kpi-label" />
                   <TextBlock Text="{Binding EditorOverheadCostText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                 </StackPanel>
               </Border>
-            </Grid>
-
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-              <Border Grid.Column="0" Classes="metric-card">
+              <Border Grid.Column="0" Grid.Row="1" Classes="metric-card">
                 <StackPanel Spacing="4">
                   <TextBlock Text="Modal Batch" Classes="kpi-label" />
                   <TextBlock Text="{Binding EditorTotalCostText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                 </StackPanel>
               </Border>
-              <Border Grid.Column="1" Background="{DynamicResource AccentWarmBrush}" CornerRadius="14" Padding="12">
+              <Border Grid.Column="1" Grid.Row="1" Background="{DynamicResource AccentWarmBrush}" CornerRadius="16" Padding="12" BorderBrush="{DynamicResource AccentWarmBrush}" BorderThickness="1">
                 <StackPanel Spacing="4">
-                  <TextBlock Text="HPP per Porsi" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SidebarSelectedTextBrush}" />
+                  <TextBlock Text="HPP per Porsi" FontSize="{DynamicResource AppCaptionFontSize}" FontWeight="Bold" Foreground="{DynamicResource SidebarSelectedTextBrush}" />
                   <TextBlock Text="{Binding EditorHppText}" FontWeight="Black" Foreground="{DynamicResource SidebarSelectedTextBrush}" />
                 </StackPanel>
               </Border>
@@ -249,35 +389,51 @@
 
             <Border Classes="metric-card">
               <StackPanel Spacing="6">
-                <TextBlock Text="Checklist Studio" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-                <TextBlock Text="1. Pastikan semua bahan punya quantity dan satuan yang benar." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
-                <TextBlock Text="2. Gunakan overhead hanya untuk biaya yang memang ingin masuk ke HPP." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
-                <TextBlock Text="3. Evaluasi margin target sebelum resep dipublikasikan ke POS atau combo." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
+                <TextBlock Text="Arah Studio" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="{Binding EditorReadinessText}" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding EditorMaterialScopeText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding EditorOutputGuideText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
               </StackPanel>
             </Border>
           </StackPanel>
-        </Grid>
+        </StackPanel>
       </Border>
 
-      <Border Classes="page-card" IsVisible="{Binding !IsEditing}">
-        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-          <StackPanel Spacing="4">
-            <TextBlock Text="Studio Resep" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-            <TextBlock Text="Pilih `Tambah Resep` untuk membuat resep baru, atau `Ubah` pada kartu resep untuk memperbarui struktur biaya dan pricing." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
-          </StackPanel>
-          <Border Grid.Column="1" Classes="metric-card" Background="{DynamicResource AccentSoftBrush}">
+      <Border Classes="page-card">
+        <StackPanel Spacing="12">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
             <StackPanel Spacing="4">
-              <TextBlock Text="{Binding HighestHppText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
-              <TextBlock Text="{Binding RecipeQuickActionText}" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" Classes="hint" MaxWidth="260" />
+              <TextBlock Text="Navigator Resep" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="Cari resep, fokuskan library berdasarkan risiko margin atau HPP, lalu gunakan aksi cepat untuk loncat ke item prioritas review." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
             </StackPanel>
-          </Border>
-        </Grid>
-      </Border>
+            <WrapPanel Grid.Column="1" Classes="action-row" HorizontalAlignment="Right" VerticalAlignment="Top">
+              <Border Classes="badge badge-soft" Padding="12,6" HorizontalAlignment="Right">
+                <TextBlock Text="{Binding SearchSummaryText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+              </Border>
+              <Button Classes="btn-secondary btn-sm"
+                      Command="{Binding FocusRecipeQuickActionCommand}"
+                      IsEnabled="{Binding HasRecipeQuickActionTarget}"
+                      MaxWidth="280">
+                <TextBlock Text="{Binding RecipeQuickActionButtonText}" TextWrapping="Wrap" TextAlignment="Center" />
+              </Button>
+            </WrapPanel>
+          </Grid>
 
-      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-        <StackPanel Spacing="10">
-          <TextBox Text="{Binding SearchTerm}" Watermark="Cari nama resep..." />
+          <WrapPanel Classes="kpi-grid">
+            <StackPanel Width="300" Spacing="6">
+              <TextBlock Text="Cari Resep" Classes="kpi-label" />
+              <TextBox Text="{Binding SearchTerm}" Watermark="Cari nama resep..." />
+            </StackPanel>
+            <Border Width="260" Classes="metric-card" Background="{DynamicResource CardAltBgBrush}">
+              <StackPanel Spacing="4">
+                <TextBlock Text="Mode Fokus" Classes="kpi-label" />
+                <TextBlock Text="{Binding RecipeFocusSummaryText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+          </WrapPanel>
+
           <TextBlock Text="{Binding SearchHelperText}" Foreground="{DynamicResource SecondaryTextBrush}" Classes="hint" />
+
           <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="8">
             <Button Classes="btn-primary btn-sm" IsVisible="{Binding IsFocusAllRecipes}" Command="{Binding FocusAllRecipesCommand}">
               <TextBlock Text="{Binding FocusAllRecipesText}" />
@@ -311,38 +467,13 @@
               <TextBlock Text="Reset Fokus" />
             </Button>
           </WrapPanel>
-          <TextBlock Text="{Binding RecipeFocusSummaryText}" Foreground="{DynamicResource SecondaryTextBrush}" Classes="hint" />
         </StackPanel>
-        <StackPanel Grid.Column="1" Spacing="8" HorizontalAlignment="Right">
-          <Border Classes="badge badge-soft" Padding="14,10" HorizontalAlignment="Right">
-            <TextBlock Text="{Binding SearchSummaryText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
-          </Border>
-          <Button Classes="btn-secondary btn-sm"
-                  Command="{Binding FocusRecipeQuickActionCommand}"
-                  IsEnabled="{Binding HasRecipeQuickActionTarget}"
-                  MaxWidth="280">
-            <TextBlock Text="{Binding RecipeQuickActionButtonText}" TextWrapping="Wrap" TextAlignment="Center" />
-          </Button>
-        </StackPanel>
-      </Grid>
-
-      <Border Classes="page-card" IsVisible="{Binding CanProduce}">
-        <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
-          <StackPanel Spacing="4">
-            <TextBlock Text="Produksi Cepat" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-            <TextBlock Text="{Binding ProductionHelperText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
-          </StackPanel>
-          <fa:NumberBox Grid.Column="1" Width="120" Value="{Binding ProduceBatches}" SmallChange="1" Minimum="1" SpinButtonPlacementMode="Compact" />
-          <Button Grid.Column="2" Classes="btn-warm" Command="{Binding ProduceCommand}">
-            <TextBlock Text="Produksi" />
-          </Button>
-        </Grid>
       </Border>
 
       <Border Classes="empty-state" IsVisible="{Binding !HasRecipes}">
         <StackPanel Spacing="12" HorizontalAlignment="Center">
           <lottie:Lottie Width="120" Height="120" Path="avares://HPPSystem/Assets/Animations/empty-pulse.json" />
-          <TextBlock Text="Belum ada resep" FontSize="22" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
+          <TextBlock Text="Belum ada resep" FontSize="{DynamicResource AppDisplaySmallFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
           <TextBlock Text="Mulai dari satu resep signature agar standar HPP, pricing, dan produksi cepat terbentuk." Foreground="{DynamicResource SecondaryTextBrush}" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="360" Classes="hint" />
           <Button Classes="btn-primary" Command="{Binding StartCreateCommand}" HorizontalAlignment="Center">
             <TextBlock Text="Buat Resep Pertama" />
@@ -350,15 +481,15 @@
         </StackPanel>
       </Border>
 
-      <Grid ColumnDefinitions="1.85*,*" ColumnSpacing="16" IsVisible="{Binding HasRecipes}">
-        <Border Grid.Column="0" Classes="page-card">
+      <StackPanel Spacing="12" IsVisible="{Binding HasRecipes}">
+        <Border Classes="page-card">
           <StackPanel Spacing="12">
             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
               <StackPanel Spacing="4">
-                <TextBlock Text="Library Resep" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="Library Resep" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                 <TextBlock Text="Bandingkan HPP, modal batch, struktur bahan, dan pricing dalam mode kartu atau tabel audit." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
               </StackPanel>
-              <StackPanel Grid.Column="1" Spacing="8" HorizontalAlignment="Right">
+              <WrapPanel Grid.Column="1" Classes="action-row" HorizontalAlignment="Right" VerticalAlignment="Top">
                 <Border Classes="badge" VerticalAlignment="Top" HorizontalAlignment="Right">
                   <TextBlock Text="{Binding TotalOverheadLineText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
                 </Border>
@@ -376,38 +507,38 @@
                     <TextBlock Text="Mode Tabel" />
                   </Button>
                 </WrapPanel>
-              </StackPanel>
+              </WrapPanel>
             </Grid>
 
             <ItemsControl ItemsSource="{Binding FilteredRecipes}" IsVisible="{Binding IsLibraryCardMode}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate DataType="vm:RecipeCardViewModel">
-                  <Border Margin="0,0,0,10" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="18" Padding="16">
-                    <StackPanel Spacing="12">
+                  <Border Margin="0,0,0,8" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="18" Padding="14">
+                    <StackPanel Spacing="10">
                       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                         <StackPanel Spacing="6">
-                          <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                          <TextBlock Text="{Binding Name}" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                           <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="8">
                             <Border Classes="badge" Padding="10,5">
-                              <TextBlock Text="{Binding PortionsText}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                              <TextBlock Text="{Binding PortionsText}" FontSize="{DynamicResource AppCaptionFontSize}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
                             </Border>
                             <Border Classes="badge" Padding="10,5">
-                              <TextBlock Text="{Binding MarginText}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                              <TextBlock Text="{Binding MarginText}" FontSize="{DynamicResource AppCaptionFontSize}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
                             </Border>
                             <Border Classes="badge" Padding="10,5">
-                              <TextBlock Text="{Binding GroupCountText}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                              <TextBlock Text="{Binding GroupCountText}" FontSize="{DynamicResource AppCaptionFontSize}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
                             </Border>
                           </WrapPanel>
                         </StackPanel>
                         <Border Grid.Column="1" Background="{DynamicResource AccentWarmBrush}" CornerRadius="16" Padding="14,10" VerticalAlignment="Top">
                           <StackPanel Spacing="2">
-                            <TextBlock Text="Rekomendasi Jual" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource SidebarSelectedTextBrush}" HorizontalAlignment="Right" />
+                            <TextBlock Text="Rekomendasi Jual" FontSize="{DynamicResource AppCaptionFontSize}" FontWeight="Bold" Foreground="{DynamicResource SidebarSelectedTextBrush}" HorizontalAlignment="Right" />
                             <TextBlock Text="{Binding RecommendedPriceText}" FontWeight="Black" Foreground="{DynamicResource SidebarSelectedTextBrush}" HorizontalAlignment="Right" />
                           </StackPanel>
                         </Border>
                       </Grid>
 
-                      <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
+                      <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="8">
                         <Border Grid.Column="0" Classes="metric-card">
                           <StackPanel Spacing="4">
                             <TextBlock Text="HPP" Classes="kpi-label" />
@@ -430,19 +561,19 @@
                           <StackPanel Spacing="4">
                             <TextBlock Text="Struktur" Classes="kpi-label" />
                             <TextBlock Text="{Binding IngredientCountText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-                            <TextBlock Text="{Binding OverheadCountText}" FontSize="11" Foreground="{DynamicResource SecondaryTextBrush}" />
+                            <TextBlock Text="{Binding OverheadCountText}" FontSize="{DynamicResource AppCaptionFontSize}" Foreground="{DynamicResource SecondaryTextBrush}" />
                           </StackPanel>
                         </Border>
                       </Grid>
 
                       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                        <TextBlock Text="Gunakan Detail untuk membaca blueprint resep, Produksi untuk mengurangi stok, dan Ubah untuk memperbarui pricing." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" VerticalAlignment="Center" Classes="hint" />
+                        <TextBlock Text="Gunakan Detail untuk membaca blueprint resep, Produksi untuk menjadwalkan batch, dan Ubah untuk memperbarui pricing." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" VerticalAlignment="Center" Classes="hint" />
                         <WrapPanel Grid.Column="1" Classes="action-row" HorizontalAlignment="Right">
                           <Button Classes="btn-ghost" Command="{Binding #Root.DataContext.SelectRecipeCommand}" CommandParameter="{Binding .}">
                             <TextBlock Text="Detail" />
                           </Button>
-                          <Button Classes="btn-warm" Command="{Binding #Root.DataContext.PrepareProduceCommand}" CommandParameter="{Binding .}" IsVisible="{Binding #Root.DataContext.IsAdvancedMode}">
-                            <TextBlock Text="Produksi" />
+                          <Button Classes="btn-warm" Command="{Binding #Root.DataContext.OpenProductionCommand}" CommandParameter="{Binding .}" IsVisible="{Binding #Root.DataContext.IsAdvancedMode}">
+                            <TextBlock Text="Buka Produksi" />
                           </Button>
                           <Button Classes="btn-secondary" Command="{Binding #Root.DataContext.DuplicateCommand}" CommandParameter="{Binding .}">
                             <TextBlock Text="Duplikat" />
@@ -484,11 +615,11 @@
                 <TextBlock Text="{Binding SelectedRecipePricingGuideText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" VerticalAlignment="Center" Classes="hint" />
                 <WrapPanel Grid.Column="1" Classes="action-row" HorizontalAlignment="Right">
                   <Button Classes="btn-warm"
-                          Command="{Binding PrepareProduceCommand}"
+                          Command="{Binding OpenProductionCommand}"
                           CommandParameter="{Binding SelectedRecipe}"
                           IsVisible="{Binding IsAdvancedMode}"
                           IsEnabled="{Binding HasSelectedRecipe}">
-                    <TextBlock Text="Produksi" />
+                    <TextBlock Text="Buka Produksi" />
                   </Button>
                   <Button Classes="btn-secondary"
                           Command="{Binding DuplicateCommand}"
@@ -514,49 +645,96 @@
           </StackPanel>
         </Border>
 
-        <StackPanel Grid.Column="1" Spacing="12">
+        <StackPanel Spacing="12">
           <Border Classes="page-card">
             <StackPanel Spacing="10">
-              <TextBlock Text="{Binding SelectedRecipeName}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
-              <TextBlock Text="{Binding SelectedRecipeSummary}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="Blueprint Resep" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  <TextBlock Text="{Binding SelectedRecipeName}" FontSize="{DynamicResource AppDisplaySmallFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+                  <TextBlock Text="{Binding SelectedRecipeSummary}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
+                </StackPanel>
+                <Border Grid.Column="1" Classes="badge badge-soft" VerticalAlignment="Top">
+                  <TextBlock Text="{Binding SelectedRecipeMarginText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+                </Border>
+              </Grid>
+
               <Border Classes="metric-card" Background="{DynamicResource AccentSoftBrush}">
                 <TextBlock Text="{Binding SelectedRecipePricingGuideText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" TextWrapping="Wrap" Classes="hint" />
               </Border>
-              <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                <Border Grid.Column="0" Classes="metric-card">
+
+              <WrapPanel Classes="kpi-grid">
+                <Border Width="160" Classes="metric-card">
                   <StackPanel Spacing="4">
                     <TextBlock Text="HPP" Classes="kpi-label" />
                     <TextBlock Text="{Binding SelectedRecipeHppText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                   </StackPanel>
                 </Border>
-                <Border Grid.Column="1" Classes="metric-card">
+                <Border Width="160" Classes="metric-card">
                   <StackPanel Spacing="4">
                     <TextBlock Text="Rekomendasi Jual" Classes="kpi-label" />
                     <TextBlock Text="{Binding SelectedRecipeRecommendedPriceText}" FontWeight="Black" Foreground="{DynamicResource AccentWarmBrush}" />
                   </StackPanel>
                 </Border>
-              </Grid>
-              <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
-                <Border Grid.Column="0" Classes="metric-card">
+                <Border Width="160" Classes="metric-card">
                   <StackPanel Spacing="4">
                     <TextBlock Text="Biaya Bahan" Classes="kpi-label" />
                     <TextBlock Text="{Binding SelectedRecipeMaterialCostText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                   </StackPanel>
                 </Border>
-                <Border Grid.Column="1" Classes="metric-card">
+                <Border Width="160" Classes="metric-card">
                   <StackPanel Spacing="4">
                     <TextBlock Text="Overhead" Classes="kpi-label" />
                     <TextBlock Text="{Binding SelectedRecipeOverheadCostText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                   </StackPanel>
                 </Border>
-              </Grid>
-              <TextBlock Text="{Binding SelectedRecipeOperationalText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
+              </WrapPanel>
+
+              <Border Classes="metric-card">
+                <TextBlock Text="{Binding SelectedRecipeBlueprintText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
+              </Border>
+
+              <WrapPanel Classes="action-row">
+                <Button Classes="btn-warm"
+                        Command="{Binding OpenProductionCommand}"
+                        CommandParameter="{Binding SelectedRecipe}"
+                        IsVisible="{Binding IsAdvancedMode}"
+                        IsEnabled="{Binding HasSelectedRecipe}">
+                  <TextBlock Text="Buka Produksi" />
+                </Button>
+                <Button Classes="btn-secondary"
+                        Command="{Binding DuplicateCommand}"
+                        CommandParameter="{Binding SelectedRecipe}"
+                        IsEnabled="{Binding HasSelectedRecipe}">
+                  <TextBlock Text="Duplikat" />
+                </Button>
+                <Button Classes="btn-primary"
+                        Command="{Binding EditCommand}"
+                        CommandParameter="{Binding SelectedRecipe}"
+                        IsEnabled="{Binding HasSelectedRecipe}">
+                  <TextBlock Text="Ubah Resep" />
+                </Button>
+                <Button Classes="btn-danger"
+                        Command="{Binding RequestDeleteCommand}"
+                        CommandParameter="{Binding SelectedRecipe}"
+                        IsEnabled="{Binding HasSelectedRecipe}">
+                  <TextBlock Text="Hapus" />
+                </Button>
+              </WrapPanel>
             </StackPanel>
           </Border>
 
           <Border Classes="page-card">
-            <StackPanel Spacing="10">
-              <TextBlock Text="Bahan" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="Bahan" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  <TextBlock Text="Audit komposisi bahan per kelompok untuk memastikan quantity dan biaya sudah masuk dengan rapi." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
+                </StackPanel>
+                <Border Grid.Column="1" Classes="badge badge-soft" VerticalAlignment="Top">
+                  <TextBlock Text="{Binding SelectedRecipeIngredientCountText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+                </Border>
+              </Grid>
               <dg:DataGrid Classes="audit-grid"
                            ItemsSource="{Binding SelectedRecipeIngredients}"
                            AutoGenerateColumns="False"
@@ -573,8 +751,16 @@
           </Border>
 
           <Border Classes="page-card" IsVisible="{Binding IsAdvancedMode}">
-            <StackPanel Spacing="10">
-              <TextBlock Text="Overhead" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <StackPanel Spacing="8">
+              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="Overhead" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  <TextBlock Text="Gunakan area ini untuk memastikan biaya tambahan seperti utilitas, kemasan, atau tenaga kerja sudah tercatat." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" Classes="hint" />
+                </StackPanel>
+                <Border Grid.Column="1" Classes="badge badge-soft" VerticalAlignment="Top">
+                  <TextBlock Text="{Binding SelectedRecipeOverheadCountText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+                </Border>
+              </Grid>
               <dg:DataGrid Classes="audit-grid"
                            ItemsSource="{Binding SelectedRecipeOverheads}"
                            AutoGenerateColumns="False"
@@ -587,7 +773,7 @@
             </StackPanel>
           </Border>
         </StackPanel>
-      </Grid>
+      </StackPanel>
     </StackPanel>
   </ScrollViewer>
 </UserControl>

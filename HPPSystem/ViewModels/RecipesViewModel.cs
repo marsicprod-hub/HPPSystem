@@ -41,6 +41,7 @@ public sealed partial class RecipesViewModel : PageViewModelBase
     public override string Title => "Manajemen Resep";
 
     public ObservableCollection<HPPSystem.Models.Material> AvailableMaterials { get; } = new();
+    public ObservableCollection<HPPSystem.Models.Material> BuilderMaterials { get; } = new();
     public ObservableCollection<RecipeCardViewModel> FilteredRecipes { get; } = new();
     public ObservableCollection<RecipeIngredientDetailViewModel> SelectedRecipeIngredients { get; } = new();
     public ObservableCollection<RecipeOverheadDetailViewModel> SelectedRecipeOverheads { get; } = new();
@@ -54,12 +55,6 @@ public sealed partial class RecipesViewModel : PageViewModelBase
 
     [ObservableProperty]
     private bool _isEditing;
-
-    [ObservableProperty]
-    private int _produceBatches = 1;
-
-    [ObservableProperty]
-    private RecipeCardViewModel? _selectedRecipeForProduction;
 
     [ObservableProperty]
     private RecipeCardViewModel? _pendingDelete;
@@ -90,17 +85,11 @@ public sealed partial class RecipesViewModel : PageViewModelBase
     {
         OnPropertyChanged(nameof(IsLibraryCardMode));
     }
-    partial void OnSelectedRecipeForProductionChanged(RecipeCardViewModel? value)
-    {
-        OnPropertyChanged(nameof(CanProduce));
-        OnPropertyChanged(nameof(ProductionTargetText));
-    }
-    partial void OnProduceBatchesChanged(int value) => OnPropertyChanged(nameof(ProductionTargetText));
 
-    public bool CanProduce => SelectedRecipeForProduction is not null;
     public bool ShowDeletePrompt => PendingDelete is not null;
     public bool HasRecipes => FilteredRecipes.Count > 0;
     public bool HasSelectedRecipe => SelectedRecipe is not null;
+    public bool HasBuilderMaterials => BuilderMaterials.Count > 0;
     public bool IsLibraryCardMode => !IsLibraryTableMode;
     public string SearchSummaryText { get; private set; } = "0 resep ditampilkan";
     public string FocusAllRecipesText { get; private set; } = "Semua 0";
@@ -135,17 +124,50 @@ public sealed partial class RecipesViewModel : PageViewModelBase
     public string EditorSubtitleText => string.IsNullOrWhiteSpace(Editor.Id)
         ? "Bangun resep dari nol dengan struktur bahan, overhead, margin, dan simulasi modal yang terukur."
         : "Perbarui struktur resep, komposisi bahan, overhead, dan arah pricing tanpa kehilangan kalkulasi biaya.";
+    public string EditorMaterialScopeText { get; private set; } = "Builder mengambil seluruh katalog material. Ikon ! merah menandai bahan yang stok gudangnya kosong atau belum aktif.";
+    public string BuilderMaterialCountText { get; private set; } = "0 material katalog";
     public string EditorStructureText =>
         $"{Editor.Groups.Count} kelompok | {Editor.Groups.SelectMany(x => x.Ingredients).Count()} bahan | {Editor.Overheads.Count} overhead | {Math.Max(Editor.Portions, 1)} porsi";
+    public string EditorGroupCountText => $"{Editor.Groups.Count} kelompok";
+    public string EditorIngredientCountText => $"{Editor.Groups.SelectMany(x => x.Ingredients).Count()} bahan";
+    public string EditorOverheadSummaryText => $"{Editor.Overheads.Count} overhead";
     public string EditorPricingGuideText =>
         $"Target margin {Editor.TargetMargin:0.#}% menghasilkan rekomendasi jual {EditorRecommendedPriceText}.";
+    public string EditorLiveCostEquationText =>
+        $"{EditorMaterialCostText} bahan + {EditorOverheadCostText} overhead = {EditorTotalCostText} modal batch.";
+    public string EditorOutputGuideText =>
+        $"{Math.Max(Editor.Portions, 1)} porsi per batch | HPP {EditorHppText} | rekomendasi jual {EditorRecommendedPriceText}.";
+    public string EditorReadinessText
+    {
+        get
+        {
+            if (!HasBuilderMaterials)
+            {
+                return "Belum ada material katalog. Tambahkan bahan dulu dari halaman Material.";
+            }
+
+            if (string.IsNullOrWhiteSpace(Editor.Name))
+            {
+                return "Isi nama resep untuk mulai menyusun blueprint.";
+            }
+
+            var validIngredients = Editor.Groups
+                .SelectMany(x => x.Ingredients)
+                .Count(x => !string.IsNullOrWhiteSpace(x.MaterialId) && x.Quantity > 0);
+
+            if (validIngredients == 0)
+            {
+                return "Tambahkan bahan pertama untuk membentuk costing.";
+            }
+            var warehouseWarnings = Editor.Groups
+                .SelectMany(x => x.Ingredients)
+                .Count(x => x.HasWarehouseWarning);
+            return warehouseWarnings == 0
+                ? $"Blueprint siap dihitung dengan {validIngredients} bahan aktif."
+                : $"Blueprint siap dihitung, tetapi {warehouseWarnings} bahan perlu perhatian stok gudang.";
+        }
+    }
     public string EditorActionText => string.IsNullOrWhiteSpace(Editor.Id) ? "Publikasikan Resep" : "Update Resep";
-    public string ProductionTargetText => SelectedRecipeForProduction is null
-        ? "Belum ada resep produksi yang dipilih."
-        : $"{SelectedRecipeForProduction.Name} untuk {ProduceBatches} batch";
-    public string ProductionHelperText => SelectedRecipeForProduction is null
-        ? "Pilih satu resep lalu tentukan jumlah batch untuk mengurangi stok bahan secara otomatis."
-        : $"{SelectedRecipeForProduction.PortionsText} | {SelectedRecipeForProduction.IngredientCountText} | modal {SelectedRecipeForProduction.TotalCostText} per batch";
     public string DeletePromptText => PendingDelete is null
         ? string.Empty
         : BuildDeletePromptText(PendingDelete);
@@ -171,6 +193,9 @@ public sealed partial class RecipesViewModel : PageViewModelBase
     public string SelectedRecipeSummary => SelectedRecipe is null
         ? "Pilih salah satu resep untuk melihat detail bahan, biaya, dan overhead."
         : $"{SelectedRecipe.PortionsText} | {SelectedRecipe.MarginText} target margin";
+    public string SelectedRecipeBlueprintText => SelectedRecipe is null
+        ? "Blueprint resep akan tampil di sini setelah kamu memilih item dari library."
+        : $"{SelectedRecipe.GroupCountText} | {SelectedRecipe.IngredientCountText} | {SelectedRecipe.OverheadCountText}";
     public string SelectedRecipeHppText => SelectedRecipe?.HppText ?? FormattingHelper.FormatCurrency(0);
     public string SelectedRecipeMaterialCostText => SelectedRecipe?.MaterialCostText ?? FormattingHelper.FormatCurrency(0);
     public string SelectedRecipeOverheadCostText => SelectedRecipe?.OverheadCostText ?? FormattingHelper.FormatCurrency(0);
@@ -183,20 +208,38 @@ public sealed partial class RecipesViewModel : PageViewModelBase
     public string SelectedRecipePricingGuideText => SelectedRecipe is null
         ? "Belum ada resep yang dipilih untuk dibaca struktur pricing-nya."
         : $"Rekomendasi jual {SelectedRecipe.RecommendedPriceText} dengan target margin {SelectedRecipe.MarginText}.";
+    public string SelectedRecipeIngredientCountText => SelectedRecipe?.IngredientCountText ?? "0 bahan";
+    public string SelectedRecipeOverheadCountText => SelectedRecipe?.OverheadCountText ?? "0 overhead";
+    public Action<string>? RequestProductionSetup { get; set; }
 
     public override void Refresh()
     {
         var profileId = DataService.Settings.ActiveProfileId;
 
         AvailableMaterials.Clear();
-        foreach (var material in DataService.Materials.Where(x => x.ProfileId == profileId).OrderBy(x => x.Name))
+        BuilderMaterials.Clear();
+        foreach (var material in DataService.Materials.Where(x => x.ProfileId == profileId).OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase))
         {
             AvailableMaterials.Add(material);
+            BuilderMaterials.Add(material);
         }
+
+        EditorMaterialScopeText = BuilderMaterials.Count switch
+        {
+            0 => "Belum ada material katalog. Tambahkan bahan dulu di halaman Material.",
+            1 => "1 material katalog tersedia untuk recipe builder. Ikon ! merah menandai stok gudang yang kosong.",
+            _ => $"{BuilderMaterials.Count} material katalog tersedia untuk recipe builder. Ikon ! merah menandai stok gudang yang kosong."
+        };
+        BuilderMaterialCountText = BuilderMaterials.Count switch
+        {
+            0 => "0 material katalog",
+            1 => "1 material katalog",
+            _ => $"{BuilderMaterials.Count} material katalog"
+        };
 
         var allCards = DataService.Recipes
             .Where(x => x.ProfileId == profileId)
-            .OrderBy(x => x.Name)
+            .OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
             .Select(CreateCard)
             .ToList();
 
@@ -242,7 +285,7 @@ public sealed partial class RecipesViewModel : PageViewModelBase
 
         var topMargin = allCards
             .OrderByDescending(x => x.Recipe.TargetMargin)
-            .ThenBy(x => x.Name)
+            .ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
         TopRecipeNameText = topMargin?.Name ?? "-";
         TopRecipeMarginText = topMargin?.MarginText ?? "0%";
@@ -284,12 +327,6 @@ public sealed partial class RecipesViewModel : PageViewModelBase
             SelectedRecipe = FilteredRecipes.First(x => x.Id == SelectedRecipe.Id);
         }
 
-        if (SelectedRecipeForProduction is not null && !FilteredRecipes.Any(x => x.Id == SelectedRecipeForProduction.Id))
-        {
-            SelectedRecipeForProduction = null;
-            ProduceBatches = 1;
-        }
-
         OnPropertyChanged(nameof(IsAdvancedMode));
         OnPropertyChanged(nameof(HasRecipes));
         OnPropertyChanged(nameof(FocusAllRecipesText));
@@ -320,6 +357,9 @@ public sealed partial class RecipesViewModel : PageViewModelBase
         OnPropertyChanged(nameof(TotalRecipeCountText));
         OnPropertyChanged(nameof(TotalPortionCapacityText));
         OnPropertyChanged(nameof(AverageHppText));
+        OnPropertyChanged(nameof(EditorMaterialScopeText));
+        OnPropertyChanged(nameof(BuilderMaterialCountText));
+        OnPropertyChanged(nameof(HasBuilderMaterials));
         RefreshMetrics();
         RefreshSelectedRecipeDetails();
     }
@@ -509,12 +549,16 @@ public sealed partial class RecipesViewModel : PageViewModelBase
     }
 
     [RelayCommand]
-    private void PrepareProduce(RecipeCardViewModel card)
+    private void OpenProduction(RecipeCardViewModel? card)
     {
+        if (card is null)
+        {
+            Error("Pilih resep dulu sebelum membuka produksi.");
+            return;
+        }
+
         SelectedRecipe = card;
-        SelectedRecipeForProduction = card;
-        ProduceBatches = 1;
-        OnPropertyChanged(nameof(ProductionTargetText));
+        RequestProductionSetup?.Invoke(card.Id);
     }
 
     [RelayCommand]
@@ -560,57 +604,6 @@ public sealed partial class RecipesViewModel : PageViewModelBase
 
         await DataService.SaveRecipeAsync(clone);
         Success($"Resep {card.Name} diduplikasi menjadi {copyName}.");
-    }
-
-    [RelayCommand]
-    private async Task ProduceAsync()
-    {
-        if (SelectedRecipeForProduction?.Recipe is null || ProduceBatches <= 0)
-        {
-            return;
-        }
-
-        var needs = SelectedRecipeForProduction.Recipe.IngredientGroups
-            .SelectMany(x => x.Ingredients)
-            .GroupBy(x => x.MaterialId)
-            .Select(x => new
-            {
-                MaterialId = x.Key,
-                Quantity = x.Sum(v => v.Quantity) * ProduceBatches,
-                Material = AvailableMaterials.FirstOrDefault(material => material.Id == x.Key)
-            })
-            .ToList();
-
-        var shortages = needs
-            .Where(x => x.Material is null || x.Material.Stock < x.Quantity)
-            .Select(x => x.Material is null
-                ? $"bahan dengan id {x.MaterialId} tidak ditemukan"
-                : $"{x.Material.Name} butuh {x.Quantity:0.##} {x.Material.Unit}, stok tersedia {x.Material.Stock:0.##}")
-            .ToList();
-
-        if (shortages.Count > 0)
-        {
-            Error($"Produksi dibatalkan karena stok tidak cukup: {string.Join("; ", shortages)}.");
-            return;
-        }
-
-        foreach (var need in needs)
-        {
-            await DataService.ApplyMaterialStockAdjustmentAsync(new MaterialStockAdjustment
-            {
-                MaterialId = need.MaterialId,
-                QuantityDelta = -need.Quantity,
-                SourceType = "production",
-                SourceId = SelectedRecipeForProduction.Id,
-                SourceLabel = SelectedRecipeForProduction.Name,
-                Notes = $"Produksi {ProduceBatches} batch mengurangi stok bahan untuk resep {SelectedRecipeForProduction.Name}."
-            });
-        }
-
-        Success($"Produksi {SelectedRecipeForProduction.Name} dicatat untuk {ProduceBatches} batch.");
-        SelectedRecipeForProduction = null;
-        ProduceBatches = 1;
-        OnPropertyChanged(nameof(ProductionTargetText));
     }
 
     private RecipeCardViewModel CreateCard(Recipe recipe)
@@ -764,17 +757,22 @@ public sealed partial class RecipesViewModel : PageViewModelBase
         OnPropertyChanged(nameof(EditorRecommendedPriceText));
         OnPropertyChanged(nameof(EditorTitleText));
         OnPropertyChanged(nameof(EditorSubtitleText));
+        OnPropertyChanged(nameof(BuilderMaterialCountText));
+        OnPropertyChanged(nameof(EditorGroupCountText));
+        OnPropertyChanged(nameof(EditorIngredientCountText));
+        OnPropertyChanged(nameof(EditorOverheadSummaryText));
         OnPropertyChanged(nameof(EditorStructureText));
         OnPropertyChanged(nameof(EditorPricingGuideText));
+        OnPropertyChanged(nameof(EditorLiveCostEquationText));
+        OnPropertyChanged(nameof(EditorOutputGuideText));
+        OnPropertyChanged(nameof(EditorReadinessText));
         OnPropertyChanged(nameof(EditorActionText));
-        OnPropertyChanged(nameof(CanProduce));
-        OnPropertyChanged(nameof(ProductionTargetText));
-        OnPropertyChanged(nameof(ProductionHelperText));
         OnPropertyChanged(nameof(ShowDeletePrompt));
         OnPropertyChanged(nameof(DeletePromptText));
         OnPropertyChanged(nameof(HasSelectedRecipe));
         OnPropertyChanged(nameof(SelectedRecipeName));
         OnPropertyChanged(nameof(SelectedRecipeSummary));
+        OnPropertyChanged(nameof(SelectedRecipeBlueprintText));
         OnPropertyChanged(nameof(SelectedRecipeHppText));
         OnPropertyChanged(nameof(SelectedRecipeMaterialCostText));
         OnPropertyChanged(nameof(SelectedRecipeOverheadCostText));
@@ -783,6 +781,8 @@ public sealed partial class RecipesViewModel : PageViewModelBase
         OnPropertyChanged(nameof(SelectedRecipeMarginText));
         OnPropertyChanged(nameof(SelectedRecipeOperationalText));
         OnPropertyChanged(nameof(SelectedRecipePricingGuideText));
+        OnPropertyChanged(nameof(SelectedRecipeIngredientCountText));
+        OnPropertyChanged(nameof(SelectedRecipeOverheadCountText));
     }
 
     partial void OnSelectedRecipeChanged(RecipeCardViewModel? value)
@@ -841,15 +841,28 @@ public sealed partial class RecipesViewModel : PageViewModelBase
             {
                 if (string.IsNullOrWhiteSpace(ingredient.MaterialId) || !materials.TryGetValue(ingredient.MaterialId, out var material))
                 {
+                    ingredient.SelectedMaterial = null;
                     ingredient.UnitName = string.Empty;
                     ingredient.UnitCostText = FormattingHelper.FormatCurrency(0);
                     ingredient.LineCostText = FormattingHelper.FormatCurrency(0);
+                    ingredient.HasWarehouseWarning = false;
+                    ingredient.WarehouseWarningText = string.Empty;
                     continue;
                 }
 
+                if (!string.Equals(ingredient.SelectedMaterial?.Id, material.Id, StringComparison.Ordinal))
+                {
+                    ingredient.SelectedMaterial = material;
+                }
                 ingredient.UnitName = material.Unit;
                 ingredient.UnitCostText = FormattingHelper.FormatCurrency(material.PricePerUnit);
                 ingredient.LineCostText = FormattingHelper.FormatCurrency(material.PricePerUnit * ingredient.Quantity);
+                ingredient.HasWarehouseWarning = !material.IsTrackedInWarehouse || material.Stock <= 0;
+                ingredient.WarehouseWarningText = !material.IsTrackedInWarehouse
+                    ? $"{material.CatalogLabel} belum aktif di Gudang. Recipe tetap bisa disimpan, tetapi produksi akan butuh stok gudang lebih dulu."
+                    : material.Stock <= 0
+                        ? $"{material.CatalogLabel} sedang kosong di Gudang. Recipe tetap bisa disimpan, tetapi produksi akan tertahan sampai stok tersedia."
+                        : string.Empty;
             }
         }
     }
@@ -866,4 +879,5 @@ public sealed partial class RecipesViewModel : PageViewModelBase
 
         return $"Hapus resep {card.Name} secara permanen? Dampak: {relatedCombos.Count} bundle terkait ({combosRemoved} ikut terhapus, {combosAdjusted} disesuaikan), {ingredientCount} komponen bahan, dan seluruh analitik margin resep ini.";
     }
+
 }

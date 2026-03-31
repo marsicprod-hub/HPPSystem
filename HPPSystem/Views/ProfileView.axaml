@@ -8,7 +8,7 @@
     <StackPanel Spacing="18">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
         <StackPanel Spacing="4">
-          <TextBlock Text="Profil &amp; Cabang" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+      <TextBlock Text="Profil &amp; Cabang" FontSize="{DynamicResource AppPageTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           <TextBlock Text="{Binding ActiveProfileInsightText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
         </StackPanel>
         <Border Grid.Column="1" Classes="badge badge-soft">
@@ -19,7 +19,7 @@
       <Border Classes="page-card" Background="{DynamicResource CardAltBgBrush}">
         <Grid ColumnDefinitions="1.35*,*" ColumnSpacing="14">
           <StackPanel Spacing="6">
-            <TextBlock Text="{Binding ActiveProfileNameText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding ActiveProfileNameText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
             <TextBlock Text="{Binding ActiveProfileOwnerText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
           </StackPanel>
           <Grid Grid.Column="1" ColumnDefinitions="*,*" ColumnSpacing="10">
@@ -43,7 +43,7 @@
       <WrapPanel Orientation="Horizontal" ItemWidth="520">
         <Border Classes="page-card" MinWidth="420" MaxWidth="640" Margin="0,0,16,16">
           <StackPanel Spacing="14">
-            <TextBlock Text="Daftar Cabang" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="Daftar Cabang" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
 
             <ItemsControl ItemsSource="{Binding ProfileCards}">
               <ItemsControl.ItemTemplate>
@@ -57,7 +57,7 @@
                     <StackPanel Spacing="10">
                       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                         <StackPanel Spacing="4">
-                          <TextBlock Text="{Binding BusinessNameText}" FontWeight="Black" FontSize="18" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <TextBlock Text="{Binding BusinessNameText}" FontWeight="Black" FontSize="{DynamicResource AppSectionFontSize}" Foreground="{DynamicResource PrimaryTextBrush}" />
                           <TextBlock Text="{Binding OwnerNameText}" Foreground="{DynamicResource SecondaryTextBrush}" />
                         </StackPanel>
                         <Border Grid.Column="1" Classes="badge badge-soft" IsVisible="{Binding IsActive}" VerticalAlignment="Top">
@@ -90,7 +90,7 @@
 
             <Border Classes="metric-card">
               <StackPanel Spacing="8">
-                <TextBlock Text="Tambah Cabang Baru" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="Tambah Cabang Baru" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                 <TextBox Text="{Binding NewProfileName}" Watermark="Nama cabang baru" />
                 <TextBlock Text="{Binding NewBranchGuideText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
                 <Button Classes="btn-primary"
@@ -105,7 +105,7 @@
 
         <Border Classes="page-card" MinWidth="420" MaxWidth="640" Margin="0,0,0,16">
           <StackPanel Spacing="14">
-            <TextBlock Text="Detail Profil Aktif" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="Detail Profil Aktif" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
 
             <StackPanel Spacing="6">
               <TextBlock Text="Nama Bisnis" Classes="kpi-label" />

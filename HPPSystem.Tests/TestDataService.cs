@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
+using HPPSystem.Helpers;
 using HPPSystem.Models;
 using HPPSystem.Services;
 
@@ -11,10 +14,12 @@ namespace HPPSystem.Tests;
 internal sealed class TestDataService : IDataService
 {
     public event EventHandler? StateChanged;
+    public string LastExportPath { get; private set; } = string.Empty;
 
     public ObservableCollection<HPPSystem.Models.Material> Materials { get; } = new();
     public ObservableCollection<StockMovement> StockMovements { get; } = new();
     public ObservableCollection<Recipe> Recipes { get; } = new();
+    public ObservableCollection<ProductionOrder> ProductionOrders { get; } = new();
     public ObservableCollection<Combo> Combos { get; } = new();
     public ObservableCollection<Sale> Sales { get; } = new();
     public ObservableCollection<Transaction> Transactions { get; } = new();
@@ -23,7 +28,8 @@ internal sealed class TestDataService : IDataService
     {
         ActiveProfileId = "default",
         IsAdvancedMode = true,
-        IsDarkMode = true
+        IsDarkMode = true,
+        FontSizePreset = FontSizingHelper.Normal
     };
 
     public string DataStorePath => "test-store.json";
@@ -47,6 +53,7 @@ internal sealed class TestDataService : IDataService
         }
 
         material.PricePerUnit = material.Weight <= 0 ? 0 : material.Price / material.Weight;
+        material.Brand = material.Brand?.Trim() ?? string.Empty;
 
         var previousStock = existing?.Stock ?? 0;
         Upsert(Materials, material, x => x.Id);
@@ -93,6 +100,7 @@ internal sealed class TestDataService : IDataService
         {
             Id = existing.Id,
             Name = existing.Name,
+            Brand = existing.Brand,
             Price = adjustment.UpdatedPrice ?? existing.Price,
             Weight = adjustment.UpdatedWeight ?? existing.Weight,
             Unit = existing.Unit,
@@ -131,6 +139,35 @@ internal sealed class TestDataService : IDataService
         return Task.CompletedTask;
     }
 
+    public Task RemoveMaterialFromWarehouseAsync(string materialId)
+    {
+        var existing = Materials.FirstOrDefault(x => string.Equals(x.Id, materialId, StringComparison.Ordinal));
+        if (existing is null)
+        {
+            return Task.CompletedTask;
+        }
+
+        var updated = new HPPSystem.Models.Material
+        {
+            Id = existing.Id,
+            Name = existing.Name,
+            Brand = existing.Brand,
+            Price = existing.Price,
+            Weight = existing.Weight,
+            Unit = existing.Unit,
+            PricePerUnit = existing.PricePerUnit,
+            Stock = 0,
+            IsTrackedInWarehouse = false,
+            ProfileId = existing.ProfileId,
+            PriceHistory = existing.PriceHistory.ToList()
+        };
+
+        Upsert(Materials, updated, x => x.Id);
+        RemoveAll(StockMovements, x => x.MaterialId == materialId);
+        NotifyChanged();
+        return Task.CompletedTask;
+    }
+
     public Task DeleteMaterialAsync(string id)
     {
         RemoveById(Materials, id);
@@ -149,6 +186,21 @@ internal sealed class TestDataService : IDataService
     public Task DeleteRecipeAsync(string id)
     {
         RemoveById(Recipes, id);
+        NotifyChanged();
+        return Task.CompletedTask;
+    }
+
+    public Task SaveProductionOrderAsync(ProductionOrder order)
+    {
+        order.Requirements ??= [];
+        Upsert(ProductionOrders, order, x => x.Id);
+        NotifyChanged();
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteProductionOrderAsync(string id)
+    {
+        RemoveById(ProductionOrders, id);
         NotifyChanged();
         return Task.CompletedTask;
     }
@@ -211,6 +263,7 @@ internal sealed class TestDataService : IDataService
         RemoveById(Profiles, id);
         RemoveAllByProfile(Materials, id);
         RemoveAllByProfile(Recipes, id);
+        RemoveAllByProfile(ProductionOrders, id);
         RemoveAllByProfile(Combos, id);
         RemoveAllByProfile(Sales, id);
         RemoveAllByProfile(Transactions, id);
@@ -229,7 +282,8 @@ internal sealed class TestDataService : IDataService
         {
             ActiveProfileId = settings.ActiveProfileId,
             IsAdvancedMode = settings.IsAdvancedMode,
-            IsDarkMode = settings.IsDarkMode
+            IsDarkMode = settings.IsDarkMode,
+            FontSizePreset = FontSizingHelper.NormalizePreset(settings.FontSizePreset)
         };
 
         NotifyChanged();
@@ -243,6 +297,33 @@ internal sealed class TestDataService : IDataService
         return Task.CompletedTask;
     }
 
+    public Task ClearAllDataAsync()
+    {
+        Materials.Clear();
+        StockMovements.Clear();
+        Recipes.Clear();
+        ProductionOrders.Clear();
+        Combos.Clear();
+        Sales.Clear();
+        Transactions.Clear();
+        Profiles.Clear();
+        Profiles.Add(new Profile
+        {
+            Id = "default",
+            BusinessName = "Bisnis Utama",
+            OwnerName = "Owner"
+        });
+        Settings = new AppSettings
+        {
+            ActiveProfileId = "default",
+            IsAdvancedMode = Settings.IsAdvancedMode,
+            IsDarkMode = Settings.IsDarkMode,
+            FontSizePreset = FontSizingHelper.NormalizePreset(Settings.FontSizePreset)
+        };
+        NotifyChanged();
+        return Task.CompletedTask;
+    }
+
     public HppDataSnapshot CreateSnapshot()
     {
         return new HppDataSnapshot
@@ -251,6 +332,7 @@ internal sealed class TestDataService : IDataService
             Materials = Materials.ToList(),
             StockMovements = StockMovements.ToList(),
             Recipes = Recipes.ToList(),
+            ProductionOrders = ProductionOrders.ToList(),
             Combos = Combos.ToList(),
             Sales = Sales.ToList(),
             Transactions = Transactions.ToList(),
@@ -258,12 +340,23 @@ internal sealed class TestDataService : IDataService
             {
                 ActiveProfileId = Settings.ActiveProfileId,
                 IsAdvancedMode = Settings.IsAdvancedMode,
-                IsDarkMode = Settings.IsDarkMode
+                IsDarkMode = Settings.IsDarkMode,
+                FontSizePreset = FontSizingHelper.NormalizePreset(Settings.FontSizePreset)
             }
         };
     }
 
-    public Task ExportSnapshotAsync(string path) => throw new NotSupportedException();
+    public async Task ExportSnapshotAsync(string path)
+    {
+        LastExportPath = path;
+        var directory = Path.GetDirectoryName(path);
+        if (!string.IsNullOrWhiteSpace(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        await File.WriteAllTextAsync(path, JsonSerializer.Serialize(CreateSnapshot()));
+    }
 
     public Task ImportSnapshotAsync(string path) => throw new NotSupportedException();
 

@@ -80,7 +80,7 @@ public sealed partial class ProfileViewModel : PageViewModelBase
     {
         ProfileCards.Clear();
         Profiles.Clear();
-        foreach (var profile in DataService.Profiles.OrderBy(x => x.BusinessName))
+        foreach (var profile in DataService.Profiles.OrderBy(x => x.BusinessName, StringComparer.OrdinalIgnoreCase))
         {
             Profiles.Add(profile);
             ProfileCards.Add(new ProfileCardViewModel

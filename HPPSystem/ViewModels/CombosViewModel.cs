@@ -145,13 +145,13 @@ public sealed partial class CombosViewModel : PageViewModelBase
         var profileId = DataService.Settings.ActiveProfileId;
 
         AvailableRecipes.Clear();
-        foreach (var recipe in DataService.Recipes.Where(x => x.ProfileId == profileId).OrderBy(x => x.Name))
+        foreach (var recipe in DataService.Recipes.Where(x => x.ProfileId == profileId).OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase))
         {
             AvailableRecipes.Add(recipe);
         }
 
         ComboCards.Clear();
-        foreach (var combo in DataService.Combos.Where(x => x.ProfileId == profileId).OrderBy(x => x.Name))
+        foreach (var combo in DataService.Combos.Where(x => x.ProfileId == profileId).OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase))
         {
             var hpp = CostCalculator.CalculateComboHpp(combo, AvailableRecipes, DataService.Materials.Where(x => x.ProfileId == profileId));
             var margin = combo.SellingPrice <= 0 ? 0 : ((combo.SellingPrice - hpp) / combo.SellingPrice) * 100;
@@ -196,7 +196,7 @@ public sealed partial class CombosViewModel : PageViewModelBase
 
         var bestCombo = ComboCards
             .OrderByDescending(card => card.MarginValue)
-            .ThenBy(card => card.Name)
+            .ThenBy(card => card.Name, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
         BestComboNameText = bestCombo?.Name ?? "-";
         BestComboMarginText = bestCombo?.MarginText ?? "0%";

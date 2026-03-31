@@ -69,22 +69,28 @@ public sealed partial class DashboardViewModel : PageViewModelBase
     public bool IsAdvancedMode => DataService.Settings.IsAdvancedMode;
     public bool ShowAdvancedSection => IsAdvancedMode;
     public bool ShowPromoSection => !IsAdvancedMode;
+    public bool ShowRecipeBenchmark => HasTopRecipes;
+    public bool ShowInsightRail => HasTopRecipes || HasRecentSales;
+    public bool ShowRecipeRankingSection => HasTopRecipes;
+    public bool ShowRecentSalesSection => HasRecentSales;
+    public bool ShowInventoryRiskSection => ShowAdvancedSection && HasLowStockMaterials;
 
     public override void Refresh()
     {
         var profileId = DataService.Settings.ActiveProfileId;
         var materials = DataService.Materials.Where(x => x.ProfileId == profileId).ToList();
+        var warehouseMaterials = materials.Where(x => x.IsTrackedInWarehouse).ToList();
         var recipes = DataService.Recipes.Where(x => x.ProfileId == profileId).ToList();
         var sales = DataService.Sales.Where(x => x.ProfileId == profileId).ToList();
         var totalSales = sales.Sum(x => x.TotalPrice);
         var totalProfit = sales.Sum(x => x.TotalProfit);
 
-        MaterialCount = materials.Count;
+        MaterialCount = warehouseMaterials.Count;
         RecipeCount = recipes.Count;
         TotalItemsSold = sales.Sum(x => x.Qty);
         TotalSalesText = FormattingHelper.FormatCurrency(totalSales);
         TotalProfitText = FormattingHelper.FormatCurrency(totalProfit);
-        TotalInventoryText = $"{materials.Sum(x => x.Stock):0.##} unit";
+        TotalInventoryText = $"{warehouseMaterials.Sum(x => x.Stock):0.##} unit";
         AverageTicketText = sales.Count == 0
             ? FormattingHelper.FormatCurrency(0)
             : FormattingHelper.FormatCurrency(totalSales / sales.Count);
@@ -129,7 +135,7 @@ public sealed partial class DashboardViewModel : PageViewModelBase
         TopRecipeHppText = topRecipe?.HppText ?? FormattingHelper.FormatCurrency(0);
 
         LowStockMaterials.Clear();
-        foreach (var item in materials.Where(x => x.Stock <= 5).OrderBy(x => x.Stock).Take(6))
+        foreach (var item in warehouseMaterials.Where(x => x.Stock <= 5).OrderBy(x => x.Stock).Take(6))
         {
             LowStockMaterials.Add(item);
         }
@@ -151,7 +157,7 @@ public sealed partial class DashboardViewModel : PageViewModelBase
             : "Belum ada restock prioritas untuk hari ini.";
 
         RecentSales.Clear();
-        foreach (var sale in sales.OrderByDescending(x => DateTime.TryParse(x.Date, out var dt) ? dt : DateTime.MinValue).Take(8))
+        foreach (var sale in sales.OrderByDescending(x => DateTime.TryParse(x.Date, out var dt) ? dt : DateTime.MinValue).ThenBy(x => x.ItemName, StringComparer.OrdinalIgnoreCase).Take(8))
         {
             RecentSales.Add(new SaleRowViewModel
             {
@@ -335,5 +341,10 @@ public sealed partial class DashboardViewModel : PageViewModelBase
         OnPropertyChanged(nameof(IsAdvancedMode));
         OnPropertyChanged(nameof(ShowAdvancedSection));
         OnPropertyChanged(nameof(ShowPromoSection));
+        OnPropertyChanged(nameof(ShowRecipeBenchmark));
+        OnPropertyChanged(nameof(ShowInsightRail));
+        OnPropertyChanged(nameof(ShowRecipeRankingSection));
+        OnPropertyChanged(nameof(ShowRecentSalesSection));
+        OnPropertyChanged(nameof(ShowInventoryRiskSection));
     }
 }

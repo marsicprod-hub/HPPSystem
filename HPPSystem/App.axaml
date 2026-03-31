@@ -2,10 +2,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:v="using:HPPSystem.Views"
              xmlns:vm="using:HPPSystem.ViewModels"
-             xmlns:material="using:Material.Icons.Avalonia"
              xmlns:fa="using:FluentAvalonia.UI.Controls"
              xmlns:faStyle="using:FluentAvalonia.Styling"
              xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
+             xmlns:icon="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
              x:Class="HPPSystem.App"
              RequestedThemeVariant="Light">
   <Application.Resources>
@@ -121,6 +121,14 @@
       <CornerRadius x:Key="InputCornerRadius">12</CornerRadius>
       <Thickness x:Key="PageCardPadding">18</Thickness>
       <Thickness x:Key="MetricCardPadding">12</Thickness>
+      <x:Double x:Key="AppBodyFontSize">14</x:Double>
+      <x:Double x:Key="AppCaptionFontSize">12</x:Double>
+      <x:Double x:Key="AppSectionFontSize">18</x:Double>
+      <x:Double x:Key="AppCardTitleFontSize">20</x:Double>
+      <x:Double x:Key="AppDisplaySmallFontSize">22</x:Double>
+      <x:Double x:Key="AppDisplayFontSize">24</x:Double>
+      <x:Double x:Key="AppPageTitleFontSize">28</x:Double>
+      <x:Double x:Key="AppHeroFontSize">32</x:Double>
     </ResourceDictionary>
   </Application.Resources>
 
@@ -136,6 +144,9 @@
     </DataTemplate>
     <DataTemplate DataType="vm:RecipesViewModel">
       <v:RecipesView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:ProductionViewModel">
+      <v:ProductionView />
     </DataTemplate>
     <DataTemplate DataType="vm:CombosViewModel">
       <v:CombosView />
@@ -161,7 +172,43 @@
     <FluentTheme />
     <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
     <faStyle:FluentAvaloniaTheme />
-    <material:MaterialIconStyles />
+    <Style Selector="icon|LucideIcon.nav-icon">
+      <Setter Property="Size" Value="17" />
+      <Setter Property="Foreground" Value="{DynamicResource SidebarTextBrush}" />
+    </Style>
+    <Style Selector="icon|LucideIcon.nav-icon-selected">
+      <Setter Property="Size" Value="17" />
+      <Setter Property="Foreground" Value="{DynamicResource SidebarSelectedTextBrush}" />
+    </Style>
+    <Style Selector="icon|LucideIcon.brand-icon">
+      <Setter Property="Size" Value="26" />
+      <Setter Property="Foreground" Value="{DynamicResource SidebarSelectedTextBrush}" />
+    </Style>
+    <Style Selector="icon|LucideIcon.accent-icon">
+      <Setter Property="Size" Value="18" />
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    </Style>
+    <Style Selector="icon|LucideIcon.metric-icon">
+      <Setter Property="Size" Value="20" />
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    </Style>
+    <Style Selector="icon|LucideIcon.feature-icon">
+      <Setter Property="Size" Value="22" />
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    </Style>
+    <Style Selector="icon|LucideIcon.button-icon">
+      <Setter Property="Size" Value="16" />
+      <Setter Property="Foreground" Value="{DynamicResource AccentBrush}" />
+    </Style>
+    <Style Selector="Button.btn-primary icon|LucideIcon.button-icon">
+      <Setter Property="Foreground" Value="{DynamicResource SidebarSelectedTextBrush}" />
+    </Style>
+    <Style Selector="Button.btn-danger icon|LucideIcon.button-icon">
+      <Setter Property="Foreground" Value="{DynamicResource SidebarSelectedTextBrush}" />
+    </Style>
+    <Style Selector="Button.btn-warm icon|LucideIcon.button-icon">
+      <Setter Property="Foreground" Value="{DynamicResource SidebarSelectedTextBrush}" />
+    </Style>
     <Style Selector="Border.page-card">
       <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
@@ -184,20 +231,22 @@
       </Setter>
     </Style>
     <Style Selector="TextBlock.kpi-label">
-      <Setter Property="FontSize" Value="11" />
+      <Setter Property="FontSize" Value="{DynamicResource AppCaptionFontSize}" />
       <Setter Property="FontWeight" Value="Bold" />
       <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
     </Style>
     <Style Selector="TextBlock.section-title">
-      <Setter Property="FontSize" Value="18" />
+      <Setter Property="FontSize" Value="{DynamicResource AppSectionFontSize}" />
       <Setter Property="FontWeight" Value="Black" />
       <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
     </Style>
     <Style Selector="TextBlock.section-subtitle">
+      <Setter Property="FontSize" Value="{DynamicResource AppBodyFontSize}" />
       <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
       <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
     <Style Selector="TextBox">
+      <Setter Property="FontSize" Value="{DynamicResource AppBodyFontSize}" />
       <Setter Property="Background" Value="{DynamicResource InputBgBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
       <Setter Property="BorderThickness" Value="1" />
@@ -217,12 +266,15 @@
       </Setter>
     </Style>
     <Style Selector="ComboBox">
+      <Setter Property="FontSize" Value="{DynamicResource AppBodyFontSize}" />
       <Setter Property="Background" Value="{DynamicResource InputBgBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="CornerRadius" Value="{DynamicResource InputCornerRadius}" />
       <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
       <Setter Property="MinHeight" Value="42" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
     <Style Selector="ComboBox:pointerover">
       <Setter Property="BorderBrush" Value="{DynamicResource InputHoverBorderBrush}" />
@@ -234,7 +286,21 @@
         <DropShadowEffect BlurRadius="10" OffsetX="0" OffsetY="0" Opacity="0.35" Color="{DynamicResource FocusRingColor}" />
       </Setter>
     </Style>
+    <Style Selector="ComboBox ContentPresenter">
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ComboBoxItem">
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="MinHeight" Value="38" />
+    </Style>
+    <Style Selector="ComboBoxItem ContentPresenter">
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
     <Style Selector="fa|NumberBox">
+      <Setter Property="FontSize" Value="{DynamicResource AppBodyFontSize}" />
       <Setter Property="Background" Value="{DynamicResource InputBgBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource InputBorderBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
@@ -251,6 +317,7 @@
       </Setter>
     </Style>
     <Style Selector="CheckBox">
+      <Setter Property="FontSize" Value="{DynamicResource AppBodyFontSize}" />
       <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
       <Setter Property="MinHeight" Value="38" />
       <Setter Property="Padding" Value="2" />
@@ -261,6 +328,7 @@
       </Setter>
     </Style>
     <Style Selector="Button">
+      <Setter Property="FontSize" Value="{DynamicResource AppBodyFontSize}" />
       <Setter Property="MinHeight" Value="42" />
       <Setter Property="BorderThickness" Value="1" />
       <Setter Property="BorderBrush" Value="{DynamicResource ButtonDepthBorderBrush}" />
@@ -353,6 +421,7 @@
       <Setter Property="HorizontalAlignment" Value="Left" />
     </Style>
     <Style Selector="Border.badge TextBlock">
+      <Setter Property="FontSize" Value="{DynamicResource AppCaptionFontSize}" />
       <Setter Property="VerticalAlignment" Value="Center" />
       <Setter Property="TextAlignment" Value="Center" />
     </Style>
@@ -396,6 +465,7 @@
       <Setter Property="LineSpacing" Value="12" />
     </Style>
     <Style Selector="dg|DataGrid.audit-grid">
+      <Setter Property="FontSize" Value="{DynamicResource AppBodyFontSize}" />
       <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
       <Setter Property="BorderThickness" Value="1" />
@@ -415,13 +485,22 @@
     <Style Selector="dg|DataGrid.audit-grid dg|DataGridColumnHeader">
       <Setter Property="Background" Value="{DynamicResource CardAltBgBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+      <Setter Property="FontSize" Value="{DynamicResource AppCaptionFontSize}" />
       <Setter Property="FontWeight" Value="Bold" />
       <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
     </Style>
     <Style Selector="dg|DataGrid.audit-grid dg|DataGridCell">
       <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+      <Setter Property="FontSize" Value="{DynamicResource AppBodyFontSize}" />
       <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
       <Setter Property="Padding" Value="10,6" />
+    </Style>
+    <Style Selector="dg|DataGrid.audit-grid dg|DataGridCell TextBlock">
+      <Setter Property="FontSize" Value="{DynamicResource AppBodyFontSize}" />
+      <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+    </Style>
+    <Style Selector="dg|DataGrid.audit-grid dg|DataGridColumnHeader ContentPresenter">
+      <Setter Property="FontSize" Value="{DynamicResource AppCaptionFontSize}" />
     </Style>
     <Style Selector="dg|DataGrid.audit-grid dg|DataGridRow">
       <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
@@ -430,6 +509,7 @@
       <Setter Property="Background" Value="{DynamicResource CardAltBgBrush}" />
     </Style>
     <Style Selector="dg|DataGrid.editor-grid">
+      <Setter Property="FontSize" Value="{DynamicResource AppBodyFontSize}" />
       <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
       <Setter Property="BorderThickness" Value="1" />
@@ -444,13 +524,22 @@
     <Style Selector="dg|DataGrid.editor-grid dg|DataGridColumnHeader">
       <Setter Property="Background" Value="{DynamicResource CardAltBgBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+      <Setter Property="FontSize" Value="{DynamicResource AppCaptionFontSize}" />
       <Setter Property="FontWeight" Value="Bold" />
       <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
     </Style>
     <Style Selector="dg|DataGrid.editor-grid dg|DataGridCell">
       <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+      <Setter Property="FontSize" Value="{DynamicResource AppBodyFontSize}" />
       <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
       <Setter Property="Padding" Value="8,4" />
+    </Style>
+    <Style Selector="dg|DataGrid.editor-grid dg|DataGridCell TextBlock">
+      <Setter Property="FontSize" Value="{DynamicResource AppBodyFontSize}" />
+      <Setter Property="Foreground" Value="{DynamicResource PrimaryTextBrush}" />
+    </Style>
+    <Style Selector="dg|DataGrid.editor-grid dg|DataGridColumnHeader ContentPresenter">
+      <Setter Property="FontSize" Value="{DynamicResource AppCaptionFontSize}" />
     </Style>
     <Style Selector="TextBlock.hint">
       <Setter Property="IsVisible" Value="False" />

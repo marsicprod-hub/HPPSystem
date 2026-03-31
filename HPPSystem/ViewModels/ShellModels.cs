@@ -1,7 +1,7 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Material.Icons;
+using Lucide.Avalonia;
 
 namespace HPPSystem.ViewModels;
 
@@ -11,6 +11,7 @@ public enum AppPage
     Materials,
     Warehouse,
     Recipes,
+    Production,
     Combos,
     Pos,
     Bookkeeping,
@@ -27,16 +28,30 @@ public sealed partial class NavigationItemViewModel : ObservableObject
     [ObservableProperty]
     private bool _isVisible = true;
 
-    public NavigationItemViewModel(AppPage page, string label, MaterialIconKind icon, Action<AppPage> navigate)
+    public NavigationItemViewModel(AppPage page, string label, Action<AppPage> navigate)
     {
         Page = page;
         Label = label;
-        Icon = icon;
+        Icon = page switch
+        {
+            AppPage.Dashboard => LucideIconKind.LayoutDashboard,
+            AppPage.Materials => LucideIconKind.Package,
+            AppPage.Warehouse => LucideIconKind.Warehouse,
+            AppPage.Recipes => LucideIconKind.ChefHat,
+            AppPage.Production => LucideIconKind.Factory,
+            AppPage.Combos => LucideIconKind.Layers2,
+            AppPage.Pos => LucideIconKind.ReceiptText,
+            AppPage.Bookkeeping => LucideIconKind.Wallet,
+            AppPage.Simulation => LucideIconKind.TrendingUp,
+            AppPage.Profile => LucideIconKind.CircleUser,
+            AppPage.Settings => LucideIconKind.Settings2,
+            _ => LucideIconKind.AppWindow
+        };
         NavigateCommand = new RelayCommand(() => navigate(Page));
     }
 
     public AppPage Page { get; }
     public string Label { get; }
-    public MaterialIconKind Icon { get; }
+    public LucideIconKind Icon { get; }
     public IRelayCommand NavigateCommand { get; }
 }

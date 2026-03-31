@@ -4,8 +4,8 @@
              xmlns:model="using:HPPSystem.Models"
              xmlns:fa="using:FluentAvalonia.UI.Controls"
              xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
-             xmlns:fi="using:FluentIcons.Avalonia"
              xmlns:lottie="using:Avalonia.Skia.Lottie"
+             xmlns:icon="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
              x:Class="HPPSystem.Views.BookkeepingView"
              x:Name="Root"
              x:DataType="vm:BookkeepingViewModel">
@@ -13,7 +13,7 @@
     <StackPanel Spacing="18">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
         <StackPanel Spacing="4">
-          <TextBlock Text="Pembukuan &amp; Kas" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="Pembukuan &amp; Kas" FontSize="{DynamicResource AppPageTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           <TextBlock Text="Input arus kas dan audit histori transaksi dalam satu workspace." Foreground="{DynamicResource SecondaryTextBrush}" />
         </StackPanel>
         <Border Grid.Column="1" Classes="badge">
@@ -24,35 +24,86 @@
       <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
         <Border Grid.Column="0" Classes="page-card">
           <StackPanel Spacing="6">
+            <icon:LucideIcon Kind="Wallet" Classes="metric-icon" />
             <TextBlock Text="Pemasukan" Classes="kpi-label" />
-            <TextBlock Text="{Binding TotalIncomeText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding TotalIncomeText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
         <Border Grid.Column="1" Classes="page-card">
           <StackPanel Spacing="6">
+            <icon:LucideIcon Kind="ReceiptText" Classes="metric-icon" />
             <TextBlock Text="Pengeluaran" Classes="kpi-label" />
-            <TextBlock Text="{Binding TotalExpenseText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding TotalExpenseText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
         <Border Grid.Column="2" Classes="page-card">
           <StackPanel Spacing="6">
+            <icon:LucideIcon Kind="TrendingUp" Classes="metric-icon" />
             <TextBlock Text="Saldo Bersih" Classes="kpi-label" />
-            <TextBlock Text="{Binding NetBalanceText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource AccentBrush}" />
+            <TextBlock Text="{Binding NetBalanceText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource AccentBrush}" />
           </StackPanel>
         </Border>
         <Border Grid.Column="3" Classes="page-card">
           <StackPanel Spacing="6">
+            <icon:LucideIcon Kind="ScrollText" Classes="metric-icon" />
             <TextBlock Text="Histori Aktif" Classes="kpi-label" />
-            <TextBlock Text="{Binding HistorySummaryText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding HistorySummaryText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
       </Grid>
 
-      <Grid ColumnDefinitions="1.05*,1.35*" ColumnSpacing="16">
-        <Border Grid.Column="0" Classes="page-card">
+      <StackPanel Spacing="16">
+        <Border Classes="page-card">
           <StackPanel Spacing="12">
-            <TextBlock Text="Form Transaksi" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="Form Transaksi" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
             <TextBlock Text="{Binding FormFlowSummaryText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+
+            <Border Classes="metric-card" Background="{DynamicResource AccentSoftBrush}" IsVisible="{Binding HasProductionShortageRecommendations}">
+              <StackPanel Spacing="10">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                  <StackPanel Spacing="4">
+                    <TextBlock Text="Rekomendasi Belanja Produksi" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <TextBlock Text="{Binding ProductionShortageHeadlineText}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+                    <TextBlock Text="{Binding ProductionShortageSummaryText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                  </StackPanel>
+                  <Button Grid.Column="1"
+                          Classes="btn-warm"
+                          Command="{Binding ApplyProductionShortageTemplateCommand}"
+                          VerticalAlignment="Top">
+                    <TextBlock Text="{Binding ProductionShortageActionText}" />
+                  </Button>
+                </Grid>
+
+                <ItemsControl ItemsSource="{Binding ProductionShortageRecommendations}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vm:ProductionBelanjaRecommendationItemViewModel">
+                      <Border Margin="0,0,0,8" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="12">
+                        <Grid ColumnDefinitions="2*,*,*,*" ColumnSpacing="10">
+                          <StackPanel Spacing="3">
+                            <TextBlock Text="{Binding MaterialLabel}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding ImpactedRecipesText, StringFormat='Tertahan di: {0}'}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                          </StackPanel>
+                          <StackPanel Grid.Column="1" Spacing="3">
+                            <TextBlock Text="Kurang" Classes="kpi-label" />
+                            <TextBlock Text="{Binding MissingQuantityText}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                          </StackPanel>
+                          <StackPanel Grid.Column="2" Spacing="3">
+                            <TextBlock Text="Mix Pack" Classes="kpi-label" />
+                            <TextBlock Text="{Binding PackText}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <TextBlock Text="{Binding RecommendedMixText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                          </StackPanel>
+                          <StackPanel Grid.Column="3" Spacing="3">
+                            <TextBlock Text="Rekomendasi" Classes="kpi-label" />
+                            <TextBlock Text="{Binding RecommendedQuantityText}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+                            <TextBlock Text="{Binding RecommendedPriceText}" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" />
+                          </StackPanel>
+                        </Grid>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
 
             <WrapPanel Classes="action-row">
               <Button Classes="btn-primary" IsVisible="{Binding IsExpenseMode}" Command="{Binding SetExpenseCommand}">
@@ -113,7 +164,7 @@
 
             <Border Classes="page-card" IsVisible="{Binding IsBelanjaBahan}">
               <StackPanel Spacing="10">
-                <TextBlock Text="Item Belanja" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="Item Belanja" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                 <WrapPanel Classes="action-row">
                   <Button Classes="btn-secondary btn-sm" Command="{Binding AddPurchasedItemCommand}">
                     <TextBlock Text="Tambah Item" />
@@ -192,9 +243,9 @@
           </StackPanel>
         </Border>
 
-        <Border Grid.Column="1" Classes="page-card">
+        <Border Classes="page-card">
           <StackPanel Spacing="12">
-            <TextBlock Text="Histori Transaksi" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="Histori Transaksi" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
 
             <TextBox Text="{Binding HistorySearchTerm}" Watermark="Cari deskripsi / kategori / item..." />
             <TextBlock Text="{Binding HistorySearchHelperText}" Foreground="{DynamicResource SecondaryTextBrush}" />
@@ -275,7 +326,7 @@
             </dg:DataGrid>
           </StackPanel>
         </Border>
-      </Grid>
+      </StackPanel>
     </StackPanel>
   </ScrollViewer>
 </UserControl>

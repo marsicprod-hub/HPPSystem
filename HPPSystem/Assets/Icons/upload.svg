@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <circle class="shadow" cx="34" cy="34" r="20"/>
+  <circle class="base" cx="32" cy="32" r="20"/>
+  <path class="accent" d="M32 12a20 20 0 0 1 17 10H15A20 20 0 0 1 32 12z"/>
+  <path class="highlight" d="M23 21h8"/>
+  <circle class="stroke" cx="32" cy="32" r="20"/>
+  <path class="stroke" d="M32 39V22"/>
+  <path class="stroke" d="m24 29 8-8 8 8"/>
+  <path class="stroke" d="M20 43h24"/>
+</svg>

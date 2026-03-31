@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -46,7 +47,7 @@ public sealed partial class SimulationViewModel : PageViewModelBase
     {
         var profileId = DataService.Settings.ActiveProfileId;
         var materials = DataService.Materials.Where(x => x.ProfileId == profileId).ToList();
-        var recipes = DataService.Recipes.Where(x => x.ProfileId == profileId).OrderBy(x => x.Name).ToList();
+        var recipes = DataService.Recipes.Where(x => x.ProfileId == profileId).OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ToList();
 
         Results.Clear();
         foreach (var recipe in recipes)
@@ -108,14 +109,14 @@ public sealed partial class SimulationViewModel : PageViewModelBase
 
         var worstCase = Results
             .OrderBy(result => result.RemainingMarginValue)
-            .ThenBy(result => result.RecipeName)
+            .ThenBy(result => result.RecipeName, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
         WorstRecipeNameText = worstCase?.RecipeName ?? "-";
         WorstRecipeMarginText = worstCase?.RemainingMarginText ?? "0%";
 
         var bestShield = Results
             .OrderByDescending(result => result.RemainingMarginValue)
-            .ThenBy(result => result.RecipeName)
+            .ThenBy(result => result.RecipeName, StringComparer.OrdinalIgnoreCase)
             .FirstOrDefault();
         BestShieldRecipeText = bestShield?.RecipeName ?? "-";
         BestShieldMarginText = bestShield?.RemainingMarginText ?? "0%";
@@ -172,7 +173,7 @@ public sealed partial class SimulationViewModel : PageViewModelBase
             .OrderByDescending(x => x.IsDanger)
             .ThenByDescending(x => x.IsWarning)
             .ThenBy(x => x.RemainingMarginValue)
-            .ThenBy(x => x.RecipeName)
+            .ThenBy(x => x.RecipeName, StringComparer.OrdinalIgnoreCase)
             .ToList();
 
         Results.Clear();

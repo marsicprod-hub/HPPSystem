@@ -21,6 +21,7 @@ public sealed partial class BookkeepingViewModel : PageViewModelBase
     private const string HistoryBelanjaValue = "belanja-bahan";
 
     private string _latestBelanjaTemplateId = string.Empty;
+    private string _targetProductionOrderId = string.Empty;
 
     public BookkeepingViewModel(IDataService dataService, NotificationService notifications)
         : base(dataService, notifications)
@@ -35,6 +36,7 @@ public sealed partial class BookkeepingViewModel : PageViewModelBase
     public ObservableCollection<BookkeepingTransactionCardViewModel> FilteredTransactionCards { get; } = new();
     public ObservableCollection<HPPSystem.Models.Material> AvailableMaterials { get; } = new();
     public ObservableCollection<PurchasedItemEntryViewModel> PurchasedItems { get; } = new();
+    public ObservableCollection<ProductionBelanjaRecommendationItemViewModel> ProductionShortageRecommendations { get; } = new();
 
     [ObservableProperty]
     private string _formType = "expense";
@@ -73,6 +75,7 @@ public sealed partial class BookkeepingViewModel : PageViewModelBase
     public decimal AutoCalculatedAmount => PurchasedItems.Sum(x => x.Price);
     public bool HasPurchasedItems => PurchasedItems.Count > 0;
     public bool ShowDeletePrompt => PendingDelete is not null;
+    public bool HasProductionShortageRecommendations => ProductionShortageRecommendations.Count > 0;
 
     public ObservableCollection<string> CategoryOptions { get; } = new();
     public int SyncCandidateCount => PurchasedItems.Count(x => !string.IsNullOrWhiteSpace(x.MaterialId));
@@ -101,6 +104,11 @@ public sealed partial class BookkeepingViewModel : PageViewModelBase
     public string HistorySummaryText { get; private set; } = "0 transaksi ditampilkan.";
     public string LastTransactionText { get; private set; } = "Belum ada transaksi terakhir.";
     public string BelanjaTemplateActionText { get; private set; } = "Belum ada template belanja terakhir.";
+    public string ProductionShortageHeadlineText { get; private set; } = "Belum ada shortage produksi aktif.";
+    public string ProductionShortageSummaryText { get; private set; } = "Saat order produksi tertahan karena bahan kurang, template belanja otomatis akan tampil di sini.";
+    public string ProductionShortageActionText => HasProductionShortageRecommendations
+        ? $"Terapkan template shortage ({ProductionShortageRecommendations.Count} bahan)"
+        : "Belum ada template shortage";
 
     public bool IsHistoryAll => string.Equals(HistoryFocusMode, HistoryAllValue, StringComparison.Ordinal);
     public bool IsHistoryExpense => string.Equals(HistoryFocusMode, HistoryExpenseValue, StringComparison.Ordinal);
@@ -164,7 +172,7 @@ public sealed partial class BookkeepingViewModel : PageViewModelBase
         }
 
         AvailableMaterials.Clear();
-        foreach (var material in DataService.Materials.Where(x => x.ProfileId == profileId).OrderBy(x => x.Name))
+        foreach (var material in DataService.Materials.Where(x => x.ProfileId == profileId).OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase))
         {
             AvailableMaterials.Add(material);
         }
@@ -195,10 +203,15 @@ public sealed partial class BookkeepingViewModel : PageViewModelBase
         OnPropertyChanged(nameof(FormAmountPreviewText));
         OnPropertyChanged(nameof(FormFlowSummaryText));
         OnPropertyChanged(nameof(SaveActionText));
+        OnPropertyChanged(nameof(HasProductionShortageRecommendations));
+        OnPropertyChanged(nameof(ProductionShortageHeadlineText));
+        OnPropertyChanged(nameof(ProductionShortageSummaryText));
+        OnPropertyChanged(nameof(ProductionShortageActionText));
 
         RefreshCategoryOptions();
         RefreshHistoryView();
         RefreshBelanjaTemplateState();
+        RefreshProductionShortageRecommendationState();
     }
 
     [RelayCommand]
@@ -320,6 +333,53 @@ public sealed partial class BookkeepingViewModel : PageViewModelBase
         OnPropertyChanged(nameof(SyncCandidateCount));
         OnPropertyChanged(nameof(SyncCatalogSummaryText));
         Success("Template belanja terakhir diterapkan ke form.");
+    }
+
+    [RelayCommand]
+    private void ApplyProductionShortageTemplate()
+    {
+        if (!HasProductionShortageRecommendations)
+        {
+            Error("Belum ada rekomendasi belanja dari shortage produksi.");
+            return;
+        }
+
+        SetExpense();
+        FormCategory = "Belanja Bahan";
+        FormDescription = $"Belanja rekomendasi produksi ({ProductionShortageRecommendations.Count} bahan)";
+        FormDate = DateTime.Today.ToString("yyyy-MM-dd");
+        SyncPurchasesToCatalog = true;
+        ClearPurchasedItems();
+
+        foreach (var recommendation in ProductionShortageRecommendations)
+        {
+            foreach (var pack in recommendation.PlanItems)
+            {
+                var item = new PurchasedItemEntryViewModel
+                {
+                    MaterialId = pack.MaterialId,
+                    CustomName = pack.MaterialLabel,
+                    Qty = pack.TotalQuantityValue,
+                    Price = pack.TotalPriceValue
+                };
+                item.PropertyChanged += OnPurchasedItemChanged;
+                PurchasedItems.Add(item);
+            }
+        }
+
+        OnPropertyChanged(nameof(AutoCalculatedAmount));
+        OnPropertyChanged(nameof(FormAmountPreviewText));
+        OnPropertyChanged(nameof(HasPurchasedItems));
+        OnPropertyChanged(nameof(SyncCandidateCount));
+        OnPropertyChanged(nameof(SyncCatalogSummaryText));
+        Success("Template belanja shortage produksi diterapkan ke form.");
+    }
+
+    public void PrepareShortageTemplateFromProductionOrder(string productionOrderId)
+    {
+        _targetProductionOrderId = productionOrderId?.Trim() ?? string.Empty;
+        RefreshProductionShortageRecommendationState();
+        ApplyProductionShortageTemplate();
     }
 
     [RelayCommand]
@@ -575,6 +635,126 @@ public sealed partial class BookkeepingViewModel : PageViewModelBase
         OnPropertyChanged(nameof(BelanjaTemplateActionText));
     }
 
+    private void RefreshProductionShortageRecommendationState()
+    {
+        ProductionShortageRecommendations.Clear();
+        var shortages = BuildProductionShortageRecommendations(_targetProductionOrderId);
+
+        foreach (var shortage in shortages)
+        {
+            ProductionShortageRecommendations.Add(shortage);
+        }
+
+        var targetOrder = string.IsNullOrWhiteSpace(_targetProductionOrderId)
+            ? null
+            : DataService.ProductionOrders.FirstOrDefault(x => string.Equals(x.Id, _targetProductionOrderId, StringComparison.Ordinal));
+
+        ProductionShortageHeadlineText = targetOrder is not null
+            ? shortages.Count switch
+            {
+                0 => $"Shortage produksi untuk {targetOrder.RecipeName} sudah bersih.",
+                1 => $"Ada 1 bahan yang perlu dibelanjakan untuk {targetOrder.RecipeName}.",
+                _ => $"Ada {shortages.Count} bahan yang perlu dibelanjakan untuk {targetOrder.RecipeName}."
+            }
+            : shortages.Count switch
+        {
+            0 => "Belum ada shortage produksi aktif.",
+            1 => "Ada 1 bahan yang perlu dibelanjakan untuk membuka produksi.",
+            _ => $"Ada {shortages.Count} bahan yang perlu dibelanjakan untuk membuka produksi."
+        };
+
+        ProductionShortageSummaryText = shortages.Count == 0
+            ? "Saat order produksi tertahan karena bahan kurang, template belanja otomatis akan tampil di sini."
+            : targetOrder is not null
+                ? $"Template ini fokus ke order {targetOrder.RecipeName} pada {targetOrder.ProductionDate}. Rekomendasi tetap dibulatkan per pack."
+                : $"Template belanja otomatis dibulatkan per pack. Contoh: kebutuhan kurang 250 gram dengan pack 1000 gram akan direkomendasikan belanja 1000 gram.";
+
+        OnPropertyChanged(nameof(HasProductionShortageRecommendations));
+        OnPropertyChanged(nameof(ProductionShortageHeadlineText));
+        OnPropertyChanged(nameof(ProductionShortageSummaryText));
+        OnPropertyChanged(nameof(ProductionShortageActionText));
+    }
+
+    private List<ProductionBelanjaRecommendationItemViewModel> BuildProductionShortageRecommendations(string? productionOrderId = null)
+    {
+        var profileId = DataService.Settings.ActiveProfileId;
+        var activeOrders = DataService.ProductionOrders
+            .Where(x => x.ProfileId == profileId && !string.Equals(x.Status, "completed", StringComparison.OrdinalIgnoreCase))
+            .Where(x => string.IsNullOrWhiteSpace(productionOrderId) || string.Equals(x.Id, productionOrderId, StringComparison.Ordinal))
+            .ToList();
+        var materials = AvailableMaterials.ToList();
+
+        return activeOrders
+            .SelectMany(order => order.Requirements.Select(requirement => new
+            {
+                OrderId = order.Id,
+                order.RecipeName,
+                Requirement = requirement,
+                RequiredQuantity = requirement.QuantityPerBatch * order.BatchCount,
+                FamilyKey = MaterialVariantPlanner.BuildFamilyKey(requirement)
+            }))
+            .GroupBy(x => x.FamilyKey)
+            .Select(group =>
+            {
+                var familyVariants = MaterialVariantPlanner.GetFamilyVariants(materials, group.Key);
+                var primaryMaterial = familyVariants.FirstOrDefault();
+                var totalRequired = group.Sum(x => x.RequiredQuantity);
+                var availableStock = MaterialVariantPlanner.GetTrackedFamilyStock(familyVariants);
+                var shortage = Math.Max(totalRequired - availableStock, 0);
+                if (primaryMaterial is null || shortage <= 0)
+                {
+                    return null;
+                }
+
+                var purchasePlan = MaterialVariantPlanner.BuildPurchasePlan(shortage, familyVariants);
+                if (purchasePlan is null)
+                {
+                    return null;
+                }
+
+                var impactedRecipes = group
+                    .Select(x => x.RecipeName)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                return new ProductionBelanjaRecommendationItemViewModel
+                {
+                    MaterialId = primaryMaterial.Id,
+                    MaterialLabel = primaryMaterial.CatalogLabel,
+                    MissingQuantityValue = shortage,
+                    PackQuantityValue = purchasePlan.Items.Min(item => item.Material.Weight),
+                    RecommendedQuantityValue = purchasePlan.TotalQuantity,
+                    RecommendedPriceValue = purchasePlan.TotalPrice,
+                    MissingQuantityText = $"{shortage:0.##} {primaryMaterial.Unit}",
+                    PackText = $"{primaryMaterial.Unit} family | {familyVariants.Count} varian pack",
+                    RecommendedQuantityText = $"{purchasePlan.TotalQuantity:0.##} {primaryMaterial.Unit}",
+                    RecommendedPriceText = FormattingHelper.FormatCurrency(purchasePlan.TotalPrice),
+                    ImpactedRecipesText = string.Join(", ", impactedRecipes),
+                    RecommendedMixText = string.Join(" + ", purchasePlan.Items.Select(item => $"{item.PackCount}x {item.Material.Weight:0.##} {item.Material.Unit}")),
+                    PlanItems =
+                    [
+                        .. purchasePlan.Items.Select(item => new ProductionBelanjaRecommendationPackItemViewModel
+                        {
+                            MaterialId = item.Material.Id,
+                            MaterialLabel = item.Material.CatalogLabel,
+                            PackCount = item.PackCount,
+                            PackQuantityValue = item.Material.Weight,
+                            TotalQuantityValue = item.TotalQuantity,
+                            TotalPriceValue = item.TotalPrice,
+                            PackText = $"{item.PackCount}x {item.Material.Weight:0.##} {item.Material.Unit}",
+                            TotalText = $"{item.TotalQuantity:0.##} {item.Material.Unit} | {FormattingHelper.FormatCurrency(item.TotalPrice)}"
+                        })
+                    ]
+                };
+            })
+            .Where(x => x is not null)
+            .OrderByDescending(x => x!.MissingQuantityValue)
+            .ThenBy(x => x!.MaterialLabel, StringComparer.OrdinalIgnoreCase)
+            .Select(x => x!)
+            .ToList();
+    }
+
     private static bool MatchHistorySearch(Transaction transaction, string keyword)
     {
         var term = keyword.Trim();
@@ -648,4 +828,33 @@ public sealed partial class BookkeepingViewModel : PageViewModelBase
             IsExpense = !isIncome
         };
     }
+}
+
+public sealed partial class ProductionBelanjaRecommendationItemViewModel : ObservableObject
+{
+    public string MaterialId { get; init; } = string.Empty;
+    public string MaterialLabel { get; init; } = string.Empty;
+    public decimal MissingQuantityValue { get; init; }
+    public decimal PackQuantityValue { get; init; }
+    public decimal RecommendedQuantityValue { get; init; }
+    public decimal RecommendedPriceValue { get; init; }
+    public string MissingQuantityText { get; init; } = string.Empty;
+    public string PackText { get; init; } = string.Empty;
+    public string RecommendedQuantityText { get; init; } = string.Empty;
+    public string RecommendedPriceText { get; init; } = string.Empty;
+    public string ImpactedRecipesText { get; init; } = string.Empty;
+    public string RecommendedMixText { get; init; } = string.Empty;
+    public IReadOnlyList<ProductionBelanjaRecommendationPackItemViewModel> PlanItems { get; init; } = [];
+}
+
+public sealed partial class ProductionBelanjaRecommendationPackItemViewModel : ObservableObject
+{
+    public string MaterialId { get; init; } = string.Empty;
+    public string MaterialLabel { get; init; } = string.Empty;
+    public int PackCount { get; init; }
+    public decimal PackQuantityValue { get; init; }
+    public decimal TotalQuantityValue { get; init; }
+    public decimal TotalPriceValue { get; init; }
+    public string PackText { get; init; } = string.Empty;
+    public string TotalText { get; init; } = string.Empty;
 }

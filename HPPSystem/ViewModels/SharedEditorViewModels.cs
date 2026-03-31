@@ -13,6 +13,9 @@ public sealed partial class IngredientEntryViewModel : ObservableObject
     private string _materialId = string.Empty;
 
     [ObservableProperty]
+    private HPPSystem.Models.Material? _selectedMaterial;
+
+    [ObservableProperty]
     private decimal _quantity;
 
     [ObservableProperty]
@@ -23,6 +26,17 @@ public sealed partial class IngredientEntryViewModel : ObservableObject
 
     [ObservableProperty]
     private string _lineCostText = string.Empty;
+
+    [ObservableProperty]
+    private bool _hasWarehouseWarning;
+
+    [ObservableProperty]
+    private string _warehouseWarningText = string.Empty;
+
+    partial void OnSelectedMaterialChanged(HPPSystem.Models.Material? value)
+    {
+        MaterialId = value?.Id ?? string.Empty;
+    }
 }
 
 public sealed partial class IngredientGroupEditorViewModel : ObservableObject
@@ -68,6 +82,8 @@ public sealed partial class PurchasedItemEntryViewModel : ObservableObject
 
 public sealed partial class PriceHistoryRowViewModel : ObservableObject
 {
+    public DateTime DateValue { get; init; }
+    public decimal PriceValue { get; init; }
     public string DateText { get; init; } = string.Empty;
     public string PriceText { get; init; } = string.Empty;
 }
@@ -75,14 +91,24 @@ public sealed partial class PriceHistoryRowViewModel : ObservableObject
 public sealed partial class MaterialCardViewModel : ObservableObject
 {
     public HPPSystem.Models.Material Material { get; init; } = new();
+    public string NameText { get; init; } = string.Empty;
+    public string BrandText { get; init; } = string.Empty;
     public string UnitBadgeText { get; init; } = string.Empty;
     public string HistoryBadgeText { get; init; } = string.Empty;
+    public decimal StockQuantityValue { get; init; }
+    public string StockUnitText { get; init; } = string.Empty;
     public string StockValueText { get; init; } = string.Empty;
     public string StockStatusText { get; init; } = string.Empty;
     public string StockStatusDetailText { get; init; } = string.Empty;
+    public decimal PackPriceValue { get; init; }
     public string PackPriceText { get; init; } = string.Empty;
+    public decimal PackQuantityValue { get; init; }
+    public string PackUnitText { get; init; } = string.Empty;
     public string WeightText { get; init; } = string.Empty;
+    public decimal UnitCostValue { get; init; }
     public string UnitCostText { get; init; } = string.Empty;
+    public int PriceHistoryCountValue { get; init; }
+    public decimal StockBalanceValue { get; init; }
     public string StockBalanceText { get; init; } = string.Empty;
     public bool IsOutOfStock { get; init; }
     public bool IsLowStock { get; init; }

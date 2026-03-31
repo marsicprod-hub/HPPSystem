@@ -1,0 +1,261 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HPPSystem.ViewModels"
+             xmlns:fa="using:FluentAvalonia.UI.Controls"
+             xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
+             xmlns:lottie="using:Avalonia.Skia.Lottie"
+             xmlns:icon="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
+             x:Class="HPPSystem.Views.ProductionView"
+             x:Name="Root"
+             x:DataType="vm:ProductionViewModel">
+  <ScrollViewer Padding="0,0,16,0">
+    <StackPanel Spacing="14">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+        <StackPanel Spacing="4">
+          <TextBlock Text="Produksi" FontSize="{DynamicResource AppPageTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="Ambil resep yang sudah jadi, jadwalkan batch, lalu konfirmasi selesai untuk mengurangi stok gudang secara aman." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+        </StackPanel>
+        <WrapPanel Grid.Column="1" Classes="action-row" HorizontalAlignment="Right" VerticalAlignment="Top">
+          <Border Classes="badge badge-soft">
+            <TextBlock Text="{Binding QueueCountText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+          </Border>
+          <Border Classes="badge badge-warm">
+            <TextBlock Text="{Binding ReadyCountText}" Foreground="{DynamicResource SidebarSelectedTextBrush}" FontWeight="Bold" />
+          </Border>
+        </WrapPanel>
+      </Grid>
+
+      <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
+        <Border Grid.Column="0" Classes="page-card">
+          <StackPanel Spacing="6">
+            <icon:LucideIcon Kind="Factory" Classes="metric-icon" />
+            <TextBlock Text="Produksi Aktif" Classes="kpi-label" />
+            <TextBlock Text="{Binding PendingCountText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="1" Classes="page-card">
+          <StackPanel Spacing="6">
+            <icon:LucideIcon Kind="CircleCheck" Classes="metric-icon" />
+            <TextBlock Text="Siap Konfirmasi" Classes="kpi-label" />
+            <TextBlock Text="{Binding ReadyCountText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="2" Classes="page-card">
+          <StackPanel Spacing="6">
+            <icon:LucideIcon Kind="TriangleAlert" Classes="metric-icon" />
+            <TextBlock Text="Tertahan Stok" Classes="kpi-label" />
+            <TextBlock Text="{Binding BlockedCountText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="3" Classes="page-card">
+          <StackPanel Spacing="6">
+            <icon:LucideIcon Kind="BadgeCheck" Classes="metric-icon" />
+            <TextBlock Text="Selesai" Classes="kpi-label" />
+            <TextBlock Text="{Binding CompletedCountText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Border Classes="page-card">
+        <StackPanel Spacing="12">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <StackPanel Spacing="4">
+              <TextBlock Text="{Binding DraftTitleText}" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="{Binding DraftRecipeGuideText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+            <Border Grid.Column="1" Classes="badge badge-soft" VerticalAlignment="Top">
+              <TextBlock Text="{Binding DraftBatchOutputText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+            </Border>
+          </Grid>
+
+          <Grid ColumnDefinitions="2.2*,1*,1*,Auto" ColumnSpacing="10">
+            <StackPanel Grid.Column="0" Spacing="6">
+              <TextBlock Text="Resep Produksi" Classes="kpi-label" />
+              <ComboBox ItemsSource="{Binding RecipeOptions}"
+                        SelectedItem="{Binding SelectedRecipeOption}"
+                        DisplayMemberBinding="{Binding Name}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Spacing="6">
+              <TextBlock Text="Tanggal Produksi" Classes="kpi-label" />
+              <TextBox Text="{Binding DraftProductionDate}" Watermark="yyyy-MM-dd" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Spacing="6">
+              <TextBlock Text="Jumlah Batch" Classes="kpi-label" />
+              <fa:NumberBox Value="{Binding DraftBatchCount}" SmallChange="1" Minimum="1" SpinButtonPlacementMode="Compact" />
+            </StackPanel>
+            <WrapPanel Grid.Column="3" Classes="action-row" VerticalAlignment="Bottom">
+              <Button Classes="btn-ghost" Command="{Binding UseTodayCommand}">
+                <TextBlock Text="Hari Ini" />
+              </Button>
+              <Button Classes="btn-primary"
+                      Command="{Binding CreateOrderCommand}"
+                      IsEnabled="{Binding CanCreateOrder}">
+                <TextBlock Text="{Binding DraftActionText}" />
+              </Button>
+            </WrapPanel>
+          </Grid>
+
+          <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+            <Border Grid.Column="0" Classes="metric-card">
+              <StackPanel Spacing="4">
+                <TextBlock Text="Tanggal &amp; Output" Classes="kpi-label" />
+                <TextBlock Text="{Binding DraftDateGuideText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding DraftBatchGuideText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+            <Border Grid.Column="1" Classes="metric-card" Background="{DynamicResource AccentSoftBrush}">
+              <StackPanel Spacing="4">
+                <TextBlock Text="Readiness" Classes="kpi-label" />
+                <TextBlock Text="{Binding DraftReadinessText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+          </Grid>
+
+          <StackPanel Spacing="8" IsVisible="{Binding HasDraftRequirements}">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+              <StackPanel Spacing="4">
+                <TextBlock Text="Kebutuhan Batch" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="Preview ini membaca kebutuhan bahan dari resep terpilih dan membandingkannya dengan stok gudang saat ini." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+              </StackPanel>
+              <Border Grid.Column="1" Classes="badge">
+                <TextBlock Text="{Binding DraftRequirements.Count, StringFormat='{}{0} bahan'}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+              </Border>
+            </Grid>
+
+            <dg:DataGrid Classes="audit-grid"
+                         ItemsSource="{Binding DraftRequirements}"
+                         AutoGenerateColumns="False"
+                         CanUserResizeColumns="True"
+                         MinHeight="180">
+              <dg:DataGrid.Columns>
+                <dg:DataGridTextColumn Header="Material" Binding="{Binding MaterialLabel}" Width="2*" />
+                <dg:DataGridTextColumn Header="Per Batch" Binding="{Binding QuantityPerBatchText}" Width="*" />
+                <dg:DataGridTextColumn Header="Total Butuh" Binding="{Binding RequiredQuantityText}" Width="*" />
+                <dg:DataGridTextColumn Header="Stok Gudang" Binding="{Binding CurrentStockText}" Width="*" />
+                <dg:DataGridTextColumn Header="Status" Binding="{Binding StatusText}" Width="*" />
+                <dg:DataGridTextColumn Header="Catatan" Binding="{Binding GuidanceText}" Width="2*" />
+              </dg:DataGrid.Columns>
+            </dg:DataGrid>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="empty-state" IsVisible="{Binding !HasRecipes}">
+        <StackPanel Spacing="12" HorizontalAlignment="Center">
+          <lottie:Lottie Width="120" Height="120" Path="avares://HPPSystem/Assets/Animations/empty-pulse.json" />
+          <TextBlock Text="Belum ada resep untuk diproduksi" FontSize="{DynamicResource AppDisplaySmallFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
+          <TextBlock Text="Buat resep dulu di halaman Resep. Setelah itu recipe akan otomatis tersedia di studio produksi." Foreground="{DynamicResource SecondaryTextBrush}" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="420" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="page-card" IsVisible="{Binding HasOrders}">
+        <StackPanel Spacing="12">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <StackPanel Spacing="4">
+              <TextBlock Text="List Produksi" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="{Binding QueueInsightText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+            <Border Grid.Column="1" Classes="badge badge-soft" VerticalAlignment="Top">
+              <TextBlock Text="{Binding CompletedCountText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+            </Border>
+          </Grid>
+
+          <dg:DataGrid Classes="audit-grid"
+                       ItemsSource="{Binding ProductionQueue}"
+                       SelectedItem="{Binding SelectedOrder}"
+                       AutoGenerateColumns="False"
+                       SelectionMode="Single"
+                       CanUserResizeColumns="True">
+            <dg:DataGrid.Columns>
+              <dg:DataGridTextColumn Header="Tanggal" Binding="{Binding DateText}" Width="*" />
+              <dg:DataGridTextColumn Header="Resep" Binding="{Binding RecipeName}" Width="2*" />
+              <dg:DataGridTextColumn Header="Batch" Binding="{Binding BatchText}" Width="*" />
+              <dg:DataGridTextColumn Header="Output" Binding="{Binding OutputText}" Width="*" />
+              <dg:DataGridTextColumn Header="Bahan" Binding="{Binding RequirementCountText}" Width="*" />
+              <dg:DataGridTextColumn Header="Status" Binding="{Binding StatusText}" Width="*" />
+              <dg:DataGridTemplateColumn Header="Aksi" Width="220">
+                <dg:DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate DataType="vm:ProductionOrderCardViewModel">
+                    <WrapPanel Classes="action-row" VerticalAlignment="Center">
+                      <Button Classes="btn-warm btn-sm"
+                              Command="{Binding #Root.DataContext.ConfirmOrderCommand}"
+                              CommandParameter="{Binding .}"
+                              IsEnabled="{Binding !IsCompleted}">
+                        <TextBlock Text="Konfirmasi" />
+                      </Button>
+                      <Button Classes="btn-secondary btn-sm"
+                              Command="{Binding #Root.DataContext.OpenBookkeepingForShortageCommand}"
+                              CommandParameter="{Binding .}"
+                              IsVisible="{Binding IsBlocked}">
+                        <TextBlock Text="Belanja Bahan" />
+                      </Button>
+                      <Button Classes="btn-danger btn-sm"
+                              Command="{Binding #Root.DataContext.RemoveOrderCommand}"
+                              CommandParameter="{Binding .}">
+                        <TextBlock Text="Hapus" />
+                      </Button>
+                    </WrapPanel>
+                  </DataTemplate>
+                </dg:DataGridTemplateColumn.CellTemplate>
+              </dg:DataGridTemplateColumn>
+            </dg:DataGrid.Columns>
+          </dg:DataGrid>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="page-card" IsVisible="{Binding HasSelectedOrder}">
+        <StackPanel Spacing="10">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Detail Produksi" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="{Binding SelectedOrderTitleText}" FontSize="{DynamicResource AppDisplaySmallFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="{Binding SelectedOrderScheduleText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+            <Border Grid.Column="1" Classes="badge badge-soft" VerticalAlignment="Top">
+              <TextBlock Text="{Binding SelectedOrderStatusText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+            </Border>
+          </Grid>
+
+          <Border Classes="metric-card" Background="{DynamicResource AccentSoftBrush}">
+            <TextBlock Text="{Binding SelectedOrderHintText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" TextWrapping="Wrap" />
+          </Border>
+
+          <dg:DataGrid Classes="audit-grid"
+                       ItemsSource="{Binding SelectedOrderRequirements}"
+                       AutoGenerateColumns="False"
+                       MinHeight="180">
+            <dg:DataGrid.Columns>
+              <dg:DataGridTextColumn Header="Material" Binding="{Binding MaterialLabel}" Width="2*" />
+              <dg:DataGridTextColumn Header="Per Batch" Binding="{Binding QuantityPerBatchText}" Width="*" />
+              <dg:DataGridTextColumn Header="Total Butuh" Binding="{Binding RequiredQuantityText}" Width="*" />
+              <dg:DataGridTextColumn Header="Stok Gudang" Binding="{Binding CurrentStockText}" Width="*" />
+              <dg:DataGridTextColumn Header="Status" Binding="{Binding StatusText}" Width="*" />
+              <dg:DataGridTextColumn Header="Catatan" Binding="{Binding GuidanceText}" Width="2*" />
+            </dg:DataGrid.Columns>
+          </dg:DataGrid>
+
+          <WrapPanel Classes="action-row">
+            <Button Classes="btn-warm"
+                    Command="{Binding ConfirmOrderCommand}"
+                    CommandParameter="{Binding SelectedOrder}"
+                    IsEnabled="{Binding CanConfirmSelectedOrder}">
+              <TextBlock Text="{Binding SelectedOrderActionText}" />
+            </Button>
+            <Button Classes="btn-secondary"
+                    Command="{Binding OpenBookkeepingForShortageCommand}"
+                    CommandParameter="{Binding SelectedOrder}"
+                    IsVisible="{Binding SelectedOrder.IsBlocked}">
+              <TextBlock Text="Buka Pembukuan Belanja" />
+            </Button>
+            <Button Classes="btn-danger"
+                    Command="{Binding RemoveOrderCommand}"
+                    CommandParameter="{Binding SelectedOrder}"
+                    IsEnabled="{Binding HasSelectedOrder}">
+              <TextBlock Text="Hapus dari List" />
+            </Button>
+          </WrapPanel>
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

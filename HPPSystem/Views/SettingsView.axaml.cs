@@ -1,6 +1,7 @@
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using FluentAvalonia.UI.Controls;
 using HPPSystem.ViewModels;
 
 namespace HPPSystem.Views;
@@ -72,6 +73,35 @@ public partial class SettingsView : UserControl
         if (file is not null)
         {
             await vm.SetImportPathAndRunAsync(file.Path.LocalPath);
+        }
+    }
+
+    private async void ClearData_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (DataContext is not SettingsViewModel vm)
+        {
+            return;
+        }
+
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel is null)
+        {
+            return;
+        }
+
+        var dialog = new ContentDialog
+        {
+            Title = "Clear Semua Data",
+            Content = vm.ClearDataPromptText,
+            PrimaryButtonText = "Hapus Semua",
+            CloseButtonText = "Batal",
+            DefaultButton = ContentDialogButton.Close
+        };
+
+        var result = await dialog.ShowAsync(topLevel);
+        if (result == ContentDialogResult.Primary)
+        {
+            await vm.ClearAllDataCommand.ExecuteAsync(null);
         }
     }
 }

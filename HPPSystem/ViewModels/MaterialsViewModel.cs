@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,10 +12,22 @@ namespace HPPSystem.ViewModels;
 
 public sealed partial class MaterialsViewModel : PageViewModelBase
 {
+    private const string SortNameAsc = "name_asc";
+    private const string SortNameDesc = "name_desc";
+    private const string SortUnitAsc = "unit_asc";
+    private const string SortUnitDesc = "unit_desc";
+    private const string SortPriceAsc = "price_asc";
+    private const string SortPriceDesc = "price_desc";
+    private const string SortPackAsc = "pack_asc";
+    private const string SortPackDesc = "pack_desc";
+    private const string SortUnitCostAsc = "unit_cost_asc";
+    private const string SortUnitCostDesc = "unit_cost_desc";
+
     public MaterialsViewModel(IDataService dataService, NotificationService notifications)
         : base(dataService, notifications)
     {
         FormUnit = "gram";
+        BuildSortOptions();
         Refresh();
     }
 
@@ -23,6 +36,7 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
     public ObservableCollection<HPPSystem.Models.Material> FilteredMaterials { get; } = new();
     public ObservableCollection<MaterialCardViewModel> MaterialCards { get; } = new();
     public ObservableCollection<PriceHistoryRowViewModel> HistoryPriceRecords { get; } = new();
+    public ObservableCollection<SelectionOptionViewModel> SortOptions { get; } = new();
 
     [ObservableProperty]
     private bool _showForm;
@@ -35,6 +49,9 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
 
     [ObservableProperty]
     private string _formName = string.Empty;
+
+    [ObservableProperty]
+    private string _formBrand = string.Empty;
 
     [ObservableProperty]
     private decimal _formPrice;
@@ -51,6 +68,9 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
     [ObservableProperty]
     private HPPSystem.Models.Material? _historyMaterial;
 
+    [ObservableProperty]
+    private SelectionOptionViewModel? _selectedSortOption;
+
     public bool HasMaterials => FilteredMaterials.Count > 0;
     public bool ShowDeletePrompt => PendingDelete is not null;
     public bool ShowHistory => HistoryMaterial is not null;
@@ -59,25 +79,31 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
     public string MaterialCountText { get; private set; } = "0 material";
     public string AverageUnitCostText { get; private set; } = FormattingHelper.FormatCurrency(0);
     public string SearchSummaryText { get; private set; } = "0 hasil";
+    public string SortSummaryText => SelectedSortOption?.Label ?? "Nama A-Z";
     public string CatalogInsightText { get; private set; } = "Master material belum tersedia.";
     public string EstimatedUnitCostText => FormWeight <= 0 ? FormattingHelper.FormatCurrency(0) : FormattingHelper.FormatCurrency(FormPrice / FormWeight);
     public string SearchHelperText => string.IsNullOrWhiteSpace(SearchTerm)
-        ? "Cari nama material untuk fokus ke item tertentu."
+        ? "Cari nama material atau merk produk untuk fokus ke item tertentu."
         : $"Filter aktif: \"{SearchTerm.Trim()}\"";
     public string FormTitleText => string.IsNullOrWhiteSpace(EditingId) ? "Tambah Material Baru" : "Edit Material";
     public string FormActionText => string.IsNullOrWhiteSpace(EditingId) ? "Simpan Material" : "Update Material";
     public string FormHelperText => string.IsNullOrWhiteSpace(EditingId)
-        ? "Isi nama bahan, harga per pack, berat bersih, dan satuan. Stok awal diatur terpisah dari halaman Gudang."
-        : "Perbarui data master bahan. Stok fisik tidak diubah dari halaman ini.";
+        ? "Isi nama bahan, merk produk, harga per pack, berat bersih, dan satuan. Stok awal diatur terpisah dari halaman Gudang."
+        : "Perbarui data master bahan dan merk produk. Stok fisik tidak diubah dari halaman ini.";
     public string DeletePromptText => PendingDelete is null ? string.Empty : BuildDeletePromptText(PendingDelete);
-    public string HistoryTitleText => HistoryMaterial is null ? string.Empty : $"Riwayat Harga {HistoryMaterial.Name}";
+    public string HistoryTitleText => HistoryMaterial is null ? string.Empty : $"Riwayat Harga {BuildMaterialLabel(HistoryMaterial)}";
     public string HistorySummaryText => HistoryMaterial is null
         ? string.Empty
-        : $"Harga aktif {FormattingHelper.FormatCurrency(HistoryMaterial.Price)} per pack | {FormattingHelper.FormatCurrency(HistoryMaterial.PricePerUnit)} per {HistoryMaterial.Unit}";
+        : $"{BuildMaterialLabel(HistoryMaterial)} | harga aktif {FormattingHelper.FormatCurrency(HistoryMaterial.Price)} per pack | {FormattingHelper.FormatCurrency(HistoryMaterial.PricePerUnit)} per {HistoryMaterial.Unit}";
     public string HistoryPriceCountText => $"{HistoryPriceRecords.Count} perubahan harga";
-    public string ImportGuideText => "Import Excel membaca kolom Nama Bahan, Berat per Pack, dan Estimasi Harga. Material baru tetap masuk sebagai katalog dengan stok 0.";
+    public string ImportGuideText => "Import Excel membaca nama bahan, merk produk, jumlah isi per pack, satuan pack, dan estimasi harga. Re-import akan update varian yang identitas nama + merk + netto + satuannya sama tanpa membuat duplikat.";
 
     partial void OnSearchTermChanged(string value) => Refresh();
+    partial void OnSelectedSortOptionChanged(SelectionOptionViewModel? value)
+    {
+        OnPropertyChanged(nameof(SortSummaryText));
+        Refresh();
+    }
     partial void OnFormPriceChanged(decimal value) => OnPropertyChanged(nameof(EstimatedUnitCostText));
     partial void OnFormWeightChanged(decimal value) => OnPropertyChanged(nameof(EstimatedUnitCostText));
 
@@ -107,11 +133,12 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
         var profileId = DataService.Settings.ActiveProfileId;
         var allProfileItems = DataService.Materials
             .Where(x => x.ProfileId == profileId)
-            .OrderBy(x => x.Name)
+            .ToList();
+        var sortedProfileItems = ApplySort(allProfileItems)
             .ToList();
 
-        var items = allProfileItems
-            .Where(x => string.IsNullOrWhiteSpace(SearchTerm) || x.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
+        var items = sortedProfileItems
+            .Where(x => MatchesSearch(x, SearchTerm))
             .ToList();
 
         FilteredMaterials.Clear();
@@ -128,12 +155,12 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
                 ?? allProfileItems.FirstOrDefault(x => x.Id == HistoryMaterial.Id);
         }
 
-        MaterialCountText = $"{allProfileItems.Count} material aktif";
-        AverageUnitCostText = allProfileItems.Count == 0
+        MaterialCountText = $"{sortedProfileItems.Count} material aktif";
+        AverageUnitCostText = sortedProfileItems.Count == 0
             ? FormattingHelper.FormatCurrency(0)
-            : FormattingHelper.FormatCurrency(allProfileItems.Average(x => x.PricePerUnit));
+            : FormattingHelper.FormatCurrency(sortedProfileItems.Average(x => x.PricePerUnit));
         SearchSummaryText = $"{items.Count} hasil ditampilkan";
-        CatalogInsightText = allProfileItems.Count switch
+        CatalogInsightText = sortedProfileItems.Count switch
         {
             0 => "Belum ada master material. Tambahkan bahan utama dulu, lalu atur stok fisiknya dari halaman Gudang.",
             _ => "Halaman ini khusus master material. Harga, berat per pack, dan modal per satuan dikelola di sini; stok fisik dikelola di Gudang."
@@ -144,6 +171,7 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
         OnPropertyChanged(nameof(MaterialCountText));
         OnPropertyChanged(nameof(AverageUnitCostText));
         OnPropertyChanged(nameof(SearchSummaryText));
+        OnPropertyChanged(nameof(SortSummaryText));
         OnPropertyChanged(nameof(CatalogInsightText));
         OnPropertyChanged(nameof(SearchHelperText));
         OnPropertyChanged(nameof(HasHistoryPriceRecords));
@@ -168,6 +196,7 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
     {
         EditingId = material.Id;
         FormName = material.Name;
+        FormBrand = material.Brand;
         FormPrice = material.Price;
         FormWeight = material.Weight;
         FormUnit = material.Unit;
@@ -219,10 +248,12 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
         {
             Id = string.IsNullOrWhiteSpace(EditingId) ? Guid.NewGuid().ToString("N") : EditingId,
             Name = FormName.Trim(),
+            Brand = FormBrand.Trim(),
             Price = FormPrice,
             Weight = FormWeight,
             Unit = FormUnit.Trim(),
             Stock = existing?.Stock ?? 0,
+            IsTrackedInWarehouse = existing?.IsTrackedInWarehouse ?? false,
             ProfileId = DataService.Settings.ActiveProfileId
         };
 
@@ -249,14 +280,48 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
         Success($"Import selesai: {result.ImportedCount} material diproses ({result.CreatedCount} baru, {result.UpdatedCount} update).");
     }
 
+    private void BuildSortOptions()
+    {
+        SortOptions.Clear();
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortNameAsc, Label = "Nama A-Z" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortNameDesc, Label = "Nama Z-A" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortUnitAsc, Label = "Satuan A-Z" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortUnitDesc, Label = "Satuan Z-A" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortPriceAsc, Label = "Harga Termurah-Termahal" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortPriceDesc, Label = "Harga Termahal-Termurah" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortPackAsc, Label = "Isi Pack Terkecil-Terbesar" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortPackDesc, Label = "Isi Pack Terbesar-Terkecil" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortUnitCostAsc, Label = "Modal Satuan Termurah-Termahal" });
+        SortOptions.Add(new SelectionOptionViewModel { Value = SortUnitCostDesc, Label = "Modal Satuan Termahal-Termurah" });
+        SelectedSortOption = SortOptions.FirstOrDefault(x => x.Value == SortNameAsc) ?? SortOptions.FirstOrDefault();
+    }
+
     private void ResetForm()
     {
         EditingId = string.Empty;
         FormName = string.Empty;
+        FormBrand = string.Empty;
         FormPrice = 0;
         FormWeight = 0;
         FormUnit = "gram";
         OnPropertyChanged(nameof(EstimatedUnitCostText));
+    }
+
+    private IEnumerable<HPPSystem.Models.Material> ApplySort(IEnumerable<HPPSystem.Models.Material> materials)
+    {
+        return (SelectedSortOption?.Value ?? SortNameAsc) switch
+        {
+            SortNameDesc => materials.OrderByDescending(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortUnitAsc => materials.OrderBy(x => x.Unit, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortUnitDesc => materials.OrderByDescending(x => x.Unit, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortPriceAsc => materials.OrderBy(x => x.Price).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortPriceDesc => materials.OrderByDescending(x => x.Price).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortPackAsc => materials.OrderBy(x => x.Weight).ThenBy(x => x.Unit, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortPackDesc => materials.OrderByDescending(x => x.Weight).ThenBy(x => x.Unit, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortUnitCostAsc => materials.OrderBy(x => x.PricePerUnit).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            SortUnitCostDesc => materials.OrderByDescending(x => x.PricePerUnit).ThenBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase),
+            _ => materials.OrderBy(x => x.Name, StringComparer.OrdinalIgnoreCase).ThenBy(x => x.Brand, StringComparer.OrdinalIgnoreCase)
+        };
     }
 
     private void RefreshHistoryDetails()
@@ -273,8 +338,11 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
         foreach (var record in HistoryMaterial.PriceHistory
                      .OrderByDescending(x => DateTime.TryParse(x.Date, out var date) ? date : DateTime.MinValue))
         {
+            var dateValue = DateTime.TryParse(record.Date, out var parsedDate) ? parsedDate : DateTime.MinValue;
             HistoryPriceRecords.Add(new PriceHistoryRowViewModel
             {
+                DateValue = dateValue,
+                PriceValue = record.Price,
                 DateText = FormattingHelper.FormatDateTime(record.Date),
                 PriceText = FormattingHelper.FormatCurrency(record.Price)
             });
@@ -302,11 +370,34 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
         return new MaterialCardViewModel
         {
             Material = material,
-            UnitBadgeText = $"Satuan {material.Unit}",
+            NameText = material.Name,
+            BrandText = string.IsNullOrWhiteSpace(material.Brand) ? "-" : material.Brand,
+            UnitBadgeText = material.Unit,
             HistoryBadgeText = $"Riwayat Harga {material.PriceHistory.Count}",
+            PackPriceValue = material.Price,
             PackPriceText = FormattingHelper.FormatCurrency(material.Price),
+            PackQuantityValue = material.Weight,
+            PackUnitText = material.Unit,
             WeightText = $"{material.Weight:0.##} {material.Unit}",
-            UnitCostText = FormattingHelper.FormatCurrency(material.PricePerUnit)
+            UnitCostValue = material.PricePerUnit,
+            UnitCostText = FormattingHelper.FormatCurrency(material.PricePerUnit),
+            PriceHistoryCountValue = material.PriceHistory.Count
         };
     }
+
+    private static bool MatchesSearch(HPPSystem.Models.Material material, string searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            return true;
+        }
+
+        return material.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            || material.Brand.Contains(searchTerm, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string BuildMaterialLabel(HPPSystem.Models.Material material)
+        => string.IsNullOrWhiteSpace(material.Brand)
+            ? material.Name
+            : $"{material.Name} | {material.Brand}";
 }

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <ellipse class="shadow" cx="34" cy="18" rx="18" ry="7"/>
+  <ellipse class="base" cx="32" cy="16" rx="18" ry="7"/>
+  <path class="accent" d="M14 16v22c0 3.9 8 7 18 7s18-3.1 18-7V16"/>
+  <path class="highlight" d="M21 13c4.2-2.1 9-3 14-2.5"/>
+  <ellipse class="stroke" cx="32" cy="16" rx="18" ry="7"/>
+  <path class="stroke" d="M14 16v22c0 3.9 8 7 18 7s18-3.1 18-7V16"/>
+  <path class="stroke" d="M14 27c0 3.9 8 7 18 7s18-3.1 18-7"/>
+</svg>

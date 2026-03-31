@@ -4,7 +4,7 @@
              xmlns:model="using:HPPSystem.Models"
              xmlns:fa="using:FluentAvalonia.UI.Controls"
              xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
-             xmlns:fi="using:FluentIcons.Avalonia"
+             xmlns:icon="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
              xmlns:lottie="using:Avalonia.Skia.Lottie"
              x:Class="HPPSystem.Views.CombosView"
              x:Name="Root"
@@ -13,12 +13,12 @@
     <StackPanel Spacing="18">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
         <StackPanel Spacing="4">
-          <TextBlock Text="Bundles" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="Bundles" FontSize="{DynamicResource AppPageTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           <TextBlock Text="{Binding AnalyticsHeadlineText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
         </StackPanel>
         <Button Grid.Column="1" Classes="btn-primary" Command="{Binding StartCreateCommand}" Padding="16,10" CornerRadius="14">
           <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-            <fi:FluentIcon Icon="Add" IconVariant="Filled" FontSize="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+            <icon:LucideIcon Kind="Plus" Size="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
             <TextBlock Grid.Column="1" Text="New Bundle" />
           </Grid>
         </Button>
@@ -27,7 +27,7 @@
       <Border Classes="page-card" Background="{DynamicResource CardAltBgBrush}">
         <Grid ColumnDefinitions="1.85*,*" ColumnSpacing="14">
           <StackPanel Spacing="6">
-            <TextBlock Text="{Binding AnalyticsHeadlineText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding AnalyticsHeadlineText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
             <TextBlock Text="{Binding AnalyticsSupportText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
           </StackPanel>
           <WrapPanel Grid.Column="1" Classes="kpi-grid">
@@ -52,30 +52,30 @@
       <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
         <Border Grid.Column="0" Classes="page-card">
           <StackPanel Spacing="8">
-            <fi:FluentIcon Icon="AppsList" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+            <icon:LucideIcon Kind="Layers2" Size="20" Foreground="{DynamicResource AccentBrush}" />
             <TextBlock Text="Bundles" Classes="kpi-label" />
-            <TextBlock Text="{Binding ComboCountText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding ComboCountText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
         <Border Grid.Column="1" Classes="page-card">
           <StackPanel Spacing="8">
-            <fi:FluentIcon Icon="ArrowTrending" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+            <icon:LucideIcon Kind="TrendingUp" Size="20" Foreground="{DynamicResource AccentBrush}" />
             <TextBlock Text="Average Margin" Classes="kpi-label" />
-            <TextBlock Text="{Binding AverageMarginText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding AverageMarginText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
         <Border Grid.Column="2" Classes="page-card">
           <StackPanel Spacing="8">
-            <fi:FluentIcon Icon="Alert" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentRoseBrush}" />
+            <icon:LucideIcon Kind="TriangleAlert" Size="20" Foreground="{DynamicResource AccentRoseBrush}" />
             <TextBlock Text="Risk Bundles" Classes="kpi-label" />
-            <TextBlock Text="{Binding RiskComboCountText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding RiskComboCountText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
         <Border Grid.Column="3" Classes="page-card">
           <StackPanel Spacing="8">
-            <fi:FluentIcon Icon="Calculator" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+            <icon:LucideIcon Kind="Calculator" Size="20" Foreground="{DynamicResource AccentBrush}" />
             <TextBlock Text="Average HPP" Classes="kpi-label" />
-            <TextBlock Text="{Binding AverageHppText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding AverageHppText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
       </Grid>
@@ -85,7 +85,7 @@
           <StackPanel Spacing="14">
             <Grid ColumnDefinitions="*,Auto">
               <StackPanel Spacing="4">
-                <TextBlock Text="{Binding FormTitleText}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="{Binding FormTitleText}" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                 <TextBlock Text="{Binding FormPricingGuideText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
               </StackPanel>
               <Border Grid.Column="1" Classes="badge badge-warm" VerticalAlignment="Top">
@@ -102,7 +102,7 @@
               <StackPanel Spacing="12">
                 <Grid ColumnDefinitions="*,Auto">
                   <StackPanel Spacing="4">
-                    <TextBlock Text="Bundle Composition" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                    <TextBlock Text="Bundle Composition" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                     <TextBlock Text="{Binding FormRecipeCountText}" Foreground="{DynamicResource SecondaryTextBrush}" />
                   </StackPanel>
                   <Button Grid.Column="1" Classes="btn-primary" Command="{Binding AddRecipeEntryCommand}" Padding="12,8">
@@ -146,7 +146,7 @@
           <StackPanel Grid.Column="1" Spacing="12">
             <Border Classes="metric-card">
               <StackPanel Spacing="6">
-                <TextBlock Text="Health Cue" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="Health Cue" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                 <TextBlock Text="{Binding FormHealthText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
               </StackPanel>
             </Border>
@@ -171,7 +171,7 @@
 
       <Border Classes="page-card" Background="{DynamicResource CardAltBgBrush}" IsVisible="{Binding ShowDeletePrompt}">
         <StackPanel Spacing="10">
-          <TextBlock Text="Delete Bundle" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="Delete Bundle" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           <TextBlock Text="{Binding DeletePromptText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
           <WrapPanel Classes="action-row">
             <Button Classes="btn-danger" Command="{Binding DeleteCommand}" CommandParameter="{Binding PendingDelete}"><TextBlock Text="Delete" /></Button>
@@ -183,7 +183,7 @@
       <Border Classes="empty-state" IsVisible="{Binding !HasCombos}">
         <StackPanel Spacing="12" HorizontalAlignment="Center">
           <lottie:Lottie Width="120" Height="120" Path="avares://HPPSystem/Assets/Animations/empty-pulse.json" />
-          <TextBlock Text="No bundles yet" FontSize="22" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="No bundles yet" FontSize="{DynamicResource AppDisplaySmallFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           <Button Classes="btn-primary" Command="{Binding StartCreateCommand}"><TextBlock Text="Create" /></Button>
         </StackPanel>
       </Border>
@@ -192,7 +192,7 @@
         <StackPanel Spacing="12">
           <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
             <StackPanel Spacing="4">
-              <TextBlock Text="Library Bundle" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="Library Bundle" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
               <TextBlock Text="Gunakan mode kartu untuk browse cepat dan mode tabel untuk audit HPP, harga, serta margin bundle." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
             </StackPanel>
             <WrapPanel Grid.Column="1" Classes="action-row" HorizontalAlignment="Right">
@@ -218,7 +218,7 @@
                   <StackPanel Spacing="12">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                       <StackPanel Spacing="6">
-                        <TextBlock Text="{Binding Name}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                        <TextBlock Text="{Binding Name}" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                         <WrapPanel Orientation="Horizontal" ItemSpacing="8" LineSpacing="8">
                           <Border Classes="badge">
                             <TextBlock Text="{Binding RecipeCountText}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />

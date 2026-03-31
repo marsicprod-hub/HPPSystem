@@ -3,8 +3,8 @@
              xmlns:vm="using:HPPSystem.ViewModels"
              xmlns:fa="using:FluentAvalonia.UI.Controls"
              xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
-             xmlns:fi="using:FluentIcons.Avalonia"
              xmlns:lottie="using:Avalonia.Skia.Lottie"
+             xmlns:icon="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
              x:Class="HPPSystem.Views.MaterialsView"
              x:Name="Root"
              x:DataType="vm:MaterialsViewModel">
@@ -12,26 +12,26 @@
     <StackPanel Spacing="18">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
         <StackPanel Spacing="4">
-          <TextBlock Text="Material" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-          <TextBlock Text="Kelola master bahan: harga per pack, berat bersih, satuan, dan modal per unit. Stok fisik dipisahkan ke halaman Gudang." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+          <TextBlock Text="Material" FontSize="{DynamicResource AppPageTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="Kelola master bahan: nama, merk produk, harga per pack, berat bersih, satuan, dan modal per unit. Stok fisik dipisahkan ke halaman Gudang." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
         </StackPanel>
-        <StackPanel Grid.Column="1" Spacing="8" HorizontalAlignment="Right">
+        <WrapPanel Grid.Column="1" Classes="action-row" HorizontalAlignment="Right" VerticalAlignment="Top">
           <Border Classes="badge badge-soft" Padding="12,6" HorizontalAlignment="Right">
-            <TextBlock Text="{Binding AverageUnitCostText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" FontSize="11" />
+            <TextBlock Text="{Binding AverageUnitCostText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" FontSize="{DynamicResource AppCaptionFontSize}" />
           </Border>
           <Button Classes="btn-secondary btn-sm" Click="BrowseImport_Click">
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-              <fi:FluentIcon Icon="ArrowUpload" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource PrimaryTextBrush}" VerticalAlignment="Center" />
+              <icon:LucideIcon Kind="Upload" Classes="button-icon" VerticalAlignment="Center" />
               <TextBlock Grid.Column="1" Text="Import Excel" />
             </Grid>
           </Button>
           <Button Classes="btn-primary" Command="{Binding StartCreateCommand}" Padding="16,10" CornerRadius="14">
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-              <fi:FluentIcon Icon="Add" IconVariant="Filled" FontSize="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+              <icon:LucideIcon Kind="Plus" Classes="button-icon" VerticalAlignment="Center" />
               <TextBlock Grid.Column="1" Text="Tambah Material" />
             </Grid>
           </Button>
-        </StackPanel>
+        </WrapPanel>
       </Grid>
 
       <fa:InfoBar IsOpen="True"
@@ -43,202 +43,209 @@
       <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12">
         <Border Grid.Column="0" Classes="page-card">
           <StackPanel Spacing="8">
-            <fi:FluentIcon Icon="Box" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+            <icon:LucideIcon Kind="Package" Classes="metric-icon" />
             <TextBlock Text="Material Aktif" Classes="kpi-label" />
-            <TextBlock Text="{Binding MaterialCountText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding MaterialCountText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
         <Border Grid.Column="1" Classes="page-card">
           <StackPanel Spacing="8">
-            <fi:FluentIcon Icon="Wallet" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+            <icon:LucideIcon Kind="WalletMinimal" Classes="metric-icon" />
             <TextBlock Text="Rata-rata Modal" Classes="kpi-label" />
-            <TextBlock Text="{Binding AverageUnitCostText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource AccentWarmBrush}" />
+            <TextBlock Text="{Binding AverageUnitCostText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource AccentWarmBrush}" />
           </StackPanel>
         </Border>
         <Border Grid.Column="2" Classes="page-card">
           <StackPanel Spacing="8">
-            <fi:FluentIcon Icon="Calculator" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+            <icon:LucideIcon Kind="Calculator" Classes="metric-icon" />
             <TextBlock Text="Estimasi Saat Edit" Classes="kpi-label" />
-            <TextBlock Text="{Binding EstimatedUnitCostText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding EstimatedUnitCostText}" FontSize="{DynamicResource AppDisplayFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
       </Grid>
 
-      <Grid ColumnDefinitions="1.75*,*" ColumnSpacing="16">
-        <StackPanel Grid.Column="0" Spacing="16">
-          <Border Classes="page-card">
-            <StackPanel Spacing="14">
-              <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                <StackPanel Spacing="4">
-                  <TextBlock Text="Katalog Material" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-                  <TextBlock Text="Gunakan halaman ini untuk menjaga data master bahan tetap rapi sebelum bahan dipakai di resep atau gudang." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
-                </StackPanel>
-                <Border Grid.Column="1" Classes="badge badge-soft" VerticalAlignment="Top">
-                  <TextBlock Text="{Binding SearchSummaryText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
-                </Border>
-              </Grid>
+      <Border Classes="page-card" IsVisible="{Binding ShowForm}">
+        <StackPanel Spacing="14">
+          <StackPanel Spacing="4">
+            <TextBlock Text="{Binding FormTitleText}" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding FormHelperText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+          </StackPanel>
 
-              <StackPanel Spacing="8">
-                <TextBox Text="{Binding SearchTerm}" Watermark="Cari nama material..." />
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                  <TextBlock Text="{Binding SearchHelperText}" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" />
-                  <Button Grid.Column="1" Classes="btn-secondary btn-sm" Command="{Binding ClearSearchCommand}" IsVisible="{Binding HasSearchTerm}">
-                    <TextBlock Text="Reset Pencarian" />
-                  </Button>
-                </Grid>
+          <StackPanel Spacing="12">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <TextBlock Text="Estimasi modal per satuan" Classes="kpi-label" VerticalAlignment="Center" />
+              <TextBlock Grid.Column="1" Text="{Binding EstimatedUnitCostText}" FontWeight="Black" Foreground="{DynamicResource AccentWarmBrush}" />
+            </Grid>
+
+            <StackPanel Spacing="6">
+              <TextBlock Text="Nama Material" Classes="kpi-label" />
+              <TextBox Text="{Binding FormName}" Watermark="Contoh: Tepung Terigu Protein Tinggi" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+              <TextBlock Text="Merk Produk" Classes="kpi-label" />
+              <TextBox Text="{Binding FormBrand}" Watermark="Contoh: Segitiga Biru / Anchor / Opsional" />
+            </StackPanel>
+
+            <WrapPanel Classes="kpi-grid">
+              <StackPanel Width="170" Spacing="6">
+                <TextBlock Text="Harga Pack" Classes="kpi-label" />
+                <fa:NumberBox Value="{Binding FormPrice}" SmallChange="1000" Minimum="0" SpinButtonPlacementMode="Compact" />
               </StackPanel>
+              <StackPanel Width="170" Spacing="6">
+                <TextBlock Text="Isi / Berat Pack" Classes="kpi-label" />
+                <fa:NumberBox Value="{Binding FormWeight}" SmallChange="10" Minimum="0" SpinButtonPlacementMode="Compact" />
+              </StackPanel>
+            </WrapPanel>
 
-              <Border Classes="empty-state" IsVisible="{Binding !HasMaterials}">
-                <StackPanel Spacing="12" HorizontalAlignment="Center">
-                  <lottie:Lottie Width="120" Height="120" Path="avares://HPPSystem/Assets/Animations/empty-pulse.json" />
-                  <TextBlock Text="Belum ada material" FontSize="22" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
-                  <TextBlock Text="Mulai dari bahan utama yang paling sering dibeli. Setelah material dibuat, stok awalnya diatur dari halaman Gudang." Foreground="{DynamicResource SecondaryTextBrush}" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="360" />
-                  <Button Classes="btn-primary" Command="{Binding StartCreateCommand}" HorizontalAlignment="Center">
-                    <TextBlock Text="Tambah Material Pertama" />
-                  </Button>
-                </StackPanel>
+            <StackPanel Spacing="6">
+              <TextBlock Text="Satuan Dasar" Classes="kpi-label" />
+              <TextBox Text="{Binding FormUnit}" Watermark="gram / ml / pcs" />
+            </StackPanel>
+
+            <Border Classes="metric-card">
+              <TextBlock Text="Stok awal tidak diinput di sini. Setelah material tersimpan, buka halaman Gudang untuk mengatur stok fisik pertamanya." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+            </Border>
+
+            <WrapPanel Classes="action-row">
+              <Button Classes="btn-primary" Command="{Binding SaveCommand}">
+                <TextBlock Text="{Binding FormActionText}" />
+              </Button>
+              <Button Classes="btn-secondary" Command="{Binding CancelCommand}">
+                <TextBlock Text="Batal" />
+              </Button>
+            </WrapPanel>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="page-card">
+        <StackPanel Spacing="14">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Katalog Material" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="Gunakan halaman ini untuk menjaga data master bahan dan merk produk tetap rapi sebelum bahan dipakai di resep atau gudang." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+            <Border Grid.Column="1" Classes="badge badge-soft" VerticalAlignment="Top">
+              <TextBlock Text="{Binding SearchSummaryText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+            </Border>
+          </Grid>
+
+          <StackPanel Spacing="8">
+            <WrapPanel Classes="kpi-grid">
+              <StackPanel Width="260" Spacing="6">
+                <TextBlock Text="Cari Material" Classes="kpi-label" />
+                <TextBox Text="{Binding SearchTerm}" Watermark="Cari nama material atau merk..." />
+              </StackPanel>
+              <StackPanel Width="240" Spacing="6">
+                <TextBlock Text="Urutkan Tabel" Classes="kpi-label" />
+                <ComboBox ItemsSource="{Binding SortOptions}" SelectedItem="{Binding SelectedSortOption}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="vm:SelectionOptionViewModel">
+                      <TextBlock Text="{Binding Label}" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+              </StackPanel>
+            </WrapPanel>
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+              <TextBlock Text="{Binding SearchHelperText}" Foreground="{DynamicResource SecondaryTextBrush}" VerticalAlignment="Center" />
+              <Border Grid.Column="1" Classes="badge badge-soft">
+                <TextBlock Text="{Binding SortSummaryText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+              </Border>
+              <Button Grid.Column="2" Classes="btn-secondary btn-sm" Command="{Binding ClearSearchCommand}" IsVisible="{Binding HasSearchTerm}">
+                <TextBlock Text="Reset Pencarian" />
+              </Button>
+            </Grid>
+          </StackPanel>
+
+          <Border Classes="empty-state" IsVisible="{Binding !HasMaterials}">
+            <StackPanel Spacing="12" HorizontalAlignment="Center">
+              <lottie:Lottie Width="120" Height="120" Path="avares://HPPSystem/Assets/Animations/empty-pulse.json" />
+              <TextBlock Text="Belum ada material" FontSize="{DynamicResource AppDisplaySmallFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
+              <TextBlock Text="Mulai dari bahan utama yang paling sering dibeli. Setelah material dibuat, stok awalnya diatur dari halaman Gudang." Foreground="{DynamicResource SecondaryTextBrush}" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="360" />
+              <Button Classes="btn-primary" Command="{Binding StartCreateCommand}" HorizontalAlignment="Center">
+                <TextBlock Text="Tambah Material Pertama" />
+              </Button>
+            </StackPanel>
+          </Border>
+
+          <dg:DataGrid Classes="audit-grid"
+                       ItemsSource="{Binding MaterialCards}"
+                       IsVisible="{Binding HasMaterials}"
+                       AutoGenerateColumns="False"
+                       MinHeight="420"
+                       CanUserResizeColumns="True">
+            <dg:DataGrid.Columns>
+              <dg:DataGridTextColumn Header="Material" Binding="{Binding NameText}" Width="2*" />
+              <dg:DataGridTextColumn Header="Merk" Binding="{Binding BrandText}" Width="1.5*" />
+              <dg:DataGridTextColumn Header="Harga Pack" Binding="{Binding PackPriceValue, StringFormat='Rp{0:N0}'}" Width="*" />
+              <dg:DataGridTextColumn Header="Isi per Pack" Binding="{Binding PackQuantityValue, StringFormat='{}{0:0.##}'}" Width="*" />
+              <dg:DataGridTextColumn Header="Satuan" Binding="{Binding PackUnitText}" Width="1.1*" />
+              <dg:DataGridTextColumn Header="Modal / Satuan" Binding="{Binding UnitCostValue, StringFormat='Rp{0:N0}'}" Width="*" />
+              <dg:DataGridTextColumn Header="Riwayat" Binding="{Binding PriceHistoryCountValue}" Width="1.1*" />
+              <dg:DataGridTemplateColumn Header="Aksi" Width="220">
+                <dg:DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate DataType="vm:MaterialCardViewModel">
+                    <WrapPanel Classes="action-row">
+                      <Button Classes="btn-ghost btn-sm" Command="{Binding #Root.DataContext.ShowHistoryForCommand}" CommandParameter="{Binding Material}">
+                        <TextBlock Text="Riwayat" />
+                      </Button>
+                      <Button Classes="btn-primary btn-sm" Command="{Binding #Root.DataContext.EditCommand}" CommandParameter="{Binding Material}">
+                        <TextBlock Text="Ubah" />
+                      </Button>
+                      <Button Classes="btn-danger btn-sm" Command="{Binding #Root.DataContext.RequestDeleteCommand}" CommandParameter="{Binding Material}">
+                        <TextBlock Text="Hapus" />
+                      </Button>
+                    </WrapPanel>
+                  </DataTemplate>
+                </dg:DataGridTemplateColumn.CellTemplate>
+              </dg:DataGridTemplateColumn>
+            </dg:DataGrid.Columns>
+          </dg:DataGrid>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="page-card">
+        <Grid>
+          <StackPanel Spacing="12" IsVisible="{Binding ShowHistory}">
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+              <StackPanel Spacing="4">
+                <TextBlock Text="{Binding HistoryTitleText}" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="{Binding HistorySummaryText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+              </StackPanel>
+              <Button Grid.Column="1" Classes="btn-secondary" Command="{Binding CloseHistoryCommand}">
+                <TextBlock Text="Tutup" />
+              </Button>
+            </Grid>
+
+            <StackPanel Spacing="8">
+              <TextBlock Text="Perubahan Harga" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="{Binding HistoryPriceCountText}" Foreground="{DynamicResource SecondaryTextBrush}" />
+
+              <Border Classes="metric-card" IsVisible="{Binding !HasHistoryPriceRecords}">
+                <TextBlock Text="Belum ada perubahan harga yang tercatat untuk material ini." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
               </Border>
 
               <dg:DataGrid Classes="audit-grid"
-                           ItemsSource="{Binding MaterialCards}"
-                           IsVisible="{Binding HasMaterials}"
+                           ItemsSource="{Binding HistoryPriceRecords}"
+                           IsVisible="{Binding HasHistoryPriceRecords}"
                            AutoGenerateColumns="False"
-                           MinHeight="420"
-                           CanUserResizeColumns="True">
+                           MinHeight="180">
                 <dg:DataGrid.Columns>
-                  <dg:DataGridTextColumn Header="Material" Binding="{Binding Material.Name}" Width="2*" />
-                  <dg:DataGridTextColumn Header="Satuan" Binding="{Binding UnitBadgeText}" Width="1.1*" />
-                  <dg:DataGridTextColumn Header="Harga Pack" Binding="{Binding PackPriceText}" Width="*" />
-                  <dg:DataGridTextColumn Header="Isi / Berat" Binding="{Binding WeightText}" Width="*" />
-                  <dg:DataGridTextColumn Header="Modal / Satuan" Binding="{Binding UnitCostText}" Width="*" />
-                  <dg:DataGridTextColumn Header="Riwayat" Binding="{Binding HistoryBadgeText}" Width="1.1*" />
-                  <dg:DataGridTemplateColumn Header="Aksi" Width="220">
-                    <dg:DataGridTemplateColumn.CellTemplate>
-                      <DataTemplate DataType="vm:MaterialCardViewModel">
-                        <WrapPanel Classes="action-row">
-                          <Button Classes="btn-ghost btn-sm" Command="{Binding #Root.DataContext.ShowHistoryForCommand}" CommandParameter="{Binding Material}">
-                            <TextBlock Text="Riwayat" />
-                          </Button>
-                          <Button Classes="btn-primary btn-sm" Command="{Binding #Root.DataContext.EditCommand}" CommandParameter="{Binding Material}">
-                            <TextBlock Text="Ubah" />
-                          </Button>
-                          <Button Classes="btn-danger btn-sm" Command="{Binding #Root.DataContext.RequestDeleteCommand}" CommandParameter="{Binding Material}">
-                            <TextBlock Text="Hapus" />
-                          </Button>
-                        </WrapPanel>
-                      </DataTemplate>
-                    </dg:DataGridTemplateColumn.CellTemplate>
-                  </dg:DataGridTemplateColumn>
+                  <dg:DataGridTextColumn Header="Tanggal" Binding="{Binding DateValue, StringFormat='{}{0:dd MMM yyyy HH:mm}'}" Width="1.4*" />
+                  <dg:DataGridTextColumn Header="Harga Pack" Binding="{Binding PriceValue, StringFormat='Rp{0:N0}'}" Width="*" />
                 </dg:DataGrid.Columns>
               </dg:DataGrid>
             </StackPanel>
-          </Border>
-        </StackPanel>
+          </StackPanel>
 
-        <StackPanel Grid.Column="1" Spacing="16">
-          <Border Classes="page-card">
-            <StackPanel Spacing="14">
-              <StackPanel Spacing="4" IsVisible="{Binding ShowForm}">
-                <TextBlock Text="{Binding FormTitleText}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-                <TextBlock Text="{Binding FormHelperText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
-              </StackPanel>
-
-              <StackPanel Spacing="10" IsVisible="{Binding !ShowForm}">
-                <TextBlock Text="Panel Material" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-                <TextBlock Text="Tambahkan atau ubah data master bahan di sini. Begitu material selesai dibuat, stok awal dan semua audit stok dikerjakan dari halaman Gudang." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
-                <Border Classes="metric-card" Background="{DynamicResource AccentSoftBrush}">
-                  <TextBlock Text="{Binding CatalogInsightText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" TextWrapping="Wrap" />
-                </Border>
-                <Border Classes="metric-card">
-                  <TextBlock Text="{Binding ImportGuideText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
-                </Border>
-              </StackPanel>
-
-              <StackPanel Spacing="12" IsVisible="{Binding ShowForm}">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                  <TextBlock Text="Estimasi modal per satuan" Classes="kpi-label" VerticalAlignment="Center" />
-                  <TextBlock Grid.Column="1" Text="{Binding EstimatedUnitCostText}" FontWeight="Black" Foreground="{DynamicResource AccentWarmBrush}" />
-                </Grid>
-
-                <StackPanel Spacing="6">
-                  <TextBlock Text="Nama Material" Classes="kpi-label" />
-                  <TextBox Text="{Binding FormName}" Watermark="Contoh: Tepung Terigu Protein Tinggi" />
-                </StackPanel>
-
-                <WrapPanel Classes="kpi-grid">
-                  <StackPanel Width="170" Spacing="6">
-                    <TextBlock Text="Harga Pack" Classes="kpi-label" />
-                    <fa:NumberBox Value="{Binding FormPrice}" SmallChange="1000" Minimum="0" SpinButtonPlacementMode="Compact" />
-                  </StackPanel>
-                  <StackPanel Width="170" Spacing="6">
-                    <TextBlock Text="Isi / Berat Pack" Classes="kpi-label" />
-                    <fa:NumberBox Value="{Binding FormWeight}" SmallChange="10" Minimum="0" SpinButtonPlacementMode="Compact" />
-                  </StackPanel>
-                </WrapPanel>
-
-                <StackPanel Spacing="6">
-                  <TextBlock Text="Satuan Dasar" Classes="kpi-label" />
-                  <TextBox Text="{Binding FormUnit}" Watermark="gram / ml / pcs" />
-                </StackPanel>
-
-                <Border Classes="metric-card">
-                  <TextBlock Text="Stok awal tidak diinput di sini. Setelah material tersimpan, buka halaman Gudang untuk mengatur stok fisik pertamanya." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
-                </Border>
-
-                <WrapPanel Classes="action-row">
-                  <Button Classes="btn-primary" Command="{Binding SaveCommand}">
-                    <TextBlock Text="{Binding FormActionText}" />
-                  </Button>
-                  <Button Classes="btn-secondary" Command="{Binding CancelCommand}">
-                    <TextBlock Text="Batal" />
-                  </Button>
-                </WrapPanel>
-              </StackPanel>
-            </StackPanel>
-          </Border>
-
-          <Border Classes="page-card">
-            <Grid>
-              <StackPanel Spacing="12" IsVisible="{Binding ShowHistory}">
-                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
-                  <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding HistoryTitleText}" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-                    <TextBlock Text="{Binding HistorySummaryText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
-                  </StackPanel>
-                  <Button Grid.Column="1" Classes="btn-secondary" Command="{Binding CloseHistoryCommand}">
-                    <TextBlock Text="Tutup" />
-                  </Button>
-                </Grid>
-
-                <StackPanel Spacing="8">
-                  <TextBlock Text="Perubahan Harga" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-                  <TextBlock Text="{Binding HistoryPriceCountText}" Foreground="{DynamicResource SecondaryTextBrush}" />
-
-                  <Border Classes="metric-card" IsVisible="{Binding !HasHistoryPriceRecords}">
-                    <TextBlock Text="Belum ada perubahan harga yang tercatat untuk material ini." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
-                  </Border>
-
-                  <dg:DataGrid Classes="audit-grid"
-                               ItemsSource="{Binding HistoryPriceRecords}"
-                               IsVisible="{Binding HasHistoryPriceRecords}"
-                               AutoGenerateColumns="False"
-                               MinHeight="180">
-                    <dg:DataGrid.Columns>
-                      <dg:DataGridTextColumn Header="Tanggal" Binding="{Binding DateText}" Width="1.4*" />
-                      <dg:DataGridTextColumn Header="Harga Pack" Binding="{Binding PriceText}" Width="*" />
-                    </dg:DataGrid.Columns>
-                  </dg:DataGrid>
-                </StackPanel>
-              </StackPanel>
-
-              <StackPanel Spacing="10" IsVisible="{Binding !ShowHistory}">
-                <TextBlock Text="Riwayat Material" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-                <TextBlock Text="Pilih `Riwayat` pada salah satu material untuk melihat histori perubahan harga. Audit stok lengkap tersedia di halaman Gudang." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
-              </StackPanel>
-            </Grid>
-          </Border>
-        </StackPanel>
-      </Grid>
+          <StackPanel Spacing="10" IsVisible="{Binding !ShowHistory}">
+            <TextBlock Text="Riwayat Material" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="Pilih `Riwayat` pada salah satu material untuk melihat histori perubahan harga. Audit stok lengkap tersedia di halaman Gudang." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+          </StackPanel>
+        </Grid>
+      </Border>
     </StackPanel>
   </ScrollViewer>
 </UserControl>

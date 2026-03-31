@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect class="shadow" x="10" y="11" width="18" height="18" rx="6"/>
+  <rect class="shadow" x="34" y="11" width="18" height="18" rx="6"/>
+  <rect class="shadow" x="10" y="35" width="18" height="18" rx="6"/>
+  <rect class="shadow" x="34" y="35" width="18" height="18" rx="6"/>
+  <rect class="base" x="8" y="9" width="18" height="18" rx="6"/>
+  <rect class="accent" x="32" y="9" width="18" height="18" rx="6"/>
+  <rect class="base" x="8" y="33" width="18" height="18" rx="6"/>
+  <rect class="accent" x="32" y="33" width="18" height="18" rx="6"/>
+  <path class="highlight" d="M13 13h8"/>
+  <path class="highlight" d="M37 13h8"/>
+  <path class="highlight" d="M13 37h8"/>
+  <path class="highlight" d="M37 37h8"/>
+  <rect class="stroke" x="8" y="9" width="18" height="18" rx="6"/>
+  <rect class="stroke" x="32" y="9" width="18" height="18" rx="6"/>
+  <rect class="stroke" x="8" y="33" width="18" height="18" rx="6"/>
+  <rect class="stroke" x="32" y="33" width="18" height="18" rx="6"/>
+</svg>

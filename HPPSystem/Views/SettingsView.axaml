@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:HPPSystem.ViewModels"
              xmlns:fa="using:FluentAvalonia.UI.Controls"
-             xmlns:fi="using:FluentIcons.Avalonia"
+             xmlns:icon="clr-namespace:Lucide.Avalonia;assembly=Lucide.Avalonia"
              x:Class="HPPSystem.Views.SettingsView"
              x:Name="Root"
              x:DataType="vm:SettingsViewModel">
@@ -10,12 +10,12 @@
     <StackPanel Spacing="18">
       <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
         <StackPanel Spacing="4">
-          <TextBlock Text="Settings" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="Settings" FontSize="{DynamicResource AppPageTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           <TextBlock Text="{Binding WorkspaceModeSummaryText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
         </StackPanel>
         <Border Grid.Column="1" Classes="badge badge-soft">
           <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-            <fi:FluentIcon Icon="Database" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
+            <icon:LucideIcon Kind="Database" Size="16" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
             <TextBlock Grid.Column="1" Text="{Binding WorkspaceModeText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
           </Grid>
         </Border>
@@ -32,10 +32,10 @@
           <StackPanel Spacing="14">
             <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
               <Border Width="42" Height="42" Background="{DynamicResource AccentSoftBrush}" CornerRadius="14">
-                <fi:FluentIcon Icon="Sparkle" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <icon:LucideIcon Kind="Sparkles" Size="20" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
               <StackPanel Grid.Column="1" Spacing="2">
-                <TextBlock Text="Workspace Mode" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="Workspace Mode" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                 <TextBlock Text="{Binding WorkspaceModeSummaryText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
               </StackPanel>
             </Grid>
@@ -44,14 +44,14 @@
               <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                 <StackPanel Spacing="4">
                   <TextBlock Text="Current Mode" Classes="kpi-label" />
-                  <TextBlock Text="{Binding WorkspaceModeText}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  <TextBlock Text="{Binding WorkspaceModeText}" FontSize="{DynamicResource AppDisplaySmallFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                 </StackPanel>
                 <Button Grid.Column="1"
                         Command="{Binding ToggleAdvancedCommand}"
                         Classes="btn-primary"
                         VerticalAlignment="Center">
                   <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                    <fi:FluentIcon Icon="ArrowSync" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+                    <icon:LucideIcon Kind="RefreshCw" Size="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
                     <TextBlock Grid.Column="1" Text="{Binding ModeActionText}" />
                   </Grid>
                 </Button>
@@ -60,14 +60,56 @@
           </StackPanel>
         </Border>
 
+        <Border Classes="page-card" MinWidth="380" MaxWidth="560" Margin="0,0,16,16">
+          <StackPanel Spacing="14">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+              <Border Width="42" Height="42" Background="{DynamicResource AccentSoftBrush}" CornerRadius="14">
+                <icon:LucideIcon Kind="Type" Size="20" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+              <StackPanel Grid.Column="1" Spacing="2">
+                <TextBlock Text="Font Size" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="{Binding FontSizePresetSummaryText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Grid>
+
+            <Border Classes="metric-card">
+              <StackPanel Spacing="10">
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                  <StackPanel Spacing="4">
+                    <TextBlock Text="Current Size" Classes="kpi-label" />
+                  <TextBlock Text="{Binding FontSizePresetLabel}" FontSize="{DynamicResource AppDisplaySmallFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                  </StackPanel>
+                  <Border Grid.Column="1" Classes="badge badge-soft" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding FontSizePresetLabel}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+                  </Border>
+                </Grid>
+
+                <Slider Minimum="0"
+                        Maximum="4"
+                        TickFrequency="1"
+                        IsSnapToTickEnabled="True"
+                        Value="{Binding FontSizePresetIndex}" />
+
+                <Grid ColumnDefinitions="*,*,*,*,*">
+                  <TextBlock Text="Extra Small" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="{DynamicResource AppCaptionFontSize}" />
+                  <TextBlock Grid.Column="1" Text="Small" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="{DynamicResource AppCaptionFontSize}" HorizontalAlignment="Center" />
+                  <TextBlock Grid.Column="2" Text="Normal" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="{DynamicResource AppCaptionFontSize}" HorizontalAlignment="Center" />
+                  <TextBlock Grid.Column="3" Text="Large" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="{DynamicResource AppCaptionFontSize}" HorizontalAlignment="Center" />
+                  <TextBlock Grid.Column="4" Text="Extra Large" Foreground="{DynamicResource SecondaryTextBrush}" FontSize="{DynamicResource AppCaptionFontSize}" HorizontalAlignment="Right" />
+                </Grid>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </Border>
+
         <Border Classes="page-card" MinWidth="380" MaxWidth="560" Margin="0,0,0,16">
           <StackPanel Spacing="14">
-            <TextBlock Text="Backup &amp; Restore" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="Backup &amp; Restore" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
             <TextBlock Text="{Binding CurrentStorePath}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
 
             <Border Classes="metric-card">
               <StackPanel Spacing="6">
-                <TextBlock Text="Export Snapshot" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="Export Snapshot" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                 <TextBox Text="{Binding ExportPath}" />
                 <TextBlock Text="{Binding ExportGuideText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
                 <WrapPanel Orientation="Horizontal" ItemWidth="132">
@@ -81,7 +123,7 @@
                           Command="{Binding ExportCommand}"
                           IsEnabled="{Binding CanExport}">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                      <fi:FluentIcon Icon="ArrowDownload" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+                      <icon:LucideIcon Kind="Download" Size="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
                       <TextBlock Grid.Column="1" Text="Export" />
                     </Grid>
                   </Button>
@@ -91,7 +133,7 @@
 
             <Border Classes="metric-card">
               <StackPanel Spacing="6">
-                <TextBlock Text="Import Snapshot" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="Import Snapshot" FontSize="{DynamicResource AppSectionFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
                 <TextBox Text="{Binding ImportPath}" />
                 <TextBlock Text="{Binding ImportGuideText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
                 <WrapPanel Orientation="Horizontal" ItemWidth="132">
@@ -105,13 +147,41 @@
                           Command="{Binding ImportCommand}"
                           IsEnabled="{Binding CanImport}">
                     <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
-                      <fi:FluentIcon Icon="ArrowUpload" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+                      <icon:LucideIcon Kind="Upload" Size="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
                       <TextBlock Grid.Column="1" Text="Import" />
                     </Grid>
                   </Button>
                 </WrapPanel>
               </StackPanel>
             </Border>
+          </StackPanel>
+        </Border>
+
+        <Border Classes="page-card" MinWidth="380" MaxWidth="560" Margin="0,0,0,16">
+          <StackPanel Spacing="14">
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+              <Border Width="42" Height="42" Background="{DynamicResource AccentRoseBrush}" CornerRadius="14">
+                <icon:LucideIcon Kind="Trash2" Size="20" Foreground="{DynamicResource SidebarSelectedTextBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+              <StackPanel Grid.Column="1" Spacing="2">
+                <TextBlock Text="{Binding ClearDataHeadlineText}" FontSize="{DynamicResource AppCardTitleFontSize}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="{Binding ClearDataSummaryText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Grid>
+
+            <Border Classes="metric-card" Background="{DynamicResource AccentSoftBrush}">
+              <TextBlock Text="{Binding ClearDataImpactText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" TextWrapping="Wrap" />
+            </Border>
+
+            <WrapPanel Classes="action-row">
+              <Button Classes="btn-danger"
+                      Click="ClearData_Click">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                  <icon:LucideIcon Kind="Trash" Size="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="Clear Semua Data" />
+                </Grid>
+              </Button>
+            </WrapPanel>
           </StackPanel>
         </Border>
       </WrapPanel>
