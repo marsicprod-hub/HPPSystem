@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using HPPSystem.Helpers;
-using HPPSystem.Models;
 using HPPSystem.Services;
 
 namespace HPPSystem.ViewModels;
@@ -19,9 +18,11 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
         Refresh();
     }
 
-    public override string Title => "Katalog Bahan Baku";
+    public override string Title => "Material";
 
     public ObservableCollection<HPPSystem.Models.Material> FilteredMaterials { get; } = new();
+    public ObservableCollection<MaterialCardViewModel> MaterialCards { get; } = new();
+    public ObservableCollection<PriceHistoryRowViewModel> HistoryPriceRecords { get; } = new();
 
     [ObservableProperty]
     private bool _showForm;
@@ -45,96 +46,108 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
     private string _formUnit = "gram";
 
     [ObservableProperty]
-    private decimal _formStock;
-
-    [ObservableProperty]
     private HPPSystem.Models.Material? _pendingDelete;
 
     [ObservableProperty]
     private HPPSystem.Models.Material? _historyMaterial;
 
-    public bool IsAdvancedMode => DataService.Settings.IsAdvancedMode;
-    public string EstimatedUnitCostText => FormWeight <= 0 ? FormattingHelper.FormatCurrency(0) : FormattingHelper.FormatCurrency(FormPrice / FormWeight);
+    public bool HasMaterials => FilteredMaterials.Count > 0;
     public bool ShowDeletePrompt => PendingDelete is not null;
     public bool ShowHistory => HistoryMaterial is not null;
-    public bool HasMaterials => FilteredMaterials.Count > 0;
-    public string MaterialCountText { get; private set; } = "0 bahan";
-    public string LowStockCountText { get; private set; } = "0 bahan kritis";
-    public string TotalStockText { get; private set; } = "0 unit";
+    public bool HasHistoryPriceRecords => HistoryPriceRecords.Count > 0;
+    public bool HasSearchTerm => !string.IsNullOrWhiteSpace(SearchTerm);
+    public string MaterialCountText { get; private set; } = "0 material";
     public string AverageUnitCostText { get; private set; } = FormattingHelper.FormatCurrency(0);
     public string SearchSummaryText { get; private set; } = "0 hasil";
-    public string InventoryInsightText { get; private set; } = "Inventaris bahan baku belum tersedia.";
-    public string FormTitleText => string.IsNullOrWhiteSpace(EditingId) ? "Input Bahan Baku Baru" : "Edit Data Bahan Baku";
-    public string FormActionText => string.IsNullOrWhiteSpace(EditingId) ? "Simpan Bahan" : "Update Bahan";
-    public string DeletePromptText => PendingDelete is null
+    public string CatalogInsightText { get; private set; } = "Master material belum tersedia.";
+    public string EstimatedUnitCostText => FormWeight <= 0 ? FormattingHelper.FormatCurrency(0) : FormattingHelper.FormatCurrency(FormPrice / FormWeight);
+    public string SearchHelperText => string.IsNullOrWhiteSpace(SearchTerm)
+        ? "Cari nama material untuk fokus ke item tertentu."
+        : $"Filter aktif: \"{SearchTerm.Trim()}\"";
+    public string FormTitleText => string.IsNullOrWhiteSpace(EditingId) ? "Tambah Material Baru" : "Edit Material";
+    public string FormActionText => string.IsNullOrWhiteSpace(EditingId) ? "Simpan Material" : "Update Material";
+    public string FormHelperText => string.IsNullOrWhiteSpace(EditingId)
+        ? "Isi nama bahan, harga per pack, berat bersih, dan satuan. Stok awal diatur terpisah dari halaman Gudang."
+        : "Perbarui data master bahan. Stok fisik tidak diubah dari halaman ini.";
+    public string DeletePromptText => PendingDelete is null ? string.Empty : BuildDeletePromptText(PendingDelete);
+    public string HistoryTitleText => HistoryMaterial is null ? string.Empty : $"Riwayat Harga {HistoryMaterial.Name}";
+    public string HistorySummaryText => HistoryMaterial is null
         ? string.Empty
-        : $"Hapus bahan {PendingDelete.Name} dari sistem? Aksi ini dapat memengaruhi perhitungan resep yang memakainya.";
-    public string HistoryTitleText => HistoryMaterial is null ? string.Empty : $"Audit Harga {HistoryMaterial.Name}";
-    public string HistoryCurrentPriceText => HistoryMaterial is null
-        ? FormattingHelper.FormatCurrency(0)
-        : $"Harga aktif {FormattingHelper.FormatCurrency(HistoryMaterial.Price)}";
+        : $"Harga aktif {FormattingHelper.FormatCurrency(HistoryMaterial.Price)} per pack | {FormattingHelper.FormatCurrency(HistoryMaterial.PricePerUnit)} per {HistoryMaterial.Unit}";
+    public string HistoryPriceCountText => $"{HistoryPriceRecords.Count} perubahan harga";
+    public string ImportGuideText => "Import Excel membaca kolom Nama Bahan, Berat per Pack, dan Estimasi Harga. Material baru tetap masuk sebagai katalog dengan stok 0.";
 
     partial void OnSearchTermChanged(string value) => Refresh();
     partial void OnFormPriceChanged(decimal value) => OnPropertyChanged(nameof(EstimatedUnitCostText));
     partial void OnFormWeightChanged(decimal value) => OnPropertyChanged(nameof(EstimatedUnitCostText));
+
     partial void OnEditingIdChanged(string value)
     {
         OnPropertyChanged(nameof(FormTitleText));
         OnPropertyChanged(nameof(FormActionText));
+        OnPropertyChanged(nameof(FormHelperText));
     }
+
     partial void OnPendingDeleteChanged(HPPSystem.Models.Material? value)
     {
         OnPropertyChanged(nameof(ShowDeletePrompt));
         OnPropertyChanged(nameof(DeletePromptText));
     }
+
     partial void OnHistoryMaterialChanged(HPPSystem.Models.Material? value)
     {
         OnPropertyChanged(nameof(ShowHistory));
         OnPropertyChanged(nameof(HistoryTitleText));
-        OnPropertyChanged(nameof(HistoryCurrentPriceText));
+        OnPropertyChanged(nameof(HistorySummaryText));
+        RefreshHistoryDetails();
     }
 
     public override void Refresh()
     {
         var profileId = DataService.Settings.ActiveProfileId;
-        var items = DataService.Materials
+        var allProfileItems = DataService.Materials
             .Where(x => x.ProfileId == profileId)
-            .Where(x => string.IsNullOrWhiteSpace(SearchTerm) || x.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
             .OrderBy(x => x.Name)
             .ToList();
 
+        var items = allProfileItems
+            .Where(x => string.IsNullOrWhiteSpace(SearchTerm) || x.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
         FilteredMaterials.Clear();
+        MaterialCards.Clear();
         foreach (var item in items)
         {
             FilteredMaterials.Add(item);
+            MaterialCards.Add(BuildMaterialCard(item));
         }
 
-        var allProfileItems = DataService.Materials
-            .Where(x => x.ProfileId == profileId)
-            .ToList();
+        if (HistoryMaterial is not null)
+        {
+            HistoryMaterial = FilteredMaterials.FirstOrDefault(x => x.Id == HistoryMaterial.Id)
+                ?? allProfileItems.FirstOrDefault(x => x.Id == HistoryMaterial.Id);
+        }
 
-        MaterialCountText = $"{allProfileItems.Count} bahan aktif";
-        LowStockCountText = $"{allProfileItems.Count(x => x.Stock <= 5)} bahan kritis";
-        TotalStockText = $"{allProfileItems.Sum(x => x.Stock):0.##} unit tersimpan";
+        MaterialCountText = $"{allProfileItems.Count} material aktif";
         AverageUnitCostText = allProfileItems.Count == 0
             ? FormattingHelper.FormatCurrency(0)
             : FormattingHelper.FormatCurrency(allProfileItems.Average(x => x.PricePerUnit));
         SearchSummaryText = $"{items.Count} hasil ditampilkan";
-        InventoryInsightText = allProfileItems.Count switch
+        CatalogInsightText = allProfileItems.Count switch
         {
-            0 => "Inventaris bahan baku belum tersedia. Tambahkan material pertama untuk mulai membangun basis HPP.",
-            _ when allProfileItems.Count(x => x.Stock <= 5) == 0 => "Stok bahan dalam kondisi aman. Fokuskan pembaruan pada harga pack dan audit riwayat belanja.",
-            _ => $"Ada {allProfileItems.Count(x => x.Stock <= 5)} bahan dengan stok tipis. Pertimbangkan restock agar produksi tidak terganggu."
+            0 => "Belum ada master material. Tambahkan bahan utama dulu, lalu atur stok fisiknya dari halaman Gudang.",
+            _ => "Halaman ini khusus master material. Harga, berat per pack, dan modal per satuan dikelola di sini; stok fisik dikelola di Gudang."
         };
 
+        OnPropertyChanged(nameof(HasMaterials));
+        OnPropertyChanged(nameof(HasSearchTerm));
         OnPropertyChanged(nameof(MaterialCountText));
-        OnPropertyChanged(nameof(LowStockCountText));
-        OnPropertyChanged(nameof(TotalStockText));
         OnPropertyChanged(nameof(AverageUnitCostText));
         OnPropertyChanged(nameof(SearchSummaryText));
-        OnPropertyChanged(nameof(InventoryInsightText));
-        OnPropertyChanged(nameof(HasMaterials));
-        OnPropertyChanged(nameof(IsAdvancedMode));
+        OnPropertyChanged(nameof(CatalogInsightText));
+        OnPropertyChanged(nameof(SearchHelperText));
+        OnPropertyChanged(nameof(HasHistoryPriceRecords));
+        OnPropertyChanged(nameof(HistoryPriceCountText));
     }
 
     [RelayCommand]
@@ -145,6 +158,12 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
     }
 
     [RelayCommand]
+    private void ClearSearch()
+    {
+        SearchTerm = string.Empty;
+    }
+
+    [RelayCommand]
     private void Edit(HPPSystem.Models.Material material)
     {
         EditingId = material.Id;
@@ -152,7 +171,6 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
         FormPrice = material.Price;
         FormWeight = material.Weight;
         FormUnit = material.Unit;
-        FormStock = material.Stock;
         ShowForm = true;
     }
 
@@ -160,7 +178,6 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
     private void ShowHistoryFor(HPPSystem.Models.Material material)
     {
         HistoryMaterial = material;
-        OnPropertyChanged(nameof(ShowHistory));
     }
 
     [RelayCommand]
@@ -191,25 +208,26 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
     [RelayCommand]
     private async Task SaveAsync()
     {
-        if (string.IsNullOrWhiteSpace(FormName) || FormPrice <= 0 || FormWeight <= 0)
+        if (string.IsNullOrWhiteSpace(FormName) || FormPrice <= 0 || FormWeight <= 0 || string.IsNullOrWhiteSpace(FormUnit))
         {
-            Error("Nama, harga, dan berat bahan wajib diisi.");
+            Error("Nama, harga, berat, dan satuan material wajib diisi.");
             return;
         }
 
+        var existing = DataService.Materials.FirstOrDefault(x => x.Id == EditingId);
         var material = new HPPSystem.Models.Material
         {
             Id = string.IsNullOrWhiteSpace(EditingId) ? Guid.NewGuid().ToString("N") : EditingId,
             Name = FormName.Trim(),
             Price = FormPrice,
             Weight = FormWeight,
-            Unit = FormUnit,
-            Stock = FormStock,
+            Unit = FormUnit.Trim(),
+            Stock = existing?.Stock ?? 0,
             ProfileId = DataService.Settings.ActiveProfileId
         };
 
         await DataService.SaveMaterialAsync(material);
-        Success(string.IsNullOrWhiteSpace(EditingId) ? "Bahan baku disimpan." : "Perubahan bahan baku disimpan.");
+        Success(string.IsNullOrWhiteSpace(EditingId) ? "Material disimpan. Atur stok awalnya dari halaman Gudang." : "Perubahan material disimpan.");
         ShowForm = false;
         ResetForm();
     }
@@ -218,8 +236,17 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
     private async Task DeleteAsync(HPPSystem.Models.Material material)
     {
         await DataService.DeleteMaterialAsync(material.Id);
-        Success($"Bahan {material.Name} dihapus.");
+        Success($"Material {material.Name} dihapus.");
         PendingDelete = null;
+    }
+
+    public MaterialImportPreview PreviewImport(string path)
+        => MaterialExcelImportService.CreatePreview(path, DataService.Materials.ToList(), DataService.Settings.ActiveProfileId);
+
+    public async Task ImportPreviewAsync(MaterialImportPreview preview)
+    {
+        var result = await MaterialExcelImportService.ApplyPreviewAsync(preview, DataService, DataService.Settings.ActiveProfileId);
+        Success($"Import selesai: {result.ImportedCount} material diproses ({result.CreatedCount} baru, {result.UpdatedCount} update).");
     }
 
     private void ResetForm()
@@ -229,7 +256,57 @@ public sealed partial class MaterialsViewModel : PageViewModelBase
         FormPrice = 0;
         FormWeight = 0;
         FormUnit = "gram";
-        FormStock = 0;
         OnPropertyChanged(nameof(EstimatedUnitCostText));
+    }
+
+    private void RefreshHistoryDetails()
+    {
+        HistoryPriceRecords.Clear();
+
+        if (HistoryMaterial is null)
+        {
+            OnPropertyChanged(nameof(HasHistoryPriceRecords));
+            OnPropertyChanged(nameof(HistoryPriceCountText));
+            return;
+        }
+
+        foreach (var record in HistoryMaterial.PriceHistory
+                     .OrderByDescending(x => DateTime.TryParse(x.Date, out var date) ? date : DateTime.MinValue))
+        {
+            HistoryPriceRecords.Add(new PriceHistoryRowViewModel
+            {
+                DateText = FormattingHelper.FormatDateTime(record.Date),
+                PriceText = FormattingHelper.FormatCurrency(record.Price)
+            });
+        }
+
+        OnPropertyChanged(nameof(HasHistoryPriceRecords));
+        OnPropertyChanged(nameof(HistoryPriceCountText));
+    }
+
+    private string BuildDeletePromptText(HPPSystem.Models.Material material)
+    {
+        var recipeCount = DataService.Recipes
+            .Where(x => x.ProfileId == material.ProfileId)
+            .Count(x => x.IngredientGroups.Any(group => group.Ingredients.Any(ingredient => ingredient.MaterialId == material.Id)));
+        var referenceCount = DataService.Recipes
+            .Where(x => x.ProfileId == material.ProfileId)
+            .Sum(x => x.IngredientGroups.Sum(group => group.Ingredients.Count(ingredient => ingredient.MaterialId == material.Id)));
+        var movementCount = DataService.StockMovements.Count(x => x.MaterialId == material.Id);
+
+        return $"Hapus material {material.Name}? Dampak: {recipeCount} resep, {referenceCount} referensi bahan, {movementCount} catatan stok, dan stok aktif {material.Stock:0.##} {material.Unit}.";
+    }
+
+    private static MaterialCardViewModel BuildMaterialCard(HPPSystem.Models.Material material)
+    {
+        return new MaterialCardViewModel
+        {
+            Material = material,
+            UnitBadgeText = $"Satuan {material.Unit}",
+            HistoryBadgeText = $"Riwayat Harga {material.PriceHistory.Count}",
+            PackPriceText = FormattingHelper.FormatCurrency(material.Price),
+            WeightText = $"{material.Weight:0.##} {material.Unit}",
+            UnitCostText = FormattingHelper.FormatCurrency(material.PricePerUnit)
+        };
     }
 }

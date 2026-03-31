@@ -52,10 +52,10 @@ public partial class RecipesView : UserControl
         {
             var dialog = new ContentDialog
             {
-                Title = "Delete Recipe",
+                Title = "Hapus Resep",
                 Content = _viewModel.DeletePromptText,
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
+                PrimaryButtonText = "Hapus",
+                CloseButtonText = "Batal",
                 DefaultButton = ContentDialogButton.Close
             };
 

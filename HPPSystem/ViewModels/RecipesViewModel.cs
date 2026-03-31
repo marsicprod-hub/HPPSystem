@@ -15,10 +15,18 @@ namespace HPPSystem.ViewModels;
 
 public sealed partial class RecipesViewModel : PageViewModelBase
 {
+    private const string FocusAllValue = "all";
+    private const string FocusLowMarginValue = "low-margin";
+    private const string FocusHighMarginValue = "high-margin";
+    private const string FocusHighHppValue = "high-hpp";
+    private const decimal LowMarginThreshold = 30m;
+    private const decimal HighMarginThreshold = 45m;
+
     private readonly HashSet<IngredientGroupEditorViewModel> _trackedGroups = new();
     private readonly HashSet<IngredientEntryViewModel> _trackedIngredients = new();
     private readonly HashSet<OverheadEntryViewModel> _trackedOverheads = new();
     private bool _isEditorSubscribed;
+    private string _riskRecipeName = string.Empty;
 
     public RecipesViewModel(IDataService dataService, NotificationService notifications)
         : base(dataService, notifications)
@@ -42,6 +50,9 @@ public sealed partial class RecipesViewModel : PageViewModelBase
     private string _searchTerm = string.Empty;
 
     [ObservableProperty]
+    private string _recipeFocusMode = FocusAllValue;
+
+    [ObservableProperty]
     private bool _isEditing;
 
     [ObservableProperty]
@@ -55,6 +66,9 @@ public sealed partial class RecipesViewModel : PageViewModelBase
 
     [ObservableProperty]
     private RecipeCardViewModel? _selectedRecipe;
+
+    [ObservableProperty]
+    private bool _isLibraryTableMode;
 
     public bool IsAdvancedMode => DataService.Settings.IsAdvancedMode;
     public string EditorMaterialCostText => FormattingHelper.FormatCurrency(CostCalculator.CalculateRecipeCost(Editor.ToRecipe(DataService.Settings.ActiveProfileId), AvailableMaterials).MaterialCost);
@@ -71,6 +85,11 @@ public sealed partial class RecipesViewModel : PageViewModelBase
     }
 
     partial void OnSearchTermChanged(string value) => Refresh();
+    partial void OnRecipeFocusModeChanged(string value) => Refresh();
+    partial void OnIsLibraryTableModeChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsLibraryCardMode));
+    }
     partial void OnSelectedRecipeForProductionChanged(RecipeCardViewModel? value)
     {
         OnPropertyChanged(nameof(CanProduce));
@@ -82,8 +101,30 @@ public sealed partial class RecipesViewModel : PageViewModelBase
     public bool ShowDeletePrompt => PendingDelete is not null;
     public bool HasRecipes => FilteredRecipes.Count > 0;
     public bool HasSelectedRecipe => SelectedRecipe is not null;
+    public bool IsLibraryCardMode => !IsLibraryTableMode;
     public string SearchSummaryText { get; private set; } = "0 resep ditampilkan";
+    public string FocusAllRecipesText { get; private set; } = "Semua 0";
+    public string FocusLowMarginText { get; private set; } = "Margin Rendah 0";
+    public string FocusHighMarginText { get; private set; } = "Margin Tinggi 0";
+    public string FocusHighHppText { get; private set; } = "HPP Tinggi 0";
+    public string RecipeFocusSummaryText { get; private set; } = "Menampilkan semua resep aktif.";
+    public string RecipeQuickActionText { get; private set; } = "Belum ada resep untuk aksi cepat.";
+    public string SearchHelperText => string.IsNullOrWhiteSpace(SearchTerm)
+        ? "Cari nama resep untuk fokus ke menu tertentu."
+        : $"Filter aktif: \"{SearchTerm.Trim()}\"";
+    public bool IsFocusAllRecipes => string.Equals(RecipeFocusMode, FocusAllValue, StringComparison.Ordinal);
+    public bool IsFocusLowMargin => string.Equals(RecipeFocusMode, FocusLowMarginValue, StringComparison.Ordinal);
+    public bool IsFocusHighMargin => string.Equals(RecipeFocusMode, FocusHighMarginValue, StringComparison.Ordinal);
+    public bool IsFocusHighHpp => string.Equals(RecipeFocusMode, FocusHighHppValue, StringComparison.Ordinal);
+    public bool HasSearchTerm => !string.IsNullOrWhiteSpace(SearchTerm);
+    public bool HasActiveRecipeFocus => !IsFocusAllRecipes;
+    public bool HasActiveSearchOrFocus => HasSearchTerm || HasActiveRecipeFocus;
+    public bool HasRecipeQuickActionTarget => !string.IsNullOrWhiteSpace(_riskRecipeName);
+    public string RecipeQuickActionButtonText => string.IsNullOrWhiteSpace(_riskRecipeName)
+        ? "Belum ada prioritas review"
+        : $"Fokus review: {_riskRecipeName}";
     public string LibraryInsightText { get; private set; } = "Belum ada resep aktif pada profil ini.";
+    public string LibraryFocusText { get; private set; } = "Belum ada highlight library.";
     public string TopRecipeNameText { get; private set; } = "-";
     public string TopRecipeMarginText { get; private set; } = "0%";
     public string TopRecipeRecommendedPriceText { get; private set; } = FormattingHelper.FormatCurrency(0);
@@ -94,13 +135,20 @@ public sealed partial class RecipesViewModel : PageViewModelBase
     public string EditorSubtitleText => string.IsNullOrWhiteSpace(Editor.Id)
         ? "Bangun resep dari nol dengan struktur bahan, overhead, margin, dan simulasi modal yang terukur."
         : "Perbarui struktur resep, komposisi bahan, overhead, dan arah pricing tanpa kehilangan kalkulasi biaya.";
+    public string EditorStructureText =>
+        $"{Editor.Groups.Count} kelompok | {Editor.Groups.SelectMany(x => x.Ingredients).Count()} bahan | {Editor.Overheads.Count} overhead | {Math.Max(Editor.Portions, 1)} porsi";
+    public string EditorPricingGuideText =>
+        $"Target margin {Editor.TargetMargin:0.#}% menghasilkan rekomendasi jual {EditorRecommendedPriceText}.";
     public string EditorActionText => string.IsNullOrWhiteSpace(Editor.Id) ? "Publikasikan Resep" : "Update Resep";
     public string ProductionTargetText => SelectedRecipeForProduction is null
         ? "Belum ada resep produksi yang dipilih."
         : $"{SelectedRecipeForProduction.Name} untuk {ProduceBatches} batch";
+    public string ProductionHelperText => SelectedRecipeForProduction is null
+        ? "Pilih satu resep lalu tentukan jumlah batch untuk mengurangi stok bahan secara otomatis."
+        : $"{SelectedRecipeForProduction.PortionsText} | {SelectedRecipeForProduction.IngredientCountText} | modal {SelectedRecipeForProduction.TotalCostText} per batch";
     public string DeletePromptText => PendingDelete is null
         ? string.Empty
-        : $"Hapus resep {PendingDelete.Name} secara permanen? Relasi bundling dan analitik margin untuk resep ini juga akan hilang.";
+        : BuildDeletePromptText(PendingDelete);
     public string TotalRecipeCountText => $"{FilteredRecipes.Count} resep";
     public string TotalPortionCapacityText => $"{FilteredRecipes.Sum(x => x.Recipe.Portions)} porsi / batch";
     public string AverageHppText
@@ -132,6 +180,9 @@ public sealed partial class RecipesViewModel : PageViewModelBase
     public string SelectedRecipeOperationalText => SelectedRecipe is null
         ? "Pilih resep untuk melihat blueprint operasional."
         : $"{SelectedRecipe.IngredientCountText} | {SelectedRecipe.GroupCountText} | {SelectedRecipe.OverheadCountText}";
+    public string SelectedRecipePricingGuideText => SelectedRecipe is null
+        ? "Belum ada resep yang dipilih untuk dibaca struktur pricing-nya."
+        : $"Rekomendasi jual {SelectedRecipe.RecommendedPriceText} dengan target margin {SelectedRecipe.MarginText}.";
 
     public override void Refresh()
     {
@@ -143,11 +194,29 @@ public sealed partial class RecipesViewModel : PageViewModelBase
             AvailableMaterials.Add(material);
         }
 
-        var cards = DataService.Recipes
+        var allCards = DataService.Recipes
             .Where(x => x.ProfileId == profileId)
-            .Where(x => string.IsNullOrWhiteSpace(SearchTerm) || x.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
             .OrderBy(x => x.Name)
             .Select(CreateCard)
+            .ToList();
+
+        var searchCards = allCards
+            .Where(x => string.IsNullOrWhiteSpace(SearchTerm) || x.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        var hppBaseline = allCards
+            .Select(x => x.HppValue)
+            .DefaultIfEmpty(0)
+            .Average();
+
+        var cards = searchCards
+            .Where(x => RecipeFocusMode switch
+            {
+                FocusLowMarginValue => x.MarginValue <= LowMarginThreshold,
+                FocusHighMarginValue => x.MarginValue >= HighMarginThreshold,
+                FocusHighHppValue => hppBaseline > 0 && x.HppValue >= hppBaseline,
+                _ => true
+            })
             .ToList();
 
         FilteredRecipes.Clear();
@@ -156,11 +225,22 @@ public sealed partial class RecipesViewModel : PageViewModelBase
             FilteredRecipes.Add(card);
         }
 
+        FocusAllRecipesText = $"Semua {allCards.Count}";
+        FocusLowMarginText = $"Margin Rendah {allCards.Count(x => x.MarginValue <= LowMarginThreshold)}";
+        FocusHighMarginText = $"Margin Tinggi {allCards.Count(x => x.MarginValue >= HighMarginThreshold)}";
+        FocusHighHppText = $"HPP Tinggi {allCards.Count(x => hppBaseline > 0 && x.HppValue >= hppBaseline)}";
+        RecipeFocusSummaryText = RecipeFocusMode switch
+        {
+            FocusLowMarginValue => $"Menampilkan resep dengan margin <= {LowMarginThreshold:0.#}%.",
+            FocusHighMarginValue => $"Menampilkan resep dengan margin >= {HighMarginThreshold:0.#}%.",
+            FocusHighHppValue => "Menampilkan resep dengan HPP di atas rata-rata hasil filter.",
+            _ => "Menampilkan semua resep aktif."
+        };
         SearchSummaryText = $"{cards.Count} resep ditampilkan";
         TotalIngredientFootprintText = $"{cards.Sum(x => x.Recipe.IngredientGroups.SelectMany(g => g.Ingredients).Count())} bahan";
         TotalOverheadLineText = $"{cards.Sum(x => x.Recipe.OverheadCosts.Count)} overhead";
 
-        var topMargin = cards
+        var topMargin = allCards
             .OrderByDescending(x => x.Recipe.TargetMargin)
             .ThenBy(x => x.Name)
             .FirstOrDefault();
@@ -168,7 +248,7 @@ public sealed partial class RecipesViewModel : PageViewModelBase
         TopRecipeMarginText = topMargin?.MarginText ?? "0%";
         TopRecipeRecommendedPriceText = topMargin?.RecommendedPriceText ?? FormattingHelper.FormatCurrency(0);
 
-        var highestHpp = cards
+        var highestHpp = allCards
             .Select(x => CostCalculator.CalculateRecipeHppPerPortion(x.Recipe, AvailableMaterials))
             .DefaultIfEmpty(0)
             .Max();
@@ -179,6 +259,21 @@ public sealed partial class RecipesViewModel : PageViewModelBase
             _ when topMargin is null => "Katalog resep tersedia, tetapi insight margin belum terbentuk.",
             _ => $"Resep margin tertinggi saat ini adalah {topMargin.Name} di {topMargin.MarginText}. Gunakan sebagai acuan pricing dan efisiensi struktur bahan."
         };
+        LibraryFocusText = allCards.Count switch
+        {
+            0 => "Belum ada fokus recipe library untuk profil aktif.",
+            _ when topMargin is null => "Belum ada resep unggulan untuk dijadikan benchmark.",
+            _ => $"Fokus library: {topMargin.Name} sebagai benchmark margin, dengan HPP tertinggi library di {HighestHppText}."
+        };
+        var riskRecipe = allCards
+            .Where(x => x.MarginValue <= LowMarginThreshold)
+            .OrderBy(x => x.MarginValue)
+            .ThenByDescending(x => x.HppValue)
+            .FirstOrDefault();
+        _riskRecipeName = riskRecipe?.Name ?? string.Empty;
+        RecipeQuickActionText = riskRecipe is null
+            ? "Tidak ada resep margin rendah. Fokus ke optimasi pricing menu unggulan."
+            : $"Prioritas review: {riskRecipe.Name} (margin {riskRecipe.MarginText}, HPP {riskRecipe.HppText}).";
 
         if (SelectedRecipe is null || !FilteredRecipes.Any(x => x.Id == SelectedRecipe.Id))
         {
@@ -197,8 +292,25 @@ public sealed partial class RecipesViewModel : PageViewModelBase
 
         OnPropertyChanged(nameof(IsAdvancedMode));
         OnPropertyChanged(nameof(HasRecipes));
+        OnPropertyChanged(nameof(FocusAllRecipesText));
+        OnPropertyChanged(nameof(FocusLowMarginText));
+        OnPropertyChanged(nameof(FocusHighMarginText));
+        OnPropertyChanged(nameof(FocusHighHppText));
+        OnPropertyChanged(nameof(RecipeFocusSummaryText));
+        OnPropertyChanged(nameof(RecipeQuickActionText));
+        OnPropertyChanged(nameof(IsFocusAllRecipes));
+        OnPropertyChanged(nameof(IsFocusLowMargin));
+        OnPropertyChanged(nameof(IsFocusHighMargin));
+        OnPropertyChanged(nameof(IsFocusHighHpp));
+        OnPropertyChanged(nameof(HasSearchTerm));
+        OnPropertyChanged(nameof(HasActiveRecipeFocus));
+        OnPropertyChanged(nameof(HasActiveSearchOrFocus));
+        OnPropertyChanged(nameof(HasRecipeQuickActionTarget));
+        OnPropertyChanged(nameof(RecipeQuickActionButtonText));
         OnPropertyChanged(nameof(SearchSummaryText));
+        OnPropertyChanged(nameof(SearchHelperText));
         OnPropertyChanged(nameof(LibraryInsightText));
+        OnPropertyChanged(nameof(LibraryFocusText));
         OnPropertyChanged(nameof(TopRecipeNameText));
         OnPropertyChanged(nameof(TopRecipeMarginText));
         OnPropertyChanged(nameof(TopRecipeRecommendedPriceText));
@@ -219,6 +331,62 @@ public sealed partial class RecipesViewModel : PageViewModelBase
         WireEditorSubscriptions();
         IsEditing = true;
         RefreshMetrics();
+    }
+
+    [RelayCommand]
+    private void FocusAllRecipes()
+    {
+        RecipeFocusMode = FocusAllValue;
+    }
+
+    [RelayCommand]
+    private void FocusLowMargin()
+    {
+        RecipeFocusMode = FocusLowMarginValue;
+    }
+
+    [RelayCommand]
+    private void FocusHighMargin()
+    {
+        RecipeFocusMode = FocusHighMarginValue;
+    }
+
+    [RelayCommand]
+    private void FocusHighHpp()
+    {
+        RecipeFocusMode = FocusHighHppValue;
+    }
+
+    [RelayCommand]
+    private void ClearSearchAndFocus()
+    {
+        RecipeFocusMode = FocusAllValue;
+        SearchTerm = string.Empty;
+    }
+
+    [RelayCommand]
+    private void FocusRecipeQuickAction()
+    {
+        if (string.IsNullOrWhiteSpace(_riskRecipeName))
+        {
+            Error("Belum ada resep margin rendah untuk diprioritaskan.");
+            return;
+        }
+
+        RecipeFocusMode = FocusLowMarginValue;
+        SearchTerm = _riskRecipeName;
+    }
+
+    [RelayCommand]
+    private void SetLibraryCardMode()
+    {
+        IsLibraryTableMode = false;
+    }
+
+    [RelayCommand]
+    private void SetLibraryTableMode()
+    {
+        IsLibraryTableMode = true;
     }
 
     [RelayCommand]
@@ -356,6 +524,45 @@ public sealed partial class RecipesViewModel : PageViewModelBase
     }
 
     [RelayCommand]
+    private async Task DuplicateAsync(RecipeCardViewModel card)
+    {
+        var profileId = DataService.Settings.ActiveProfileId;
+        var copyName = BuildDuplicateName(card.Name, profileId);
+        var clone = new Recipe
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            Name = copyName,
+            Portions = card.Recipe.Portions,
+            TargetMargin = card.Recipe.TargetMargin,
+            ProfileId = profileId,
+            IngredientGroups = card.Recipe.IngredientGroups
+                .Select(group => new IngredientGroup
+                {
+                    Id = Guid.NewGuid().ToString("N"),
+                    Name = group.Name,
+                    Ingredients = group.Ingredients
+                        .Select(ingredient => new Ingredient
+                        {
+                            MaterialId = ingredient.MaterialId,
+                            Quantity = ingredient.Quantity
+                        })
+                        .ToList()
+                })
+                .ToList(),
+            OverheadCosts = card.Recipe.OverheadCosts
+                .Select(overhead => new OverheadCost
+                {
+                    Name = overhead.Name,
+                    Cost = overhead.Cost
+                })
+                .ToList()
+        };
+
+        await DataService.SaveRecipeAsync(clone);
+        Success($"Resep {card.Name} diduplikasi menjadi {copyName}.");
+    }
+
+    [RelayCommand]
     private async Task ProduceAsync()
     {
         if (SelectedRecipeForProduction?.Recipe is null || ProduceBatches <= 0)
@@ -389,8 +596,15 @@ public sealed partial class RecipesViewModel : PageViewModelBase
 
         foreach (var need in needs)
         {
-            need.Material!.Stock -= need.Quantity;
-            await DataService.SaveMaterialAsync(need.Material);
+            await DataService.ApplyMaterialStockAdjustmentAsync(new MaterialStockAdjustment
+            {
+                MaterialId = need.MaterialId,
+                QuantityDelta = -need.Quantity,
+                SourceType = "production",
+                SourceId = SelectedRecipeForProduction.Id,
+                SourceLabel = SelectedRecipeForProduction.Name,
+                Notes = $"Produksi {ProduceBatches} batch mengurangi stok bahan untuk resep {SelectedRecipeForProduction.Name}."
+            });
         }
 
         Success($"Produksi {SelectedRecipeForProduction.Name} dicatat untuk {ProduceBatches} batch.");
@@ -408,18 +622,41 @@ public sealed partial class RecipesViewModel : PageViewModelBase
             Id = recipe.Id,
             Name = recipe.Name,
             Recipe = recipe,
+            HppValue = hpp,
+            MarginValue = recipe.TargetMargin,
             HppText = FormattingHelper.FormatCurrency(hpp),
             MaterialCostText = FormattingHelper.FormatCurrency(breakdown.MaterialCost),
             OverheadCostText = FormattingHelper.FormatCurrency(breakdown.OverheadCost),
             TotalCostText = FormattingHelper.FormatCurrency(breakdown.TotalCost),
             RecommendedPriceText = FormattingHelper.FormatCurrency(CostCalculator.CalculateRecommendedSellingPrice(hpp, recipe.TargetMargin)),
             MarginText = $"{recipe.TargetMargin:0.#}%",
-            PortionsText = $"{recipe.Portions} porsi"
-            ,
+            PortionsText = $"{recipe.Portions} porsi",
             IngredientCountText = $"{recipe.IngredientGroups.SelectMany(x => x.Ingredients).Count()} bahan",
             GroupCountText = $"{recipe.IngredientGroups.Count} kelompok",
             OverheadCountText = $"{recipe.OverheadCosts.Count} overhead"
         };
+    }
+
+    private string BuildDuplicateName(string baseName, string profileId)
+    {
+        var existingNames = DataService.Recipes
+            .Where(x => x.ProfileId == profileId)
+            .Select(x => x.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+        var candidate = $"{baseName} Copy";
+        if (!existingNames.Contains(candidate))
+        {
+            return candidate;
+        }
+
+        var index = 2;
+        while (existingNames.Contains($"{baseName} Copy {index}"))
+        {
+            index++;
+        }
+
+        return $"{baseName} Copy {index}";
     }
 
     private void WireEditorSubscriptions()
@@ -527,9 +764,12 @@ public sealed partial class RecipesViewModel : PageViewModelBase
         OnPropertyChanged(nameof(EditorRecommendedPriceText));
         OnPropertyChanged(nameof(EditorTitleText));
         OnPropertyChanged(nameof(EditorSubtitleText));
+        OnPropertyChanged(nameof(EditorStructureText));
+        OnPropertyChanged(nameof(EditorPricingGuideText));
         OnPropertyChanged(nameof(EditorActionText));
         OnPropertyChanged(nameof(CanProduce));
         OnPropertyChanged(nameof(ProductionTargetText));
+        OnPropertyChanged(nameof(ProductionHelperText));
         OnPropertyChanged(nameof(ShowDeletePrompt));
         OnPropertyChanged(nameof(DeletePromptText));
         OnPropertyChanged(nameof(HasSelectedRecipe));
@@ -542,6 +782,7 @@ public sealed partial class RecipesViewModel : PageViewModelBase
         OnPropertyChanged(nameof(SelectedRecipeRecommendedPriceText));
         OnPropertyChanged(nameof(SelectedRecipeMarginText));
         OnPropertyChanged(nameof(SelectedRecipeOperationalText));
+        OnPropertyChanged(nameof(SelectedRecipePricingGuideText));
     }
 
     partial void OnSelectedRecipeChanged(RecipeCardViewModel? value)
@@ -611,5 +852,18 @@ public sealed partial class RecipesViewModel : PageViewModelBase
                 ingredient.LineCostText = FormattingHelper.FormatCurrency(material.PricePerUnit * ingredient.Quantity);
             }
         }
+    }
+
+    private string BuildDeletePromptText(RecipeCardViewModel card)
+    {
+        var relatedCombos = DataService.Combos
+            .Where(x => x.ProfileId == card.Recipe.ProfileId)
+            .Where(x => x.Recipes.Any(recipe => recipe.RecipeId == card.Id))
+            .ToList();
+        var combosRemoved = relatedCombos.Count(x => x.Recipes.Count == 1);
+        var combosAdjusted = relatedCombos.Count - combosRemoved;
+        var ingredientCount = card.Recipe.IngredientGroups.SelectMany(x => x.Ingredients).Count();
+
+        return $"Hapus resep {card.Name} secara permanen? Dampak: {relatedCombos.Count} bundle terkait ({combosRemoved} ikut terhapus, {combosAdjusted} disesuaikan), {ingredientCount} komponen bahan, dan seluruh analitik margin resep ini.";
     }
 }

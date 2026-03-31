@@ -66,6 +66,46 @@ public sealed partial class PurchasedItemEntryViewModel : ObservableObject
     private decimal _price;
 }
 
+public sealed partial class PriceHistoryRowViewModel : ObservableObject
+{
+    public string DateText { get; init; } = string.Empty;
+    public string PriceText { get; init; } = string.Empty;
+}
+
+public sealed partial class MaterialCardViewModel : ObservableObject
+{
+    public HPPSystem.Models.Material Material { get; init; } = new();
+    public string UnitBadgeText { get; init; } = string.Empty;
+    public string HistoryBadgeText { get; init; } = string.Empty;
+    public string StockValueText { get; init; } = string.Empty;
+    public string StockStatusText { get; init; } = string.Empty;
+    public string StockStatusDetailText { get; init; } = string.Empty;
+    public string PackPriceText { get; init; } = string.Empty;
+    public string WeightText { get; init; } = string.Empty;
+    public string UnitCostText { get; init; } = string.Empty;
+    public string StockBalanceText { get; init; } = string.Empty;
+    public bool IsOutOfStock { get; init; }
+    public bool IsLowStock { get; init; }
+    public bool IsHealthyStock { get; init; }
+}
+
+public sealed partial class StockMovementRowViewModel : ObservableObject
+{
+    public string MaterialNameText { get; init; } = string.Empty;
+    public string DateText { get; init; } = string.Empty;
+    public string SourceText { get; init; } = string.Empty;
+    public string QuantityText { get; init; } = string.Empty;
+    public string BalanceText { get; init; } = string.Empty;
+    public string NotesText { get; init; } = string.Empty;
+    public bool IsInbound { get; init; }
+}
+
+public sealed partial class SelectionOptionViewModel : ObservableObject
+{
+    public string Value { get; init; } = string.Empty;
+    public string Label { get; init; } = string.Empty;
+}
+
 public sealed partial class RecipeEditorViewModel : ObservableObject
 {
     [ObservableProperty]
@@ -170,6 +210,8 @@ public sealed partial class RecipeCardViewModel : ObservableObject
 {
     public string Id { get; init; } = string.Empty;
     public string Name { get; init; } = string.Empty;
+    public decimal HppValue { get; init; }
+    public decimal MarginValue { get; init; }
     public string HppText { get; init; } = string.Empty;
     public string MaterialCostText { get; init; } = string.Empty;
     public string OverheadCostText { get; init; } = string.Empty;
@@ -180,6 +222,7 @@ public sealed partial class RecipeCardViewModel : ObservableObject
     public string IngredientCountText { get; init; } = string.Empty;
     public string GroupCountText { get; init; } = string.Empty;
     public string OverheadCountText { get; init; } = string.Empty;
+    public string AuditStructureText => $"{IngredientCountText} | {GroupCountText} | {OverheadCountText}";
     public string ProfileId { get; init; } = string.Empty;
     public Recipe Recipe { get; init; } = new();
 }
@@ -203,9 +246,16 @@ public sealed partial class ComboCardViewModel : ObservableObject
 {
     public string Id { get; init; } = string.Empty;
     public string Name { get; init; } = string.Empty;
+    public decimal HppValue { get; init; }
+    public decimal SellingPriceValue { get; init; }
+    public decimal MarginValue { get; init; }
     public string HppText { get; init; } = string.Empty;
     public string SellingPriceText { get; init; } = string.Empty;
     public string MarginText { get; init; } = string.Empty;
+    public string HealthLabelText { get; init; } = string.Empty;
+    public string RecipeCountText { get; init; } = string.Empty;
+    public bool IsRisky { get; init; }
+    public bool IsHealthy { get; init; }
     public Combo Combo { get; init; } = new();
 }
 
@@ -232,10 +282,18 @@ public sealed partial class SaleRowViewModel : ObservableObject
 public sealed partial class SimulationResultViewModel : ObservableObject
 {
     public string RecipeName { get; init; } = string.Empty;
+    public decimal CurrentHppValue { get; init; }
+    public decimal SimulatedHppValue { get; init; }
+    public decimal RemainingMarginValue { get; init; }
+    public decimal HppDeltaValue { get; init; }
     public string CurrentHppText { get; init; } = string.Empty;
     public string SimulatedHppText { get; init; } = string.Empty;
     public string RemainingMarginText { get; init; } = string.Empty;
+    public string HppDeltaText { get; init; } = string.Empty;
+    public string StatusText { get; init; } = string.Empty;
     public bool IsDanger { get; init; }
+    public bool IsWarning { get; init; }
+    public bool IsSafe { get; init; }
 }
 
 public sealed partial class PosCatalogItemViewModel : ObservableObject
@@ -246,6 +304,10 @@ public sealed partial class PosCatalogItemViewModel : ObservableObject
     public decimal BasePrice { get; init; }
     public decimal Hpp { get; init; }
     public string DisplayPrice => FormattingHelper.FormatCurrency(BasePrice);
+    public string HppText => FormattingHelper.FormatCurrency(Hpp);
+    public bool IsRecipe => string.Equals(Type, "recipe", StringComparison.OrdinalIgnoreCase);
+    public bool IsCombo => string.Equals(Type, "combo", StringComparison.OrdinalIgnoreCase);
+    public string TypeLabel => IsCombo ? "Bundle" : "Resep";
 }
 
 public sealed partial class CartItemViewModel : ObservableObject
@@ -263,4 +325,45 @@ public sealed partial class CartItemViewModel : ObservableObject
     private decimal _price;
 
     public string TotalText => FormattingHelper.FormatCurrency(Price * Qty);
+    public string UnitPriceText => FormattingHelper.FormatCurrency(Price);
+    public string BasePriceText => FormattingHelper.FormatCurrency(BasePrice);
+    public string HppText => FormattingHelper.FormatCurrency(Hpp);
+    public string ProfitPerUnitText => FormattingHelper.FormatCurrency(Price - Hpp);
+
+    partial void OnQtyChanged(int value)
+    {
+        OnPropertyChanged(nameof(TotalText));
+    }
+
+    partial void OnPriceChanged(decimal value)
+    {
+        OnPropertyChanged(nameof(TotalText));
+        OnPropertyChanged(nameof(UnitPriceText));
+        OnPropertyChanged(nameof(ProfitPerUnitText));
+    }
+}
+
+public sealed partial class BookkeepingTransactionCardViewModel : ObservableObject
+{
+    public Transaction Transaction { get; init; } = new();
+    public string DescriptionText { get; init; } = string.Empty;
+    public string CategoryText { get; init; } = string.Empty;
+    public string DateText { get; init; } = string.Empty;
+    public string AmountText { get; init; } = string.Empty;
+    public string TypeBadgeText { get; init; } = string.Empty;
+    public string PurchaseCountText { get; init; } = string.Empty;
+    public string PurchaseSummaryText { get; init; } = string.Empty;
+    public bool HasPurchasedItems { get; init; }
+    public bool IsIncome { get; init; }
+    public bool IsExpense { get; init; }
+}
+
+public sealed partial class ProfileCardViewModel : ObservableObject
+{
+    public Profile Profile { get; init; } = new();
+    public string BusinessNameText { get; init; } = string.Empty;
+    public string OwnerNameText { get; init; } = string.Empty;
+    public string DataFootprintText { get; init; } = string.Empty;
+    public string ActivitySummaryText { get; init; } = string.Empty;
+    public bool IsActive { get; init; }
 }

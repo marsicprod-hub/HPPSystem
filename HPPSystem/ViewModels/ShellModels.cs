@@ -9,6 +9,7 @@ public enum AppPage
 {
     Dashboard,
     Materials,
+    Warehouse,
     Recipes,
     Combos,
     Pos,

@@ -28,6 +28,7 @@ public partial class App : Application
 
             var dashboard = new DashboardViewModel(dataService, notifications);
             var materials = new MaterialsViewModel(dataService, notifications);
+            var warehouse = new WarehouseViewModel(dataService, notifications);
             var recipes = new RecipesViewModel(dataService, notifications);
             var combos = new CombosViewModel(dataService, notifications);
             var pos = new PosViewModel(dataService, notifications);
@@ -44,6 +45,7 @@ public partial class App : Application
                     notifications,
                     dashboard,
                     materials,
+                    warehouse,
                     recipes,
                     combos,
                     pos,

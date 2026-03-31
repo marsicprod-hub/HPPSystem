@@ -12,8 +12,38 @@ public class Material
     public string Unit { get; set; } = "gram";
     public decimal PricePerUnit { get; set; }
     public decimal Stock { get; set; }
+    public bool IsTrackedInWarehouse { get; set; }
     public string ProfileId { get; set; } = "default";
     public List<PriceHistoryRecord> PriceHistory { get; set; } = new();
+}
+
+public class StockMovement
+{
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
+    public string MaterialId { get; set; } = string.Empty;
+    public string MaterialName { get; set; } = string.Empty;
+    public decimal QuantityDelta { get; set; }
+    public decimal PreviousStock { get; set; }
+    public decimal CurrentStock { get; set; }
+    public string Direction { get; set; } = "adjustment";
+    public string SourceType { get; set; } = string.Empty;
+    public string SourceId { get; set; } = string.Empty;
+    public string SourceLabel { get; set; } = string.Empty;
+    public string Notes { get; set; } = string.Empty;
+    public string Date { get; set; } = DateTime.UtcNow.ToString("O");
+    public string ProfileId { get; set; } = "default";
+}
+
+public class MaterialStockAdjustment
+{
+    public string MaterialId { get; set; } = string.Empty;
+    public decimal QuantityDelta { get; set; }
+    public string SourceType { get; set; } = string.Empty;
+    public string SourceId { get; set; } = string.Empty;
+    public string SourceLabel { get; set; } = string.Empty;
+    public string Notes { get; set; } = string.Empty;
+    public decimal? UpdatedPrice { get; set; }
+    public decimal? UpdatedWeight { get; set; }
 }
 
 public class PriceHistoryRecord
@@ -98,6 +128,11 @@ public class PurchasedItem
     public string CustomName { get; set; } = string.Empty;
     public decimal Qty { get; set; } = 1;
     public decimal Price { get; set; }
+    public bool SyncToMaterialCatalog { get; set; }
+    public decimal PreviousMaterialPrice { get; set; }
+    public decimal PreviousMaterialWeight { get; set; }
+    public decimal AppliedMaterialPrice { get; set; }
+    public decimal AppliedMaterialWeight { get; set; }
 }
 
 public class Profile
@@ -120,6 +155,7 @@ public class HppDataSnapshot
     public string Timestamp { get; set; } = DateTime.UtcNow.ToString("O");
     public List<Profile> Profiles { get; set; } = new();
     public List<Material> Materials { get; set; } = new();
+    public List<StockMovement> StockMovements { get; set; } = new();
     public List<Recipe> Recipes { get; set; } = new();
     public List<Combo> Combos { get; set; } = new();
     public List<Sale> Sales { get; set; } = new();

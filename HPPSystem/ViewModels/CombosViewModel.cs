@@ -13,6 +13,9 @@ namespace HPPSystem.ViewModels;
 
 public sealed partial class CombosViewModel : PageViewModelBase
 {
+    private const decimal RiskMarginThreshold = 20m;
+    private const decimal HealthyMarginThreshold = 35m;
+
     public CombosViewModel(IDataService dataService, NotificationService notifications)
         : base(dataService, notifications)
     {
@@ -40,16 +43,60 @@ public sealed partial class CombosViewModel : PageViewModelBase
     [ObservableProperty]
     private ComboCardViewModel? _pendingDelete;
 
+    [ObservableProperty]
+    private ComboCardViewModel? _selectedCombo;
+
+    [ObservableProperty]
+    private bool _isLibraryTableMode;
+
     public bool HasCombos => ComboCards.Count > 0;
+    public bool HasSelectedCombo => SelectedCombo is not null;
+    public bool IsLibraryCardMode => !IsLibraryTableMode;
     public bool ShowDeletePrompt => PendingDelete is not null;
     public string ComboCountText { get; private set; } = "0 paket";
     public string AverageMarginText { get; private set; } = "0%";
     public string BestComboNameText { get; private set; } = "-";
     public string BestComboMarginText { get; private set; } = "0%";
     public string PortfolioInsightText { get; private set; } = "Belum ada bundling aktif pada profil ini.";
+    public string AnalyticsHeadlineText { get; private set; } = "Belum ada portofolio bundle yang bisa dibaca.";
+    public string AnalyticsSupportText { get; private set; } = "Tambahkan paket aktif untuk membentuk benchmark margin.";
+    public string RiskComboCountText { get; private set; } = "0 paket rawan";
+    public string HealthyComboCountText { get; private set; } = "0 paket sehat";
+    public string AverageHppText { get; private set; } = FormattingHelper.FormatCurrency(0);
+    public string BestComboSellingPriceText { get; private set; } = FormattingHelper.FormatCurrency(0);
+    public string BestComboGuideText { get; private set; } = "Belum ada best bundle.";
+    public string SelectedComboName => SelectedCombo?.Name ?? "Belum ada bundle dipilih";
+    public string SelectedComboAuditText => SelectedCombo is null
+        ? "Pilih bundle untuk audit HPP, harga jual, dan margin dalam mode tabel."
+        : $"{SelectedCombo.RecipeCountText} | HPP {SelectedCombo.HppText} | jual {SelectedCombo.SellingPriceText} | margin {SelectedCombo.MarginText}";
     public string FormTitleText => string.IsNullOrWhiteSpace(FormId) ? "Bundle Builder" : $"Bundle Builder: {FormName}";
     public string FormActionText => string.IsNullOrWhiteSpace(FormId) ? "Simpan Bundling" : "Update Bundling";
     public string FormRecipeCountText => $"{FormRecipes.Count(x => !string.IsNullOrWhiteSpace(x.RecipeId) && x.Qty > 0)} resep aktif";
+    public string FormPricingGuideText
+    {
+        get
+        {
+            var combo = BuildFormCombo();
+            var hpp = CalculateFormHpp(combo);
+            var margin = combo.SellingPrice <= 0 ? 0 : ((combo.SellingPrice - hpp) / combo.SellingPrice) * 100;
+            return $"Bundle HPP {FormattingHelper.FormatCurrency(hpp)} dengan margin {margin:0.#}% pada harga jual saat ini.";
+        }
+    }
+    public string FormHealthText
+    {
+        get
+        {
+            var combo = BuildFormCombo();
+            var hpp = CalculateFormHpp(combo);
+            var margin = combo.SellingPrice <= 0 ? 0 : ((combo.SellingPrice - hpp) / combo.SellingPrice) * 100;
+            return margin switch
+            {
+                < RiskMarginThreshold => "Margin bundling masih rawan. Naikkan harga atau rapikan isi paket.",
+                < HealthyMarginThreshold => "Margin bundling cukup, tetapi belum punya buffer promo yang tebal.",
+                _ => "Margin bundling sehat dan cukup aman untuk dipakai sebagai anchor promo."
+            };
+        }
+    }
     public string DeletePromptText => PendingDelete is null
         ? string.Empty
         : $"Hapus paket {PendingDelete.Name} secara permanen? Riwayat margin dan pricing bundle ini akan ikut hilang.";
@@ -77,6 +124,16 @@ public sealed partial class CombosViewModel : PageViewModelBase
     partial void OnFormIdChanged(string value) => NotifyFormStateChanged();
     partial void OnFormNameChanged(string value) => NotifyFormStateChanged();
     partial void OnFormSellingPriceChanged(decimal value) => NotifyFormStateChanged();
+    partial void OnSelectedComboChanged(ComboCardViewModel? value)
+    {
+        OnPropertyChanged(nameof(HasSelectedCombo));
+        OnPropertyChanged(nameof(SelectedComboName));
+        OnPropertyChanged(nameof(SelectedComboAuditText));
+    }
+    partial void OnIsLibraryTableModeChanged(bool value)
+    {
+        OnPropertyChanged(nameof(IsLibraryCardMode));
+    }
     partial void OnPendingDeleteChanged(ComboCardViewModel? value)
     {
         OnPropertyChanged(nameof(ShowDeletePrompt));
@@ -102,40 +159,99 @@ public sealed partial class CombosViewModel : PageViewModelBase
             {
                 Id = combo.Id,
                 Name = combo.Name,
+                HppValue = hpp,
+                SellingPriceValue = combo.SellingPrice,
+                MarginValue = margin,
                 Combo = combo,
                 HppText = FormattingHelper.FormatCurrency(hpp),
                 SellingPriceText = FormattingHelper.FormatCurrency(combo.SellingPrice),
-                MarginText = $"{margin:0.#}%"
+                MarginText = $"{margin:0.#}%",
+                HealthLabelText = margin < RiskMarginThreshold ? "Rawan" : margin < HealthyMarginThreshold ? "Butuh buffer" : "Sehat",
+                RecipeCountText = $"{combo.Recipes.Sum(recipe => recipe.Qty)} item / {combo.Recipes.Count} resep",
+                IsRisky = margin < RiskMarginThreshold,
+                IsHealthy = margin >= HealthyMarginThreshold
             });
+        }
+
+        if (SelectedCombo is null || !ComboCards.Any(card => card.Id == SelectedCombo.Id))
+        {
+            SelectedCombo = ComboCards.FirstOrDefault();
+        }
+        else
+        {
+            SelectedCombo = ComboCards.First(card => card.Id == SelectedCombo.Id);
         }
 
         ComboCountText = $"{ComboCards.Count} paket";
 
         var margins = ComboCards
-            .Select(card => decimal.TryParse(card.MarginText.TrimEnd('%'), out var margin) ? margin : 0)
+            .Select(card => card.MarginValue)
             .ToList();
         AverageMarginText = margins.Count == 0 ? "0%" : $"{margins.Average():0.#}%";
+        AverageHppText = ComboCards.Count == 0
+            ? FormattingHelper.FormatCurrency(0)
+            : FormattingHelper.FormatCurrency(ComboCards.Average(card => card.HppValue));
+        RiskComboCountText = $"{ComboCards.Count(card => card.IsRisky)} paket rawan";
+        HealthyComboCountText = $"{ComboCards.Count(card => card.IsHealthy)} paket sehat";
 
         var bestCombo = ComboCards
-            .OrderByDescending(card => decimal.TryParse(card.MarginText.TrimEnd('%'), out var margin) ? margin : 0)
+            .OrderByDescending(card => card.MarginValue)
             .ThenBy(card => card.Name)
             .FirstOrDefault();
         BestComboNameText = bestCombo?.Name ?? "-";
         BestComboMarginText = bestCombo?.MarginText ?? "0%";
+        BestComboSellingPriceText = bestCombo?.SellingPriceText ?? FormattingHelper.FormatCurrency(0);
+        BestComboGuideText = bestCombo is null
+            ? "Belum ada bundle benchmark."
+            : $"{bestCombo.Name} berjalan di harga {bestCombo.SellingPriceText} dengan HPP {bestCombo.HppText}.";
         PortfolioInsightText = ComboCards.Count switch
         {
             0 => "Belum ada bundling aktif pada profil ini. Paket promo akan membantu menggerakkan volume dan average basket.",
             _ when bestCombo is null => "Bundling tersedia, tetapi insight margin belum terbentuk.",
             _ => $"Bundle dengan margin terbaik saat ini adalah {bestCombo.Name} di {bestCombo.MarginText}. Gunakan sebagai benchmark untuk promo berikutnya."
         };
+        AnalyticsHeadlineText = ComboCards.Count switch
+        {
+            0 => "Belum ada portofolio bundle aktif.",
+            _ when ComboCards.Any(card => card.IsRisky) => "Sebagian bundle masih terlalu tipis untuk dijadikan motor promo.",
+            _ => "Portofolio bundle mulai siap dipakai untuk strategi upsell dan promo."
+        };
+        AnalyticsSupportText = ComboCards.Count switch
+        {
+            0 => "Bangun satu bundle unggulan dulu untuk membentuk benchmark margin.",
+            _ when ComboCards.Any(card => card.IsRisky) => $"Ada {RiskComboCountText} yang perlu review harga atau isi paket.",
+            _ => $"Mayoritas bundle sudah sehat. Gunakan {BestComboNameText} sebagai anchor promo."
+        };
 
         OnPropertyChanged(nameof(HasCombos));
         OnPropertyChanged(nameof(ComboCountText));
         OnPropertyChanged(nameof(AverageMarginText));
+        OnPropertyChanged(nameof(AverageHppText));
         OnPropertyChanged(nameof(BestComboNameText));
         OnPropertyChanged(nameof(BestComboMarginText));
+        OnPropertyChanged(nameof(BestComboSellingPriceText));
+        OnPropertyChanged(nameof(BestComboGuideText));
         OnPropertyChanged(nameof(PortfolioInsightText));
+        OnPropertyChanged(nameof(AnalyticsHeadlineText));
+        OnPropertyChanged(nameof(AnalyticsSupportText));
+        OnPropertyChanged(nameof(RiskComboCountText));
+        OnPropertyChanged(nameof(HealthyComboCountText));
+        OnPropertyChanged(nameof(HasSelectedCombo));
+        OnPropertyChanged(nameof(SelectedComboName));
+        OnPropertyChanged(nameof(SelectedComboAuditText));
         NotifyFormStateChanged();
+    }
+
+    [RelayCommand]
+    private void SetLibraryCardMode()
+    {
+        IsLibraryTableMode = false;
+    }
+
+    [RelayCommand]
+    private void SetLibraryTableMode()
+    {
+        IsLibraryTableMode = true;
     }
 
     [RelayCommand]
@@ -273,5 +389,7 @@ public sealed partial class CombosViewModel : PageViewModelBase
         OnPropertyChanged(nameof(FormRecipeCountText));
         OnPropertyChanged(nameof(FormHppText));
         OnPropertyChanged(nameof(FormMarginText));
+        OnPropertyChanged(nameof(FormPricingGuideText));
+        OnPropertyChanged(nameof(FormHealthText));
     }
 }

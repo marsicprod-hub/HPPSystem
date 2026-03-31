@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using HPPSystem.Helpers;
@@ -48,6 +49,16 @@ public sealed partial class DashboardViewModel : PageViewModelBase
     public string TopRecipeHppText { get; private set; } = FormattingHelper.FormatCurrency(0);
     public string InventoryHealthText { get; private set; } = "Stok aman";
     public string DashboardInsightText { get; private set; } = "Belum ada cukup data untuk analitik.";
+    public string ExecutiveHeadlineText { get; private set; } = "Belum ada data penjualan aktif.";
+    public string ExecutiveSupportText { get; private set; } = "Mulai catat transaksi untuk membentuk baseline insight.";
+    public string RevenuePulseText { get; private set; } = "Belum ada momentum penjualan.";
+    public string RevenuePulseDetailText { get; private set; } = "Perlu histori transaksi untuk membaca tren omzet.";
+    public string BestDaySummaryText { get; private set; } = "Belum ada hari terbaik yang bisa dipetakan.";
+    public string TopRecipeGuideText { get; private set; } = "Belum ada recipe benchmark.";
+    public string InventoryActionText { get; private set; } = "Belum ada tindakan inventaris yang mendesak.";
+    public string LowStockSummaryText { get; private set; } = "Tidak ada bahan kritis.";
+    public string RecentSalesSummaryText { get; private set; } = "Belum ada transaksi terbaru.";
+    public bool HasCriticalInventory => LowStockMaterials.Count >= 3;
     public ISeries[] SalesSeries { get; private set; } = [];
     public Axis[] XAxes { get; private set; } = [];
     public Axis[] YAxes { get; private set; } = [];
@@ -90,16 +101,19 @@ public sealed partial class DashboardViewModel : PageViewModelBase
             var costBreakdown = CostCalculator.CalculateRecipeCost(recipe, materials);
             var total = costBreakdown.TotalCost;
             var hpp = CostCalculator.CalculateRecipeHppPerPortion(recipe, materials);
+            var recommendedPrice = CostCalculator.CalculateRecommendedSellingPrice(hpp, recipe.TargetMargin);
             TopMarginRecipes.Add(new RecipeCardViewModel
             {
                 Id = recipe.Id,
                 Name = recipe.Name,
                 Recipe = recipe,
+                HppValue = hpp,
+                MarginValue = recipe.TargetMargin,
                 HppText = FormattingHelper.FormatCurrency(hpp),
                 MaterialCostText = FormattingHelper.FormatCurrency(costBreakdown.MaterialCost),
                 OverheadCostText = FormattingHelper.FormatCurrency(costBreakdown.OverheadCost),
                 TotalCostText = FormattingHelper.FormatCurrency(total),
-                RecommendedPriceText = FormattingHelper.FormatCurrency(CostCalculator.CalculateRecommendedSellingPrice(hpp, recipe.TargetMargin)),
+                RecommendedPriceText = FormattingHelper.FormatCurrency(recommendedPrice),
                 MarginText = $"{recipe.TargetMargin:0.#}%",
                 PortionsText = $"{recipe.Portions} porsi",
                 IngredientCountText = $"{recipe.IngredientGroups.SelectMany(x => x.Ingredients).Count()} bahan",
@@ -126,6 +140,15 @@ public sealed partial class DashboardViewModel : PageViewModelBase
             <= 2 => "Perlu monitor",
             _ => "Perlu restock"
         };
+        LowStockSummaryText = LowStockMaterials.Count switch
+        {
+            0 => "Semua bahan utama masih di atas batas kritis.",
+            1 => $"Fokus restock pertama: {LowStockMaterials[0].Name}.",
+            _ => $"Ada {LowStockMaterials.Count} bahan dengan stok kritis yang perlu diprioritaskan."
+        };
+        InventoryActionText = LowStockMaterials.FirstOrDefault() is { } focusMaterial
+            ? $"{focusMaterial.Name} tersisa {focusMaterial.Stock:0.##} {focusMaterial.Unit}."
+            : "Belum ada restock prioritas untuk hari ini.";
 
         RecentSales.Clear();
         foreach (var sale in sales.OrderByDescending(x => DateTime.TryParse(x.Date, out var dt) ? dt : DateTime.MinValue).Take(8))
@@ -139,10 +162,15 @@ public sealed partial class DashboardViewModel : PageViewModelBase
                 TotalProfitText = FormattingHelper.FormatCurrency(sale.TotalProfit)
             });
         }
+        RecentSalesSummaryText = RecentSales.Count switch
+        {
+            0 => "Belum ada transaksi terbaru yang bisa dibaca.",
+            _ => $"{RecentSales.Count} transaksi terbaru sudah siap dibaca untuk validasi ritme penjualan."
+        };
 
         Last7DaysSales.Clear();
         var today = DateTime.Today;
-        var dailyTotals = new Collection<decimal>();
+        var dailyTotals = new List<decimal>();
         for (var i = 6; i >= 0; i--)
         {
             var date = today.AddDays(-i);
@@ -229,6 +257,38 @@ public sealed partial class DashboardViewModel : PageViewModelBase
             BestDayLabel = "-";
             BestDaySalesText = FormattingHelper.FormatCurrency(0);
         }
+        BestDaySummaryText = max <= 0
+            ? "Belum ada peak day yang terbentuk."
+            : $"{BestDayLabel} menjadi puncak omzet dengan {BestDaySalesText}.";
+
+        var lastThreeDaysAverage = dailyTotals.Skip(Math.Max(0, dailyTotals.Count - 3)).DefaultIfEmpty(0).Average();
+        RevenuePulseText = sales.Count == 0
+            ? "Belum ada momentum penjualan."
+            : lastThreeDaysAverage >= dailyTotals.DefaultIfEmpty(0).Average()
+                ? "Momentum penjualan stabil"
+                : "Momentum penjualan melambat";
+        RevenuePulseDetailText = sales.Count == 0
+            ? "Mulai checkout di POS untuk membaca pulse omzet harian."
+            : $"Rata-rata 3 hari terakhir {FormattingHelper.FormatCurrency(lastThreeDaysAverage)} per hari.";
+
+        TopRecipeGuideText = topRecipe is null
+            ? "Belum ada resep benchmark yang bisa dibaca."
+            : $"{topRecipe.Name} memimpin dengan margin {topRecipe.MarginText} dan rekomendasi jual {topRecipe.RecommendedPriceText}.";
+
+        ExecutiveHeadlineText = sales.Count switch
+        {
+            0 => "Belum ada data transaksi aktif.",
+            _ when LowStockMaterials.Count >= 3 => "Penjualan berjalan, tetapi inventaris mulai menekan operasi.",
+            _ when totalProfit <= 0 => "Omzet sudah masuk, namun profit belum sehat.",
+            _ => "Operasi harian terlihat stabil dan bisa diputuskan lebih cepat."
+        };
+        ExecutiveSupportText = sales.Count switch
+        {
+            0 => "Aktifkan POS dan pembukuan untuk membentuk baseline analitik.",
+            _ when LowStockMaterials.Count >= 3 => $"Prioritas hari ini: restock {LowStockMaterials[0].Name} dan review bahan kritis lainnya.",
+            _ when totalProfit <= 0 => "Periksa pricing menu dan struktur biaya karena laba belum terbentuk.",
+            _ => $"Fokus berikutnya: pertahankan menu unggulan {TopRecipeName} sambil menjaga stok aman."
+        };
 
         DashboardInsightText = sales.Count == 0
             ? "Belum ada transaksi POS pada profil ini. Dashboard akan makin informatif setelah penjualan mulai tercatat."
@@ -255,6 +315,16 @@ public sealed partial class DashboardViewModel : PageViewModelBase
         OnPropertyChanged(nameof(TopRecipeHppText));
         OnPropertyChanged(nameof(InventoryHealthText));
         OnPropertyChanged(nameof(DashboardInsightText));
+        OnPropertyChanged(nameof(ExecutiveHeadlineText));
+        OnPropertyChanged(nameof(ExecutiveSupportText));
+        OnPropertyChanged(nameof(RevenuePulseText));
+        OnPropertyChanged(nameof(RevenuePulseDetailText));
+        OnPropertyChanged(nameof(BestDaySummaryText));
+        OnPropertyChanged(nameof(TopRecipeGuideText));
+        OnPropertyChanged(nameof(InventoryActionText));
+        OnPropertyChanged(nameof(LowStockSummaryText));
+        OnPropertyChanged(nameof(RecentSalesSummaryText));
+        OnPropertyChanged(nameof(HasCriticalInventory));
         OnPropertyChanged(nameof(SalesSeries));
         OnPropertyChanged(nameof(XAxes));
         OnPropertyChanged(nameof(YAxes));

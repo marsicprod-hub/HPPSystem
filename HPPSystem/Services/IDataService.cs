@@ -16,6 +16,7 @@ public interface IDataService
     event EventHandler? StateChanged;
 
     ObservableCollection<HPPSystem.Models.Material> Materials { get; }
+    ObservableCollection<StockMovement> StockMovements { get; }
     ObservableCollection<Recipe> Recipes { get; }
     ObservableCollection<Combo> Combos { get; }
     ObservableCollection<Sale> Sales { get; }
@@ -26,6 +27,8 @@ public interface IDataService
 
     Task LoadDataAsync();
     Task SaveMaterialAsync(HPPSystem.Models.Material material);
+    Task SaveMaterialsAsync(IEnumerable<HPPSystem.Models.Material> materials);
+    Task ApplyMaterialStockAdjustmentAsync(MaterialStockAdjustment adjustment);
     Task DeleteMaterialAsync(string id);
     Task SaveRecipeAsync(Recipe recipe);
     Task DeleteRecipeAsync(string id);
@@ -57,6 +60,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
     public event EventHandler? StateChanged;
 
     public ObservableCollection<HPPSystem.Models.Material> Materials { get; } = new();
+    public ObservableCollection<StockMovement> StockMovements { get; } = new();
     public ObservableCollection<Recipe> Recipes { get; } = new();
     public ObservableCollection<Combo> Combos { get; } = new();
     public ObservableCollection<Sale> Sales { get; } = new();
@@ -72,8 +76,14 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
 
     public string DataStorePath { get; }
 
-    public LocalJsonDataService()
+    public LocalJsonDataService(string? dataStorePath = null)
     {
+        if (!string.IsNullOrWhiteSpace(dataStorePath))
+        {
+            DataStorePath = dataStorePath;
+            return;
+        }
+
         var appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
         DataStorePath = Path.Combine(appData, "HPPSystem", "hppsystem-data.json");
     }
@@ -109,25 +119,53 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
 
     public async Task SaveMaterialAsync(HPPSystem.Models.Material material)
     {
-        var existing = Materials.FirstOrDefault(x => x.Id == material.Id);
-        if (existing is not null)
+        var movement = BuildManualStockMovement(material);
+        await SaveMaterialCoreAsync(material, movement);
+    }
+
+    public async Task SaveMaterialsAsync(IEnumerable<HPPSystem.Models.Material> materials)
+    {
+        foreach (var material in materials)
         {
-            material.PriceHistory = existing.PriceHistory.ToList();
-            if (existing.Price != material.Price)
-            {
-                material.PriceHistory.Add(new PriceHistoryRecord
-                {
-                    Date = DateTime.UtcNow.ToString("O"),
-                    Price = existing.Price
-                });
-            }
+            await SaveMaterialCoreAsync(material, movement: null, persistChanges: false);
         }
 
-        material.PricePerUnit = material.Weight <= 0 ? 0 : material.Price / material.Weight;
-        material.ProfileId = string.IsNullOrWhiteSpace(material.ProfileId) ? Settings.ActiveProfileId : material.ProfileId;
-
-        Upsert(Materials, material, x => x.Id);
         await PersistAndNotifyAsync();
+    }
+
+    public async Task ApplyMaterialStockAdjustmentAsync(MaterialStockAdjustment adjustment)
+    {
+        var existing = Materials.FirstOrDefault(x => x.Id == adjustment.MaterialId);
+        if (existing is null)
+        {
+            return;
+        }
+
+        var updated = CloneMaterial(existing);
+        updated.IsTrackedInWarehouse = true;
+        updated.Stock += adjustment.QuantityDelta;
+
+        if (adjustment.UpdatedPrice is > 0)
+        {
+            updated.Price = adjustment.UpdatedPrice.Value;
+        }
+
+        if (adjustment.UpdatedWeight is > 0)
+        {
+            updated.Weight = adjustment.UpdatedWeight.Value;
+        }
+
+        var movement = CreateStockMovement(
+            updated,
+            adjustment.QuantityDelta,
+            existing.Stock,
+            updated.Stock,
+            adjustment.SourceType,
+            adjustment.SourceId,
+            adjustment.SourceLabel,
+            adjustment.Notes);
+
+        await SaveMaterialCoreAsync(updated, movement);
     }
 
     public async Task DeleteMaterialAsync(string id)
@@ -149,6 +187,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
             Upsert(Recipes, recipe, x => x.Id);
         }
 
+        RemoveAll(StockMovements, x => string.Equals(x.MaterialId, id, StringComparison.Ordinal));
         RemoveById(Materials, id);
         await PersistAndNotifyAsync();
     }
@@ -244,6 +283,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
         RemoveAllByProfile(Combos, id);
         RemoveAllByProfile(Sales, id);
         RemoveAllByProfile(Transactions, id);
+        RemoveAllByProfile(StockMovements, id);
 
         if (Settings.ActiveProfileId == id)
         {
@@ -272,6 +312,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
             Timestamp = DateTime.UtcNow.ToString("O"),
             Profiles = Profiles.ToList(),
             Materials = Materials.ToList(),
+            StockMovements = StockMovements.ToList(),
             Recipes = Recipes.ToList(),
             Combos = Combos.ToList(),
             Sales = Sales.ToList(),
@@ -335,6 +376,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
     {
         ReplaceCollection(Profiles, snapshot.Profiles);
         ReplaceCollection(Materials, snapshot.Materials);
+        ReplaceCollection(StockMovements, snapshot.StockMovements);
         ReplaceCollection(Recipes, snapshot.Recipes);
         ReplaceCollection(Combos, snapshot.Combos);
         ReplaceCollection(Sales, snapshot.Sales);
@@ -346,6 +388,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
     {
         snapshot.Profiles ??= new List<Profile>();
         snapshot.Materials ??= new List<HPPSystem.Models.Material>();
+        snapshot.StockMovements ??= new List<StockMovement>();
         snapshot.Recipes ??= new List<Recipe>();
         snapshot.Combos ??= new List<Combo>();
         snapshot.Sales ??= new List<Sale>();
@@ -362,6 +405,9 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
             material.ProfileId = string.IsNullOrWhiteSpace(material.ProfileId) ? "default" : material.ProfileId;
             material.PriceHistory ??= new List<PriceHistoryRecord>();
             material.PricePerUnit = material.Weight <= 0 ? 0 : material.Price / material.Weight;
+            material.IsTrackedInWarehouse = material.IsTrackedInWarehouse
+                || material.Stock != 0
+                || snapshot.StockMovements.Any(x => string.Equals(x.MaterialId, material.Id, StringComparison.Ordinal));
         }
 
         foreach (var recipe in snapshot.Recipes)
@@ -386,6 +432,11 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
         {
             transaction.ProfileId = string.IsNullOrWhiteSpace(transaction.ProfileId) ? "default" : transaction.ProfileId;
             transaction.PurchasedItems ??= new List<PurchasedItem>();
+        }
+
+        foreach (var movement in snapshot.StockMovements)
+        {
+            movement.ProfileId = string.IsNullOrWhiteSpace(movement.ProfileId) ? "default" : movement.ProfileId;
         }
 
         if (!snapshot.Profiles.Any(x => x.Id == snapshot.Settings.ActiveProfileId))
@@ -440,6 +491,112 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
         }
     }
 
+    private static void RemoveAll<T>(ObservableCollection<T> collection, Func<T, bool> predicate)
+    {
+        var items = collection.Where(predicate).ToList();
+        foreach (var item in items)
+        {
+            collection.Remove(item);
+        }
+    }
+
+    private async Task SaveMaterialCoreAsync(HPPSystem.Models.Material material, StockMovement? movement, bool persistChanges = true)
+    {
+        var existing = Materials.FirstOrDefault(x => x.Id == material.Id);
+        if (existing is not null)
+        {
+            material.PriceHistory = existing.PriceHistory.ToList();
+            if (existing.Price != material.Price)
+            {
+                material.PriceHistory.Add(new PriceHistoryRecord
+                {
+                    Date = DateTime.UtcNow.ToString("O"),
+                    Price = existing.Price
+                });
+            }
+        }
+
+        material.PricePerUnit = material.Weight <= 0 ? 0 : material.Price / material.Weight;
+        material.ProfileId = string.IsNullOrWhiteSpace(material.ProfileId) ? Settings.ActiveProfileId : material.ProfileId;
+
+        Upsert(Materials, material, x => x.Id);
+
+        if (movement is not null)
+        {
+            Upsert(StockMovements, movement, x => x.Id);
+        }
+
+        if (persistChanges)
+        {
+            await PersistAndNotifyAsync();
+        }
+    }
+
+    private StockMovement? BuildManualStockMovement(HPPSystem.Models.Material material)
+    {
+        var existing = Materials.FirstOrDefault(x => x.Id == material.Id);
+        var previousStock = existing?.Stock ?? 0;
+        var currentStock = material.Stock;
+        var delta = currentStock - previousStock;
+        if (delta == 0)
+        {
+            return null;
+        }
+
+        return CreateStockMovement(
+            material,
+            delta,
+            previousStock,
+            currentStock,
+            "manual-adjustment",
+            material.Id,
+            material.Name,
+            existing is null ? "Stok awal material dicatat dari katalog." : "Stok material diperbarui dari katalog bahan.");
+    }
+
+    private static StockMovement CreateStockMovement(
+        HPPSystem.Models.Material material,
+        decimal delta,
+        decimal previousStock,
+        decimal currentStock,
+        string sourceType,
+        string sourceId,
+        string sourceLabel,
+        string notes)
+    {
+        return new StockMovement
+        {
+            MaterialId = material.Id,
+            MaterialName = material.Name,
+            QuantityDelta = delta,
+            PreviousStock = previousStock,
+            CurrentStock = currentStock,
+            Direction = delta > 0 ? "in" : delta < 0 ? "out" : "adjustment",
+            SourceType = sourceType,
+            SourceId = sourceId,
+            SourceLabel = sourceLabel,
+            Notes = notes,
+            ProfileId = material.ProfileId
+        };
+    }
+
+    private static HPPSystem.Models.Material CloneMaterial(HPPSystem.Models.Material material)
+    {
+        return new HPPSystem.Models.Material
+        {
+            Id = material.Id,
+            Name = material.Name,
+            Price = material.Price,
+            Weight = material.Weight,
+            Unit = material.Unit,
+            PricePerUnit = material.PricePerUnit,
+            Stock = material.Stock,
+            IsTrackedInWarehouse = material.IsTrackedInWarehouse,
+            ProfileId = material.ProfileId,
+            PriceHistory = material.PriceHistory.ToList()
+        };
+    }
+
     private static HppDataSnapshot CreateDefaultSnapshot()
     {
         var profile = new Profile
@@ -460,6 +617,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
                 Unit = "gram",
                 PricePerUnit = 14,
                 Stock = 3500,
+                IsTrackedInWarehouse = true,
                 ProfileId = "default"
             },
             new()
@@ -471,6 +629,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
                 Unit = "gram",
                 PricePerUnit = 18,
                 Stock = 2000,
+                IsTrackedInWarehouse = true,
                 ProfileId = "default"
             },
             new()
@@ -482,6 +641,7 @@ public sealed class LocalJsonDataService : ObservableObject, IDataService
                 Unit = "ml",
                 PricePerUnit = 22,
                 Stock = 1200,
+                IsTrackedInWarehouse = true,
                 ProfileId = "default"
             }
         };

@@ -31,11 +31,45 @@ public sealed partial class SettingsViewModel : PageViewModelBase
     private string _importPath = string.Empty;
 
     public string CurrentStorePath => DataService.DataStorePath;
+    public string WorkspaceModeText => IsAdvancedMode ? "Enterprise" : "Basic";
+    public string WorkspaceModeSummaryText => IsAdvancedMode
+        ? "Modul POS, pembukuan, simulasi, dan bundling sedang aktif."
+        : "Workspace sedang berjalan di mode dasar dengan modul inti saja.";
+    public string ModeActionText => IsAdvancedMode ? "Turunkan ke Basic" : "Naikkan ke Enterprise";
+    public string BackupInsightText => $"Data aktif disimpan di {CurrentStorePath}. Gunakan export rutin sebelum import atau perubahan besar.";
+    public string ExportGuideText => string.IsNullOrWhiteSpace(ExportPath)
+        ? "Isi path export untuk membuat backup snapshot."
+        : $"Backup akan dibuat ke {ExportPath}.";
+    public string ImportGuideText => string.IsNullOrWhiteSpace(ImportPath)
+        ? "Isi path import untuk memulihkan snapshot."
+        : $"Import akan membaca data dari {ImportPath}.";
+    public bool CanExport => !string.IsNullOrWhiteSpace(ExportPath);
+    public bool CanImport => !string.IsNullOrWhiteSpace(ImportPath);
+
+    partial void OnExportPathChanged(string value)
+    {
+        OnPropertyChanged(nameof(ExportGuideText));
+        OnPropertyChanged(nameof(CanExport));
+    }
+
+    partial void OnImportPathChanged(string value)
+    {
+        OnPropertyChanged(nameof(ImportGuideText));
+        OnPropertyChanged(nameof(CanImport));
+    }
 
     public override void Refresh()
     {
         IsAdvancedMode = DataService.Settings.IsAdvancedMode;
         OnPropertyChanged(nameof(CurrentStorePath));
+        OnPropertyChanged(nameof(WorkspaceModeText));
+        OnPropertyChanged(nameof(WorkspaceModeSummaryText));
+        OnPropertyChanged(nameof(ModeActionText));
+        OnPropertyChanged(nameof(BackupInsightText));
+        OnPropertyChanged(nameof(ExportGuideText));
+        OnPropertyChanged(nameof(ImportGuideText));
+        OnPropertyChanged(nameof(CanExport));
+        OnPropertyChanged(nameof(CanImport));
     }
 
     [RelayCommand]

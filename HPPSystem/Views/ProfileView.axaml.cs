@@ -52,10 +52,10 @@ public partial class ProfileView : UserControl
         {
             var dialog = new ContentDialog
             {
-                Title = "Delete Branch",
-                Content = $"Hapus cabang {_viewModel.PendingDelete.BusinessName} beserta seluruh datanya?",
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
+                Title = "Hapus Cabang",
+                Content = _viewModel.DeletePromptText,
+                PrimaryButtonText = "Hapus",
+                CloseButtonText = "Batal",
                 DefaultButton = ContentDialogButton.Close
             };
 

@@ -19,6 +19,7 @@ public partial class MainViewModel : ViewModelBase
         NotificationService notifications,
         DashboardViewModel dashboard,
         MaterialsViewModel materials,
+        WarehouseViewModel warehouse,
         RecipesViewModel recipes,
         CombosViewModel combos,
         PosViewModel pos,
@@ -32,6 +33,7 @@ public partial class MainViewModel : ViewModelBase
 
         Dashboard = dashboard;
         Materials = materials;
+        Warehouse = warehouse;
         Recipes = recipes;
         Combos = combos;
         Pos = pos;
@@ -43,7 +45,8 @@ public partial class MainViewModel : ViewModelBase
         PrimaryNavigation = new ObservableCollection<NavigationItemViewModel>
         {
             new(AppPage.Dashboard, "Dashboard", MaterialIconKind.ViewDashboard, Navigate),
-            new(AppPage.Materials, "Materials", MaterialIconKind.PackageVariant, Navigate),
+            new(AppPage.Materials, "Material", MaterialIconKind.PackageVariant, Navigate),
+            new(AppPage.Warehouse, "Gudang", MaterialIconKind.PackageVariant, Navigate),
             new(AppPage.Recipes, "Recipes", MaterialIconKind.ChefHat, Navigate)
         };
 
@@ -72,6 +75,7 @@ public partial class MainViewModel : ViewModelBase
 
     public DashboardViewModel Dashboard { get; }
     public MaterialsViewModel Materials { get; }
+    public WarehouseViewModel Warehouse { get; }
     public RecipesViewModel Recipes { get; }
     public CombosViewModel Combos { get; }
     public PosViewModel Pos { get; }
@@ -108,7 +112,8 @@ public partial class MainViewModel : ViewModelBase
     public string CurrentPageDescription => CurrentPage switch
     {
         AppPage.Dashboard => "Overview and portfolio movement.",
-        AppPage.Materials => "Inventory source of truth.",
+        AppPage.Materials => "Master catalog for materials.",
+        AppPage.Warehouse => "Stock management and warehouse audit.",
         AppPage.Recipes => "Costing and pricing engine.",
         AppPage.Combos => "Bundle and offer builder.",
         AppPage.Pos => "Transaction terminal.",
@@ -170,6 +175,7 @@ public partial class MainViewModel : ViewModelBase
         {
             AppPage.Dashboard => Dashboard,
             AppPage.Materials => Materials,
+            AppPage.Warehouse => Warehouse,
             AppPage.Recipes => Recipes,
             AppPage.Combos => Combos,
             AppPage.Pos => Pos,

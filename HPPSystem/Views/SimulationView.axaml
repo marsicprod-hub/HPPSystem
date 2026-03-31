@@ -1,0 +1,153 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:HPPSystem.ViewModels"
+             xmlns:fa="using:FluentAvalonia.UI.Controls"
+             xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
+             xmlns:fi="using:FluentIcons.Avalonia"
+             xmlns:lottie="using:Avalonia.Skia.Lottie"
+             x:Class="HPPSystem.Views.SimulationView"
+             x:DataType="vm:SimulationViewModel">
+  <ScrollViewer Padding="0,0,14,0">
+    <StackPanel Spacing="18">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+        <StackPanel Spacing="4">
+          <TextBlock Text="Simulation" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="{Binding SimulationHeadlineText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+        </StackPanel>
+        <Border Grid.Column="1" Classes="badge badge-warm">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+            <fi:FluentIcon Icon="ArrowTrendingLines" IconVariant="Regular" FontSize="16" Foreground="{DynamicResource SidebarSelectedTextBrush}" VerticalAlignment="Center" />
+            <TextBlock Grid.Column="1" Text="{Binding InflationRateText}" Foreground="{DynamicResource SidebarSelectedTextBrush}" FontWeight="Bold" />
+          </Grid>
+        </Border>
+      </Grid>
+
+      <Border Classes="page-card" Background="{DynamicResource CardAltBgBrush}">
+        <Grid ColumnDefinitions="1.85*,*" ColumnSpacing="14">
+          <StackPanel Spacing="6">
+            <TextBlock Text="{Binding SimulationHeadlineText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding SimulationSupportText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+          </StackPanel>
+          <WrapPanel Grid.Column="1" Classes="kpi-grid">
+            <Border Width="160" Classes="metric-card">
+              <StackPanel Spacing="4">
+                <TextBlock Text="Safety Cue" Classes="kpi-label" />
+                <TextBlock Text="{Binding MarginSafetyText}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+            <Border Width="160" Classes="metric-card">
+              <StackPanel Spacing="4">
+                <TextBlock Text="Rata-rata Kenaikan HPP" Classes="kpi-label" />
+                <TextBlock Text="{Binding AverageDeltaText}" FontWeight="Black" Foreground="{DynamicResource AccentBrush}" />
+              </StackPanel>
+            </Border>
+          </WrapPanel>
+        </Grid>
+      </Border>
+
+      <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
+        <Border Grid.Column="0" Classes="page-card">
+          <StackPanel Spacing="8">
+            <fi:FluentIcon Icon="Food" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+            <TextBlock Text="Resep Dianalisis" Classes="kpi-label" />
+            <TextBlock Text="{Binding RecipeCountText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="1" Classes="page-card">
+          <StackPanel Spacing="8">
+            <fi:FluentIcon Icon="Alert" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentRoseBrush}" />
+            <TextBlock Text="Zona Rawan" Classes="kpi-label" />
+            <TextBlock Text="{Binding DangerCountText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="2" Classes="page-card">
+          <StackPanel Spacing="8">
+            <fi:FluentIcon Icon="Shield" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+            <TextBlock Text="Zona Aman" Classes="kpi-label" />
+            <TextBlock Text="{Binding SafeCountText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="3" Classes="page-card">
+          <StackPanel Spacing="8">
+            <fi:FluentIcon Icon="Calculator" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" />
+            <TextBlock Text="Avg HPP Simulasi" Classes="kpi-label" />
+            <TextBlock Text="{Binding AverageSimulatedHppText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          </StackPanel>
+        </Border>
+      </Grid>
+
+      <Border Classes="page-card">
+        <StackPanel Spacing="12">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <StackPanel Spacing="4">
+              <TextBlock Text="Inflation Scenario" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="{Binding SimulationInsightText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+            <Border Grid.Column="1" Classes="badge badge-warm" VerticalAlignment="Top">
+              <TextBlock Text="{Binding InflationRateText}" Foreground="{DynamicResource SidebarSelectedTextBrush}" FontWeight="Bold" />
+            </Border>
+          </Grid>
+
+          <Slider Minimum="0"
+                  Maximum="100"
+                  TickFrequency="5"
+                  IsSnapToTickEnabled="False"
+                  Value="{Binding InflationRate}"
+                  Background="{DynamicResource AccentSoftBrush}" />
+        </StackPanel>
+      </Border>
+
+      <Grid ColumnDefinitions="1.85*,*" ColumnSpacing="14">
+        <Border Grid.Column="0" Classes="page-card">
+          <StackPanel Spacing="12">
+            <TextBlock Text="Recipe Exposure" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+
+            <Border Classes="empty-state" IsVisible="{Binding !HasResults}">
+              <StackPanel Spacing="10" HorizontalAlignment="Center">
+                <lottie:Lottie Width="110" Height="110" Path="avares://HPPSystem/Assets/Animations/empty-pulse.json" />
+                <TextBlock Text="Belum ada resep untuk disimulasikan" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" HorizontalAlignment="Center" />
+                <TextBlock Text="Tambahkan resep aktif agar skenario inflasi bisa dianalisis." Foreground="{DynamicResource SecondaryTextBrush}" HorizontalAlignment="Center" TextAlignment="Center" />
+              </StackPanel>
+            </Border>
+
+            <dg:DataGrid Classes="audit-grid"
+                         ItemsSource="{Binding Results}"
+                         IsVisible="{Binding HasResults}"
+                         AutoGenerateColumns="False"
+                         MinHeight="420"
+                         CanUserResizeColumns="True">
+              <dg:DataGrid.Columns>
+                <dg:DataGridTextColumn Header="Resep" Binding="{Binding RecipeName}" Width="2*" />
+                <dg:DataGridTextColumn Header="Current HPP" Binding="{Binding CurrentHppText}" Width="*" />
+                <dg:DataGridTextColumn Header="Simulated HPP" Binding="{Binding SimulatedHppText}" Width="*" />
+                <dg:DataGridTextColumn Header="Delta HPP" Binding="{Binding HppDeltaText}" Width="*" />
+                <dg:DataGridTextColumn Header="Remaining Margin" Binding="{Binding RemainingMarginText}" Width="*" />
+                <dg:DataGridTextColumn Header="Status" Binding="{Binding StatusText}" Width="*" />
+              </dg:DataGrid.Columns>
+            </dg:DataGrid>
+          </StackPanel>
+        </Border>
+
+        <StackPanel Grid.Column="1" Spacing="14">
+          <Border Classes="page-card">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Worst Case" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="{Binding WorstRecipeNameText}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding WorstRecipeMarginText}" FontWeight="Bold" Foreground="{DynamicResource AccentRoseBrush}" />
+              <TextBlock Text="Resep dengan sisa margin terendah pada skenario aktif." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="page-card">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Best Shield" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+              <TextBlock Text="{Binding BestShieldRecipeText}" FontSize="22" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+              <TextBlock Text="{Binding BestShieldMarginText}" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" />
+              <TextBlock Text="Resep dengan buffer margin terbaik terhadap tekanan inflasi." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Grid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

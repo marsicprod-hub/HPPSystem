@@ -3,176 +3,276 @@
              xmlns:vm="using:HPPSystem.ViewModels"
              xmlns:model="using:HPPSystem.Models"
              xmlns:fa="using:FluentAvalonia.UI.Controls"
+             xmlns:dg="clr-namespace:Avalonia.Controls;assembly=Avalonia.Controls.DataGrid"
              xmlns:fi="using:FluentIcons.Avalonia"
+             xmlns:lottie="using:Avalonia.Skia.Lottie"
              x:Class="HPPSystem.Views.BookkeepingView"
              x:Name="Root"
              x:DataType="vm:BookkeepingViewModel">
-  <UserControl.Styles>
-    <Style Selector="Border.page-card">
-      <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
-      <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="CornerRadius" Value="18" />
-      <Setter Property="Padding" Value="18" />
-    </Style>
-    <Style Selector="TextBlock.kpi-label">
-      <Setter Property="FontSize" Value="11" />
-      <Setter Property="FontWeight" Value="Bold" />
-      <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
-    </Style>
-  </UserControl.Styles>
-
-  <ScrollViewer>
+  <ScrollViewer Padding="0,0,14,0">
     <StackPanel Spacing="18">
-      <StackPanel Spacing="4">
-        <TextBlock Text="Pembukuan &amp; Kas" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
-        <TextBlock Text="Cashflow, expense, dan update stok belanja bahan." Foreground="{DynamicResource SecondaryTextBrush}" />
-      </StackPanel>
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+        <StackPanel Spacing="4">
+          <TextBlock Text="Pembukuan &amp; Kas" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="Input arus kas dan audit histori transaksi dalam satu workspace." Foreground="{DynamicResource SecondaryTextBrush}" />
+        </StackPanel>
+        <Border Grid.Column="1" Classes="badge">
+          <TextBlock Text="{Binding LastTransactionText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+        </Border>
+      </Grid>
 
-      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="16">
+      <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
         <Border Grid.Column="0" Classes="page-card">
-          <StackPanel>
+          <StackPanel Spacing="6">
             <TextBlock Text="Pemasukan" Classes="kpi-label" />
-            <TextBlock Text="{Binding TotalIncomeText}" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding TotalIncomeText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
         <Border Grid.Column="1" Classes="page-card">
-          <StackPanel>
+          <StackPanel Spacing="6">
             <TextBlock Text="Pengeluaran" Classes="kpi-label" />
-            <TextBlock Text="{Binding TotalExpenseText}" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding TotalExpenseText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
-        <Border Grid.Column="2" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Padding="18" CornerRadius="20">
-          <StackPanel>
+        <Border Grid.Column="2" Classes="page-card">
+          <StackPanel Spacing="6">
             <TextBlock Text="Saldo Bersih" Classes="kpi-label" />
-            <TextBlock Text="{Binding NetBalanceText}" FontSize="28" FontWeight="Black" Foreground="{DynamicResource AccentBrush}" />
+            <TextBlock Text="{Binding NetBalanceText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource AccentBrush}" />
+          </StackPanel>
+        </Border>
+        <Border Grid.Column="3" Classes="page-card">
+          <StackPanel Spacing="6">
+            <TextBlock Text="Histori Aktif" Classes="kpi-label" />
+            <TextBlock Text="{Binding HistorySummaryText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
           </StackPanel>
         </Border>
       </Grid>
 
-      <Grid ColumnDefinitions="*,1.8*" ColumnSpacing="16">
-        <StackPanel Grid.Column="0" Spacing="16">
-          <Border Classes="page-card">
-            <StackPanel Spacing="12">
-              <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Command="{Binding SetExpenseCommand}" Background="{DynamicResource AccentRoseBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="12">Expense</Button>
-                <Button Command="{Binding SetIncomeCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="12">Income</Button>
-              </StackPanel>
+      <Grid ColumnDefinitions="1.05*,1.35*" ColumnSpacing="16">
+        <Border Grid.Column="0" Classes="page-card">
+          <StackPanel Spacing="12">
+            <TextBlock Text="Form Transaksi" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+            <TextBlock Text="{Binding FormFlowSummaryText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
 
-              <StackPanel Spacing="6">
-                <TextBlock Text="Kategori Transaksi" Classes="kpi-label" />
-                <ComboBox ItemsSource="{Binding CategoryOptions}" SelectedItem="{Binding FormCategory}" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" />
-              </StackPanel>
+            <WrapPanel Classes="action-row">
+              <Button Classes="btn-primary" IsVisible="{Binding IsExpenseMode}" Command="{Binding SetExpenseCommand}">
+                <TextBlock Text="Pengeluaran" />
+              </Button>
+              <Button Classes="btn-secondary" IsVisible="{Binding !IsExpenseMode}" Command="{Binding SetExpenseCommand}">
+                <TextBlock Text="Pengeluaran" />
+              </Button>
 
-              <StackPanel Spacing="6">
-                <TextBlock Text="Deskripsi" Classes="kpi-label" />
-                <TextBox Text="{Binding FormDescription}" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
-              </StackPanel>
+              <Button Classes="btn-primary" IsVisible="{Binding IsIncomeMode}" Command="{Binding SetIncomeCommand}">
+                <TextBlock Text="Pemasukan" />
+              </Button>
+              <Button Classes="btn-secondary" IsVisible="{Binding !IsIncomeMode}" Command="{Binding SetIncomeCommand}">
+                <TextBlock Text="Pemasukan" />
+              </Button>
+            </WrapPanel>
 
-              <StackPanel Spacing="6">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Kategori Transaksi" Classes="kpi-label" />
+              <ComboBox ItemsSource="{Binding CategoryOptions}" SelectedItem="{Binding FormCategory}" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+              <TextBlock Text="Deskripsi" Classes="kpi-label" />
+              <TextBox Text="{Binding FormDescription}" Watermark="Contoh: Restock tepung minggu 1" />
+            </StackPanel>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+              <StackPanel Grid.Column="0" Spacing="6">
                 <TextBlock Text="Tanggal" Classes="kpi-label" />
-                <TextBox Text="{Binding FormDate}" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
+                <TextBox Text="{Binding FormDate}" />
               </StackPanel>
-
-              <StackPanel Spacing="6">
+              <StackPanel Grid.Column="1" Spacing="6">
                 <TextBlock Text="Nominal Manual" Classes="kpi-label" />
-                <fa:NumberBox Value="{Binding FormAmount}" Minimum="0" SmallChange="1000" SpinButtonPlacementMode="Compact" IsEnabled="{Binding !IsBelanjaBahan}" />
+                <fa:NumberBox Value="{Binding FormAmount}"
+                              Minimum="0"
+                              SmallChange="1000"
+                              SpinButtonPlacementMode="Compact"
+                              IsEnabled="{Binding !IsBelanjaBahan}" />
               </StackPanel>
+            </Grid>
 
-              <StackPanel Spacing="6" IsVisible="{Binding IsBelanjaBahan}">
-                <TextBlock Text="Subtotal Item Belanja" Classes="kpi-label" />
-                <TextBlock Text="{Binding AutoCalculatedAmount, StringFormat={}{0:N0}}" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" />
+            <Border Classes="metric-card">
+              <StackPanel Spacing="4">
+                <TextBlock Text="Nominal Final" Classes="kpi-label" />
+                <TextBlock Text="{Binding FormAmountPreviewText}" FontWeight="Black" Foreground="{DynamicResource AccentBrush}" />
               </StackPanel>
+            </Border>
 
-              <ItemsControl ItemsSource="{Binding PurchasedItems}" IsVisible="{Binding IsBelanjaBahan}">
-                <ItemsControl.ItemTemplate>
-                  <DataTemplate DataType="vm:PurchasedItemEntryViewModel">
-                    <Border Margin="0,0,0,8" Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="12">
-                      <Grid ColumnDefinitions="2*,2*,*,*,Auto" ColumnSpacing="8">
-                        <StackPanel Grid.Column="0" Spacing="6">
-                          <TextBlock Text="Material Master" Classes="kpi-label" />
+            <Border Classes="metric-card" IsVisible="{Binding IsBelanjaBahan}">
+              <StackPanel Spacing="8">
+                <CheckBox Content="Sinkronkan harga beli ke master material"
+                          IsChecked="{Binding SyncPurchasesToCatalog}"
+                          Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBlock Text="{Binding SyncCatalogSummaryText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+
+            <Border Classes="page-card" IsVisible="{Binding IsBelanjaBahan}">
+              <StackPanel Spacing="10">
+                <TextBlock Text="Item Belanja" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <WrapPanel Classes="action-row">
+                  <Button Classes="btn-secondary btn-sm" Command="{Binding AddPurchasedItemCommand}">
+                    <TextBlock Text="Tambah Item" />
+                  </Button>
+                  <Button Classes="btn-secondary btn-sm" Command="{Binding ClearPurchasedItemsCommand}" IsEnabled="{Binding HasPurchasedItems}">
+                    <TextBlock Text="Clear Item" />
+                  </Button>
+                  <Button Classes="btn-warm btn-sm"
+                          Command="{Binding ApplyLastBelanjaTemplateCommand}"
+                          IsEnabled="{Binding HasBelanjaTemplateSource}">
+                    <TextBlock Text="Pakai Template" />
+                  </Button>
+                </WrapPanel>
+                <TextBlock Text="{Binding BelanjaTemplateActionText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+
+                <dg:DataGrid Classes="editor-grid"
+                             ItemsSource="{Binding PurchasedItems}"
+                             AutoGenerateColumns="False"
+                             MinHeight="220">
+                  <dg:DataGrid.Columns>
+                    <dg:DataGridTemplateColumn Header="Material Master" Width="1.8*">
+                      <dg:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="vm:PurchasedItemEntryViewModel">
                           <ComboBox ItemsSource="{Binding #Root.DataContext.AvailableMaterials}"
                                     SelectedValueBinding="{Binding Id}"
-                                    SelectedValue="{Binding MaterialId}"
-                                    Background="{DynamicResource CardBgBrush}"
-                                    BorderBrush="{DynamicResource InputBorderBrush}">
+                                    SelectedValue="{Binding MaterialId}">
                             <ComboBox.ItemTemplate>
                               <DataTemplate DataType="model:Material">
                                 <TextBlock Text="{Binding Name}" />
                               </DataTemplate>
                             </ComboBox.ItemTemplate>
                           </ComboBox>
-                        </StackPanel>
-                        <StackPanel Grid.Column="1" Spacing="6">
-                          <TextBlock Text="Nama Custom" Classes="kpi-label" />
-                          <TextBox Text="{Binding CustomName}" Background="{DynamicResource CardBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="2" Spacing="6">
-                          <TextBlock Text="Qty" Classes="kpi-label" />
+                        </DataTemplate>
+                      </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+                    <dg:DataGridTemplateColumn Header="Nama Custom" Width="1.5*">
+                      <dg:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="vm:PurchasedItemEntryViewModel">
+                          <TextBox Text="{Binding CustomName}" />
+                        </DataTemplate>
+                      </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+                    <dg:DataGridTemplateColumn Header="Qty" Width="110">
+                      <dg:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="vm:PurchasedItemEntryViewModel">
                           <fa:NumberBox Value="{Binding Qty}" Minimum="0" SmallChange="1" SpinButtonPlacementMode="Compact" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="3" Spacing="6">
-                          <TextBlock Text="Harga" Classes="kpi-label" />
+                        </DataTemplate>
+                      </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+                    <dg:DataGridTemplateColumn Header="Harga" Width="150">
+                      <dg:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="vm:PurchasedItemEntryViewModel">
                           <fa:NumberBox Value="{Binding Price}" Minimum="0" SmallChange="1000" SpinButtonPlacementMode="Compact" />
-                        </StackPanel>
-                        <Button Grid.Column="4" Command="{Binding #Root.DataContext.RemovePurchasedItemCommand}" CommandParameter="{Binding .}" VerticalAlignment="Bottom" Background="{DynamicResource AccentRoseBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="10">X</Button>
-                      </Grid>
-                    </Border>
-                  </DataTemplate>
-                </ItemsControl.ItemTemplate>
-              </ItemsControl>
+                        </DataTemplate>
+                      </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+                    <dg:DataGridTemplateColumn Header="Aksi" Width="90">
+                      <dg:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="vm:PurchasedItemEntryViewModel">
+                          <Button Classes="btn-danger btn-sm"
+                                  Command="{Binding #Root.DataContext.RemovePurchasedItemCommand}"
+                                  CommandParameter="{Binding .}">
+                            <TextBlock Text="Hapus" />
+                          </Button>
+                        </DataTemplate>
+                      </dg:DataGridTemplateColumn.CellTemplate>
+                    </dg:DataGridTemplateColumn>
+                  </dg:DataGrid.Columns>
+                </dg:DataGrid>
+              </StackPanel>
+            </Border>
 
-              <Button Command="{Binding AddPurchasedItemCommand}" IsVisible="{Binding IsBelanjaBahan}" Background="{DynamicResource CardAltBgBrush}" Foreground="{DynamicResource PrimaryTextBrush}" CornerRadius="12">Tambah Item Belanja</Button>
-              <Button Command="{Binding SaveCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="12">Simpan Transaksi</Button>
-            </StackPanel>
-          </Border>
-        </StackPanel>
+            <Button Classes="btn-primary" Command="{Binding SaveCommand}">
+              <TextBlock Text="{Binding SaveActionText}" />
+            </Button>
+          </StackPanel>
+        </Border>
 
         <Border Grid.Column="1" Classes="page-card">
           <StackPanel Spacing="12">
-            <TextBlock Text="Riwayat Transaksi" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
-            <ItemsControl ItemsSource="{Binding Transactions}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="model:Transaction">
-                  <Border Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Padding="14" CornerRadius="16" Margin="0,0,0,10">
-                    <StackPanel Spacing="8">
-                      <Grid ColumnDefinitions="2*,Auto,Auto" ColumnSpacing="8">
-                        <StackPanel>
-                          <TextBlock Text="Deskripsi" Classes="kpi-label" />
-                          <TextBlock Text="{Binding Description}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
-                          <TextBlock Text="{Binding Category}" Foreground="{DynamicResource SecondaryTextBrush}" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1">
-                          <TextBlock Text="Nominal" Classes="kpi-label" />
-                          <TextBlock Text="{Binding Amount, StringFormat={}{0:N0}}" VerticalAlignment="Center" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" />
-                        </StackPanel>
-                        <Button Grid.Column="2" Command="{Binding #Root.DataContext.RequestDeleteCommand}" CommandParameter="{Binding .}" VerticalAlignment="Bottom" Background="{DynamicResource AccentRoseBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="10">Hapus</Button>
-                      </Grid>
-                      <ItemsControl ItemsSource="{Binding PurchasedItems}">
-                        <ItemsControl.ItemTemplate>
-                          <DataTemplate DataType="model:PurchasedItem">
-                            <Grid ColumnDefinitions="2*,Auto,Auto" ColumnSpacing="8">
-                              <StackPanel>
-                                <TextBlock Text="Item Belanja" Classes="kpi-label" />
-                                <TextBlock Text="{Binding CustomName}" Foreground="{DynamicResource PrimaryTextBrush}" />
-                              </StackPanel>
-                              <StackPanel Grid.Column="1">
-                                <TextBlock Text="Qty" Classes="kpi-label" />
-                                <TextBlock Text="{Binding Qty}" Foreground="{DynamicResource PrimaryTextBrush}" />
-                              </StackPanel>
-                              <StackPanel Grid.Column="2">
-                                <TextBlock Text="Harga" Classes="kpi-label" />
-                                <TextBlock Text="{Binding Price, StringFormat={}{0:N0}}" Foreground="{DynamicResource PrimaryTextBrush}" />
-                              </StackPanel>
-                            </Grid>
-                          </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                      </ItemsControl>
-                    </StackPanel>
-                  </Border>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <TextBlock Text="Histori Transaksi" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+
+            <TextBox Text="{Binding HistorySearchTerm}" Watermark="Cari deskripsi / kategori / item..." />
+            <TextBlock Text="{Binding HistorySearchHelperText}" Foreground="{DynamicResource SecondaryTextBrush}" />
+
+            <WrapPanel Classes="action-row">
+              <Button Classes="btn-primary btn-sm" IsVisible="{Binding IsHistoryAll}" Command="{Binding FocusAllHistoryCommand}">
+                <TextBlock Text="{Binding HistoryAllText}" />
+              </Button>
+              <Button Classes="btn-secondary btn-sm" IsVisible="{Binding !IsHistoryAll}" Command="{Binding FocusAllHistoryCommand}">
+                <TextBlock Text="{Binding HistoryAllText}" />
+              </Button>
+
+              <Button Classes="btn-primary btn-sm" IsVisible="{Binding IsHistoryExpense}" Command="{Binding FocusExpenseHistoryCommand}">
+                <TextBlock Text="{Binding HistoryExpenseText}" />
+              </Button>
+              <Button Classes="btn-secondary btn-sm" IsVisible="{Binding !IsHistoryExpense}" Command="{Binding FocusExpenseHistoryCommand}">
+                <TextBlock Text="{Binding HistoryExpenseText}" />
+              </Button>
+
+              <Button Classes="btn-primary btn-sm" IsVisible="{Binding IsHistoryIncome}" Command="{Binding FocusIncomeHistoryCommand}">
+                <TextBlock Text="{Binding HistoryIncomeText}" />
+              </Button>
+              <Button Classes="btn-secondary btn-sm" IsVisible="{Binding !IsHistoryIncome}" Command="{Binding FocusIncomeHistoryCommand}">
+                <TextBlock Text="{Binding HistoryIncomeText}" />
+              </Button>
+
+              <Button Classes="btn-primary btn-sm" IsVisible="{Binding IsHistoryBelanja}" Command="{Binding FocusBelanjaHistoryCommand}">
+                <TextBlock Text="{Binding HistoryBelanjaText}" />
+              </Button>
+              <Button Classes="btn-secondary btn-sm" IsVisible="{Binding !IsHistoryBelanja}" Command="{Binding FocusBelanjaHistoryCommand}">
+                <TextBlock Text="{Binding HistoryBelanjaText}" />
+              </Button>
+
+              <Button Classes="btn-warm btn-sm"
+                      IsVisible="{Binding HasActiveHistorySearchOrFilter}"
+                      Command="{Binding ClearHistoryFilterCommand}">
+                <TextBlock Text="Reset Histori" />
+              </Button>
+            </WrapPanel>
+
+            <Border Classes="metric-card">
+              <TextBlock Text="{Binding HistorySummaryText}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+            </Border>
+
+            <Border Classes="empty-state" IsVisible="{Binding !HasHistoryItems}">
+              <StackPanel Spacing="10" HorizontalAlignment="Center">
+                <lottie:Lottie Width="100" Height="100" Path="avares://HPPSystem/Assets/Animations/empty-pulse.json" />
+                <TextBlock Text="Belum ada transaksi sesuai filter" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+              </StackPanel>
+            </Border>
+
+            <dg:DataGrid Classes="audit-grid"
+                         ItemsSource="{Binding FilteredTransactionCards}"
+                         IsVisible="{Binding HasHistoryItems}"
+                         AutoGenerateColumns="False"
+                         MinHeight="420"
+                         CanUserResizeColumns="True">
+              <dg:DataGrid.Columns>
+                <dg:DataGridTextColumn Header="Tanggal" Binding="{Binding DateText}" Width="1.2*" />
+                <dg:DataGridTextColumn Header="Tipe" Binding="{Binding TypeBadgeText}" Width="*" />
+                <dg:DataGridTextColumn Header="Kategori" Binding="{Binding CategoryText}" Width="1.2*" />
+                <dg:DataGridTextColumn Header="Deskripsi" Binding="{Binding DescriptionText}" Width="2*" />
+                <dg:DataGridTextColumn Header="Nominal" Binding="{Binding AmountText}" Width="*" />
+                <dg:DataGridTextColumn Header="Item" Binding="{Binding PurchaseCountText}" Width="*" />
+                <dg:DataGridTextColumn Header="Ringkasan Belanja" Binding="{Binding PurchaseSummaryText}" Width="1.8*" />
+                <dg:DataGridTemplateColumn Header="Aksi" Width="100">
+                  <dg:DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate DataType="vm:BookkeepingTransactionCardViewModel">
+                      <Button Classes="btn-danger btn-sm"
+                              Command="{Binding #Root.DataContext.RequestDeleteCommand}"
+                              CommandParameter="{Binding Transaction}">
+                        <TextBlock Text="Hapus" />
+                      </Button>
+                    </DataTemplate>
+                  </dg:DataGridTemplateColumn.CellTemplate>
+                </dg:DataGridTemplateColumn>
+              </dg:DataGrid.Columns>
+            </dg:DataGrid>
           </StackPanel>
         </Border>
       </Grid>

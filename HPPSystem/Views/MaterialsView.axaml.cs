@@ -1,5 +1,7 @@
 using System.ComponentModel;
+using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using FluentAvalonia.UI.Controls;
 using HPPSystem.ViewModels;
@@ -52,10 +54,10 @@ public partial class MaterialsView : UserControl
         {
             var dialog = new ContentDialog
             {
-                Title = "Delete Material",
+                Title = "Hapus Bahan",
                 Content = _viewModel.DeletePromptText,
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
+                PrimaryButtonText = "Hapus",
+                CloseButtonText = "Batal",
                 DefaultButton = ContentDialogButton.Close
             };
 
@@ -72,6 +74,75 @@ public partial class MaterialsView : UserControl
         finally
         {
             _deleteDialogOpen = false;
+        }
+    }
+
+    private async void BrowseImport_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        if (DataContext is not MaterialsViewModel vm)
+        {
+            return;
+        }
+
+        var topLevel = TopLevel.GetTopLevel(this);
+        if (topLevel?.StorageProvider is null)
+        {
+            return;
+        }
+
+        var result = await topLevel.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+        {
+            AllowMultiple = false,
+            Title = "Pilih File Excel Material",
+            SuggestedStartLocation = await topLevel.StorageProvider.TryGetFolderFromPathAsync(@"C:\Users\hazel\Documents"),
+            FileTypeFilter =
+            [
+                new FilePickerFileType("Excel")
+                {
+                    Patterns = ["*.xlsx"]
+                }
+            ]
+        });
+
+        var file = result.FirstOrDefault();
+        if (file is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var preview = vm.PreviewImport(file.Path.LocalPath);
+            var dialog = new ContentDialog
+            {
+                Title = "Import Material dari Excel",
+                PrimaryButtonText = $"Import {preview.Entries.Count} Item",
+                CloseButtonText = "Batal",
+                DefaultButton = ContentDialogButton.Primary,
+                Content = string.Join(
+                    System.Environment.NewLine + System.Environment.NewLine,
+                    new[]
+                    {
+                        preview.SummaryText,
+                        string.Join(System.Environment.NewLine, preview.Notes)
+                    })
+            };
+
+            var choice = await dialog.ShowAsync(topLevel);
+            if (choice == ContentDialogResult.Primary)
+            {
+                await vm.ImportPreviewAsync(preview);
+            }
+        }
+        catch (System.Exception ex)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Import Gagal",
+                Content = ex.Message,
+                CloseButtonText = "Tutup"
+            };
+            await dialog.ShowAsync(topLevel);
         }
     }
 }

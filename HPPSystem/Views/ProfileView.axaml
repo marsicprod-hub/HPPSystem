@@ -1,73 +1,137 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:HPPSystem.ViewModels"
-             xmlns:model="using:HPPSystem.Models"
-             xmlns:fi="using:FluentIcons.Avalonia"
              x:Class="HPPSystem.Views.ProfileView"
              x:Name="Root"
              x:DataType="vm:ProfileViewModel">
-  <UserControl.Styles>
-    <Style Selector="Border.page-card">
-      <Setter Property="Background" Value="{DynamicResource CardBgBrush}" />
-      <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}" />
-      <Setter Property="BorderThickness" Value="1" />
-      <Setter Property="CornerRadius" Value="18" />
-      <Setter Property="Padding" Value="18" />
-    </Style>
-    <Style Selector="TextBlock.kpi-label">
-      <Setter Property="FontSize" Value="11" />
-      <Setter Property="FontWeight" Value="Bold" />
-      <Setter Property="Foreground" Value="{DynamicResource SecondaryTextBrush}" />
-    </Style>
-  </UserControl.Styles>
+  <ScrollViewer Padding="0,0,14,0">
+    <StackPanel Spacing="18">
+      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+        <StackPanel Spacing="4">
+          <TextBlock Text="Profil &amp; Cabang" FontSize="28" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+          <TextBlock Text="{Binding ActiveProfileInsightText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+        </StackPanel>
+        <Border Grid.Column="1" Classes="badge badge-soft">
+          <TextBlock Text="{Binding ProfileCountText}" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+        </Border>
+      </Grid>
 
-  <Grid ColumnDefinitions="*,1.8*" ColumnSpacing="16">
-    <Border Grid.Column="0" Classes="page-card">
-      <StackPanel Spacing="12">
-        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-          <fi:FluentIcon Icon="Building" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
-          <TextBlock Grid.Column="1" Text="Cabang" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
+      <Border Classes="page-card" Background="{DynamicResource CardAltBgBrush}">
+        <Grid ColumnDefinitions="1.35*,*" ColumnSpacing="14">
+          <StackPanel Spacing="6">
+            <TextBlock Text="{Binding ActiveProfileNameText}" FontSize="24" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding ActiveProfileOwnerText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+          </StackPanel>
+          <Grid Grid.Column="1" ColumnDefinitions="*,*" ColumnSpacing="10">
+            <Border Grid.Column="0" Classes="metric-card">
+              <StackPanel Spacing="4">
+                <TextBlock Text="Footprint" Classes="kpi-label" />
+                <TextBlock Text="{Binding ActiveProfileFootprintText}" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+            <Border Grid.Column="1" Classes="metric-card">
+              <StackPanel Spacing="4">
+                <TextBlock Text="Status" Classes="kpi-label" />
+                <TextBlock Text="Profil Aktif" FontWeight="Black" Foreground="{DynamicResource AccentBrush}" />
+                <TextBlock Text="Gunakan panel kiri untuk berpindah cabang." Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+          </Grid>
         </Grid>
-        <ItemsControl ItemsSource="{Binding Profiles}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate DataType="model:Profile">
-              <Border Background="{DynamicResource CardAltBgBrush}" BorderBrush="{DynamicResource CardBorderBrush}" BorderThickness="1" Padding="14" CornerRadius="16" Margin="0,0,0,8">
-                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                  <StackPanel>
-                    <TextBlock Text="Nama Cabang" Classes="kpi-label" />
-                    <TextBlock Text="{Binding BusinessName}" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
-                  </StackPanel>
-                  <Button Grid.Column="1" Command="{Binding #Root.DataContext.SwitchCommand}" CommandParameter="{Binding .}" VerticalAlignment="Bottom" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="10">Pilih</Button>
-                  <Button Grid.Column="2" Command="{Binding #Root.DataContext.RequestDeleteCommand}" CommandParameter="{Binding .}" VerticalAlignment="Bottom" Background="{DynamicResource AccentRoseBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="10">Hapus</Button>
-                </Grid>
-              </Border>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
-        <StackPanel Spacing="6">
-          <TextBlock Text="Nama Cabang Baru" Classes="kpi-label" />
-          <TextBox Text="{Binding NewProfileName}" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
-        </StackPanel>
-        <Button Command="{Binding AddProfileCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="12">Tambah Cabang</Button>
-      </StackPanel>
-    </Border>
+      </Border>
 
-    <Border Grid.Column="1" Classes="page-card">
-      <StackPanel Spacing="12">
-        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-          <fi:FluentIcon Icon="ContactCard" IconVariant="Regular" FontSize="20" Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" />
-          <TextBlock Grid.Column="1" Text="Detail Profil Aktif" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource PrimaryTextBrush}" />
-        </Grid>
-        <StackPanel Spacing="6">
-          <TextBlock Text="Nama Bisnis" Classes="kpi-label" />
-          <TextBox Text="{Binding BusinessName}" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
-        </StackPanel>
-        <StackPanel Spacing="6">
-          <TextBlock Text="Nama Owner / PIC" Classes="kpi-label" />
-          <TextBox Text="{Binding OwnerName}" Background="{DynamicResource InputBgBrush}" BorderBrush="{DynamicResource InputBorderBrush}" CornerRadius="12" />
-        </StackPanel>
-        <Button Command="{Binding SaveCurrentCommand}" Background="{DynamicResource AccentBrush}" Foreground="{DynamicResource SidebarSelectedTextBrush}" CornerRadius="12">Simpan Profil</Button>
-      </StackPanel>
-    </Border>
-  </Grid>
+      <WrapPanel Orientation="Horizontal" ItemWidth="520">
+        <Border Classes="page-card" MinWidth="420" MaxWidth="640" Margin="0,0,16,16">
+          <StackPanel Spacing="14">
+            <TextBlock Text="Daftar Cabang" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+
+            <ItemsControl ItemsSource="{Binding ProfileCards}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:ProfileCardViewModel">
+                  <Border Background="{DynamicResource CardAltBgBrush}"
+                          BorderBrush="{DynamicResource CardBorderBrush}"
+                          BorderThickness="1"
+                          Padding="14"
+                          CornerRadius="16"
+                          Margin="0,0,0,10">
+                    <StackPanel Spacing="10">
+                      <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <StackPanel Spacing="4">
+                          <TextBlock Text="{Binding BusinessNameText}" FontWeight="Black" FontSize="18" Foreground="{DynamicResource PrimaryTextBrush}" />
+                          <TextBlock Text="{Binding OwnerNameText}" Foreground="{DynamicResource SecondaryTextBrush}" />
+                        </StackPanel>
+                        <Border Grid.Column="1" Classes="badge badge-soft" IsVisible="{Binding IsActive}" VerticalAlignment="Top">
+                          <TextBlock Text="Aktif" Foreground="{DynamicResource PrimaryTextBrush}" FontWeight="Bold" />
+                        </Border>
+                      </Grid>
+
+                      <TextBlock Text="{Binding DataFootprintText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                      <TextBlock Text="{Binding ActivitySummaryText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+
+                      <WrapPanel Orientation="Horizontal" ItemWidth="120">
+                        <Button Classes="btn-primary"
+                                Margin="0,0,8,8"
+                                Command="{Binding #Root.DataContext.SwitchCommand}"
+                                CommandParameter="{Binding Profile}">
+                          <TextBlock Text="Pilih" />
+                        </Button>
+                        <Button Classes="btn-danger"
+                                Margin="0,0,8,8"
+                                Command="{Binding #Root.DataContext.RequestDeleteCommand}"
+                                CommandParameter="{Binding Profile}">
+                          <TextBlock Text="Hapus" />
+                        </Button>
+                      </WrapPanel>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border Classes="metric-card">
+              <StackPanel Spacing="8">
+                <TextBlock Text="Tambah Cabang Baru" FontSize="18" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+                <TextBox Text="{Binding NewProfileName}" Watermark="Nama cabang baru" />
+                <TextBlock Text="{Binding NewBranchGuideText}" Foreground="{DynamicResource SecondaryTextBrush}" TextWrapping="Wrap" />
+                <Button Classes="btn-primary"
+                        Command="{Binding AddProfileCommand}"
+                        IsEnabled="{Binding CanAddProfile}">
+                  <TextBlock Text="Tambah Cabang" />
+                </Button>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </Border>
+
+        <Border Classes="page-card" MinWidth="420" MaxWidth="640" Margin="0,0,0,16">
+          <StackPanel Spacing="14">
+            <TextBlock Text="Detail Profil Aktif" FontSize="20" FontWeight="Black" Foreground="{DynamicResource PrimaryTextBrush}" />
+
+            <StackPanel Spacing="6">
+              <TextBlock Text="Nama Bisnis" Classes="kpi-label" />
+              <TextBox Text="{Binding BusinessName}" />
+            </StackPanel>
+
+            <StackPanel Spacing="6">
+              <TextBlock Text="Nama Owner / PIC" Classes="kpi-label" />
+              <TextBox Text="{Binding OwnerName}" />
+            </StackPanel>
+
+            <Border Classes="metric-card">
+              <StackPanel Spacing="4">
+                <TextBlock Text="Ringkasan" Classes="kpi-label" />
+                <TextBlock Text="{Binding ActiveProfileInsightText}" Foreground="{DynamicResource PrimaryTextBrush}" TextWrapping="Wrap" />
+              </StackPanel>
+            </Border>
+
+            <Button Classes="btn-primary"
+                    Command="{Binding SaveCurrentCommand}"
+                    IsEnabled="{Binding CanSaveCurrent}">
+              <TextBlock Text="Simpan Profil" />
+            </Button>
+          </StackPanel>
+        </Border>
+      </WrapPanel>
+    </StackPanel>
+  </ScrollViewer>
 </UserControl>

@@ -52,10 +52,10 @@ public partial class BookkeepingView : UserControl
         {
             var dialog = new ContentDialog
             {
-                Title = "Delete Transaction",
-                Content = $"Hapus transaksi {_viewModel.PendingDelete.Description} senilai {_viewModel.PendingDelete.Amount:N0}?",
-                PrimaryButtonText = "Delete",
-                CloseButtonText = "Cancel",
+                Title = "Hapus Transaksi",
+                Content = _viewModel.DeletePromptText,
+                PrimaryButtonText = "Hapus",
+                CloseButtonText = "Batal",
                 DefaultButton = ContentDialogButton.Close
             };
 
